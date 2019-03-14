@@ -1,0 +1,107 @@
+apply plugin: 'com.android.application'
+
+ext.versions = [
+		// Android
+		targetSdkVersion: 28,
+		minSdkVersion   : 16,
+		buildtools      : "28.0.3",
+
+		//Timber
+		timber          : "4.7.0",
+]
+
+def versionMajor = 0
+def versionMinor = 1
+def versionPatch = 0
+
+android {
+	compileSdkVersion versions.targetSdkVersion
+	buildToolsVersion versions.buildtools
+	defaultConfig {
+		applicationId "com.dimowner.charttemplate"
+		minSdkVersion versions.minSdkVersion
+		targetSdkVersion versions.targetSdkVersion
+		versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
+		versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+//		vectorDrawables.useSupportLibrary = true
+	}
+
+	def keystorePropertiesFile = rootProject.file("keystore.properties")
+	def keystoreProperties = new Properties()
+	keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+	signingConfigs {
+		dev {
+			storeFile file(keystoreProperties['storeFile'])
+			storePassword keystoreProperties['storePassword']
+			keyAlias keystoreProperties['keyAlias']
+			keyPassword keystoreProperties['keyPassword']
+		}
+		release {
+			storeFile file(keystoreProperties['prodStoreFile'])
+			storePassword keystoreProperties['prodStorePassword']
+			keyAlias keystoreProperties['prodKeyAlias']
+			keyPassword keystoreProperties['prodKeyPassword']
+		}
+	}
+
+	buildTypes {
+		release {
+			minifyEnabled true
+			shrinkResources true
+			useProguard true
+			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+		}
+		debug {
+			minifyEnabled false
+		}
+	}
+
+	flavorDimensions "default"
+
+	productFlavors {
+		debugConfig {
+			dimension "default"
+			applicationId "com.dimowner.charttemplate.debug"
+			minSdkVersion versions.minSdkVersion
+			targetSdkVersion versions.targetSdkVersion
+			signingConfig = signingConfigs.dev
+		}
+		releaseConfig {
+			dimension "default"
+			signingConfig = signingConfigs.dev
+			applicationId "com.dimowner.charttemplate"
+			minSdkVersion versions.minSdkVersion
+			targetSdkVersion versions.targetSdkVersion
+		}
+	}
+
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_7
+		targetCompatibility JavaVersion.VERSION_1_7
+	}
+
+	lintOptions {
+		checkReleaseBuilds false
+		// Or, if you prefer, you can continue to check for errors in release builds,
+		// but continue the build even when errors are found:
+		abortOnError false
+	}
+}
+
+// Remove not needed buildVariants.
+android.variantFilter { variant ->
+	if (variant.buildType.name == 'release'
+			&& variant.getFlavors().get(0).name == 'debugConfig') {
+		variant.setIgnore(true)
+	}
+	if (variant.buildType.name == 'debug'
+			&& variant.getFlavors().get(0).name == 'releaseConfig') {
+		variant.setIgnore(true)
+	}
+}
+
+dependencies {
+	//Timber
+	implementation "com.jakewharton.timber:timber:$versions.timber"
+}
