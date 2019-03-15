@@ -22,4 +22,8 @@
 	<color name="md_blue_700">#1976D2</color>
 	<color name="md_grey_100">#F5F5F5</color>
 
+	<color name="white">#ffffff</color>
+	<color name="grid_color">#E3E6E7</color>
+	<color name="text_color">#96a2aa</color>
+
 </resources>

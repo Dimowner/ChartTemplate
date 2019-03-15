@@ -99,17 +99,24 @@ public class ChartView extends View {
 
 		linePaint = new Paint();
 		linePaint.setAntiAlias(false);
+		linePaint.setDither(false);
 		linePaint.setStyle(Paint.Style.STROKE);
-		linePaint.setStrokeWidth(AndroidUtils.dpToPx(2));
+		linePaint.setStrokeWidth(AndroidUtils.dpToPx(3));
+		linePaint.setStrokeJoin(Paint.Join.ROUND);
+		linePaint.setStrokeCap(Paint.Cap.ROUND);
+//		linePaint.setPathEffect(new CornerPathEffect(AndroidUtils.dpToPx(8)));
 		linePaint.setColor(context.getResources().getColor(R.color.md_yellow_A700));
 
 		gridPaint = new Paint();
-		gridPaint.setColor(context.getResources().getColor(R.color.md_grey_100));
-		gridPaint.setStrokeWidth(AndroidUtils.dpToPx(1)/2);
+		gridPaint.setAntiAlias(false);
+		linePaint.setDither(false);
+		gridPaint.setStyle(Paint.Style.STROKE);
+		gridPaint.setColor(context.getResources().getColor(R.color.grid_color));
+		gridPaint.setStrokeWidth(AndroidUtils.dpToPx(1));
 
 		textHeight = context.getResources().getDimension(R.dimen.text_normal);
 		textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-		textPaint.setColor(context.getResources().getColor(R.color.md_grey_100));
+		textPaint.setColor(context.getResources().getColor(R.color.text_color));
 		textPaint.setStrokeWidth(AndroidUtils.dpToPx(1));
 		textPaint.setTextAlign(Paint.Align.CENTER);
 		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));

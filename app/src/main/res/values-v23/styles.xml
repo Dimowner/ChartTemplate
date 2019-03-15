@@ -16,11 +16,18 @@
 
 <resources>
 
-	<style name="AppTheme" parent="android:Theme.Holo.Light">
+	<style name="AppTheme" parent="@android:style/Theme.Material.Light">
+
+		<item name="android:colorPrimary">@color/md_blue_700</item>
+		<item name="android:colorPrimaryDark">@color/md_blue_700</item>
+		<item name="android:colorAccent">@color/md_yellow_A700</item>
+		<item name="android:statusBarColor">#00000000</item>
 
 		<item name="android:windowActionBar">false</item>
 		<item name="android:windowNoTitle">true</item>
 		<item name="android:windowActionBarOverlay">true</item>
+
+		<item name="android:windowLightStatusBar">true</item>
 
 	</style>
 
