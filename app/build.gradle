@@ -6,13 +6,13 @@ ext.versions = [
 		minSdkVersion   : 16,
 		buildtools      : "28.0.3",
 
-		//Timber
 		timber          : "4.7.0",
+		gson            : "2.8.5"
 ]
 
 def versionMajor = 0
 def versionMinor = 1
-def versionPatch = 0
+def versionPatch = 1
 
 android {
 	compileSdkVersion versions.targetSdkVersion
@@ -104,4 +104,6 @@ android.variantFilter { variant ->
 dependencies {
 	//Timber
 	implementation "com.jakewharton.timber:timber:$versions.timber"
+
+	implementation "com.google.code.gson:gson:$versions.gson"
 }

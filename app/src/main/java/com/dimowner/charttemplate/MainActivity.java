@@ -20,8 +20,16 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.SeekBar;
 
+import com.dimowner.charttemplate.model.DataArray;
 import com.dimowner.charttemplate.widget.ChartData;
 import com.dimowner.charttemplate.widget.ChartView;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+
+import timber.log.Timber;
 
 public class MainActivity extends Activity {
 
@@ -60,5 +68,41 @@ public class MainActivity extends Activity {
 			@Override public void onStartTrackingTouch(SeekBar seekBar) { }
 			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
 		});
+		readDemoData();
+	}
+
+	public void readDemoData() {
+		String json;
+		try {
+			InputStream is = getAssets().open("telegram_chart_data.json");
+			int size = is.available();
+			byte[] buffer = new byte[size];
+			is.read(buffer);
+			is.close();
+			json = new String(buffer, "UTF-8");
+
+			Gson gson = new Gson();
+			DataArray dataArray = gson.fromJson(json, DataArray.class);
+			if (dataArray != null) {
+				Timber.v("READ DATA = %s", dataArray.toString());
+				Timber.v("Test color y0 = %s", dataArray.getDataArray()[0].getColors().get("y0"));
+				Timber.v("Test names y0 = %s", dataArray.getDataArray()[0].getNames().get("y0"));
+				Timber.v("Test types y0 = %s", dataArray.getDataArray()[0].getTypes().get("y0"));
+				Timber.v("Test types x = %s", dataArray.getDataArray()[0].getTypes().get("x"));
+				Timber.v("Test column x = %s", (String) dataArray.getDataArray()[0].getColumns()[0][0]);
+
+				Timber.v("TimeLine = %s", Arrays.toString(dataArray.getDataArray()[0].getTimeArray()));
+				Timber.v("ColumnCount = %s", dataArray.getDataArray()[0].getColumnCount());
+				Timber.v("ColumnKeys = %s", Arrays.toString(dataArray.getDataArray()[0].getColumnsKeys()));
+
+				String key0 = dataArray.getDataArray()[0].getColumnsKeys()[0];
+				Timber.v("Color0 = " + dataArray.getDataArray()[0].getColor(key0)
+						+ ", Name = " + dataArray.getDataArray()[0].getName(key0)
+						+ ", Type = " + dataArray.getDataArray()[0].getType(key0));
+				Timber.v("Values = %s", Arrays.toString(dataArray.getDataArray()[0].getValues(key0)));
+			}
+		} catch (IOException | ClassCastException ex) {
+			Timber.e(ex);
+		}
 	}
 }
