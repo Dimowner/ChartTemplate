@@ -30,20 +30,26 @@ import android.view.View;
 
 import com.dimowner.charttemplate.AppConstants;
 import com.dimowner.charttemplate.R;
-import com.dimowner.charttemplate.model.Data2;
+import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.util.TimeUtils;
+
+import java.util.Date;
 
 import timber.log.Timber;
 
 public class ChartView extends View {
 
-	private static final float PADD = 15.0f;
-	private static final int END_PADD = 30;
 	private static int STEP = (int) AndroidUtils.dpToPx(AppConstants.DEFAULT_STEP);
-	private static int PADDING_NORMAL = (int) AndroidUtils.dpToPx(16);
+	private static int PADDING_SMALL = (int) AndroidUtils.dpToPx(8);
+	private static int GRID_LINES_COUNT = 6;
+	private static int TEXT_SPACE = (int) AndroidUtils.dpToPx(65);
 
-	private Data2 data;
+	private ChartData data;
+
+	private Path chartPath;
+	private Date date;
+	private String dateText;
 
 	private Paint gridPaint;
 	private TextPaint textPaint;
@@ -55,7 +61,6 @@ public class ChartView extends View {
 	private boolean showRecording = false;
 
 	private float textHeight;
-	private float inset;
 
 	private int prevScreenShift = 0;
 	private float startX = 0;
@@ -88,6 +93,10 @@ public class ChartView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 
+		chartPath = new Path();
+		date = new Date();
+		dateText = null;
+
 		linePaint = new Paint();
 		linePaint.setAntiAlias(false);
 		linePaint.setStyle(Paint.Style.STROKE);
@@ -99,7 +108,6 @@ public class ChartView extends View {
 		gridPaint.setStrokeWidth(AndroidUtils.dpToPx(1)/2);
 
 		textHeight = context.getResources().getDimension(R.dimen.text_normal);
-		inset = textHeight + PADD;
 		textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		textPaint.setColor(context.getResources().getColor(R.color.md_grey_100));
 		textPaint.setStrokeWidth(AndroidUtils.dpToPx(1));
@@ -134,8 +142,8 @@ public class ChartView extends View {
 							int shift = (int) (prevScreenShift + (motionEvent.getX()) - startX);
 							if (data != null) {
 								//Right char move edge
-								if (shift <= -data.getLength() * STEP - END_PADD + WIDTH) {
-									shift = -data.getLength() * STEP - END_PADD + WIDTH;
+								if (shift <= -data.getLength() * STEP - PADDING_SMALL + WIDTH) {
+									shift = -data.getLength() * STEP - PADDING_SMALL + WIDTH;
 								}
 							}
 							//Left chart move edge
@@ -187,50 +195,50 @@ public class ChartView extends View {
 		super.onDraw(canvas);
 
 		if (data != null) {
+			textPaint.setTextAlign(Paint.Align.LEFT);
+			drawGrid(canvas);
 
-			//==================Draw grid ==============
-			int lineCount = 6;
-			int gridValue = (maxValue / lineCount);
-			int lineStep = (int) (gridValue * valueScale);
-			for (int i = 0; i < lineCount; i++) {
-				canvas.drawLine(0, HEIGHT - lineStep * i, WIDTH, HEIGHT - lineStep * i, gridPaint);
-				if (i > 0) {
-					canvas.drawText(Integer.toString((gridValue * i)), PADDING_NORMAL, HEIGHT - lineStep * i - PADD, textPaint);
-				}
-			}
-
+			textPaint.setTextAlign(Paint.Align.CENTER);
 			for (int i = 0; i < data.getNames().length; i++) {
 				drawChart(canvas, data.getValues(i), data.getColors()[i]);
 			}
 		}
 	}
 
-	private void drawChart(Canvas canvas, int[] vals, String color) {
-		Timber.v("drawPath2 screenShift = " + screenShift + " height = " + HEIGHT + " maxVal = " + maxValue * valueScale
-				+ " valScale = " + valueScale);
+	private void drawGrid(Canvas canvas) {
+		int gridValueText = (maxValue / GRID_LINES_COUNT);
+		int gridStep = (int) (gridValueText * valueScale);
+		for (int i = 0; i < GRID_LINES_COUNT; i++) {
+			canvas.drawLine(0, HEIGHT - gridStep * i, WIDTH, HEIGHT - gridStep * i, gridPaint);
+			if (i > 0) {
+				canvas.drawText(Integer.toString((gridValueText * i)), PADDING_SMALL, HEIGHT - gridStep * i - PADDING_SMALL, textPaint);
+			}
+		}
+	}
+
+	private void drawChart(Canvas canvas, int[] values, String color) {
 		linePaint.setColor(Color.parseColor(color));
-		int bottomPadd = 0;
-		int pos = 0;
-		Path path2 = new Path();
+
+		chartPath.reset();
 		int start = screenShift <= 0 ? -screenShift / STEP : 0;
 		int offset = screenShift % STEP;
 
-		int w = 150;//TODO: textWidth to DP
-		for (int i = start; i < vals.length; i++) {
+		int pos = 0;
+		for (int i = start; i < values.length; i++) {
+			//Draw chart
 			if (pos == 0) {
-				path2.moveTo(pos + offset, HEIGHT - bottomPadd - vals[i] * valueScale);
+				chartPath.moveTo(pos + offset, HEIGHT - values[i] * valueScale);
 			} else {
-				path2.lineTo(pos + offset, HEIGHT - bottomPadd - vals[i] * valueScale);
+				chartPath.lineTo(pos + offset, HEIGHT - values[i] * valueScale);
 			}
 
-			String text = TimeUtils.formatDate(data.getTime()[i]);
-
-			Timber.v("textWidth = " + w + " step = " + STEP + " t/s = " + w / (float) STEP
-					+ " i = " + i % (Math.ceil(w / (float) STEP)) + " round = " + Math.ceil(w / (float) STEP));
-			if (w < STEP) {
-				canvas.drawText(text, pos + offset, HEIGHT - PADD, textPaint);
-			} else if (i % (Math.ceil(w / (float) STEP)) == 0) {
-				canvas.drawText(text, pos + offset, HEIGHT - PADD, textPaint);
+			//Draw dates
+			date.setTime(data.getTime()[i]);
+			dateText = TimeUtils.formatDate(date);
+			if (TEXT_SPACE < STEP) {
+				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_SMALL, textPaint);
+			} else if (i % (Math.ceil(TEXT_SPACE/(float) STEP)) == 0) {
+				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_SMALL, textPaint);
 			}
 
 			if (pos - STEP > WIDTH) {
@@ -238,7 +246,7 @@ public class ChartView extends View {
 			}
 			pos += STEP;
 		}
-		canvas.drawPath(path2, linePaint);
+		canvas.drawPath(chartPath, linePaint);
 	}
 
 	private void updateShifts(int px) {
@@ -253,7 +261,7 @@ public class ChartView extends View {
 		ChartView.STEP = s;
 	}
 
-	public void setData(Data2 d) {
+	public void setData(ChartData d) {
 		this.data = d;
 		if (data != null) {
 			for (int i = 0; i < data.getLength(); i++) {

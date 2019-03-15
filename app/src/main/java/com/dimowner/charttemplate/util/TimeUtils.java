@@ -41,4 +41,10 @@ public class TimeUtils {
         return dateFormat24H.format(new Date(time));
     }
 
+    public static String formatDate(Date date) {
+        if (date == null) {
+            return "Wrong date!";
+        }
+        return dateFormat24H.format(date);
+    }
 }

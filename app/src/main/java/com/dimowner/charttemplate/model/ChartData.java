@@ -2,7 +2,7 @@ package com.dimowner.charttemplate.model;
 
 import java.util.Arrays;
 
-public class Data2 {
+public class ChartData {
 
 	private long[] time;
 	private int[][] columns;
@@ -10,7 +10,7 @@ public class Data2 {
 	private String[] types;
 	private String[] colors;
 
-	public Data2(long[] time, int[][] columns, String[] names, String[] types, String[] colors) {
+	public ChartData(long[] time, int[][] columns, String[] names, String[] types, String[] colors) {
 		this.time = time;
 		this.columns = columns;
 		this.names = names;
@@ -48,7 +48,7 @@ public class Data2 {
 
 	@Override
 	public String toString() {
-		return "Data2{" +
+		return "ChartData{" +
 				"time=" + Arrays.toString(time) +
 				", columns=" + Arrays.toString(columns) +
 				", names=" + Arrays.toString(names) +
