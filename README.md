@@ -1,5 +1,7 @@
 # ChartTemplate
+<p>Chart Template application</p>
 
+![Chart Template Logo](https://github.com/Dimowner/ChartTemplate/blob/master/app/src/main/res/mipmap-xxxhdpi/chart_template_logo.png)
 ### License
 
 ```
