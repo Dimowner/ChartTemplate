@@ -112,4 +112,11 @@ public class Data {
 		}
 		return new int[0];
 	}
+
+	public int getDataLength() {
+		if (columns.length > 0 && columns[0].length > 0) {
+			return columns[0].length-1;
+		}
+		return 0;
+	}
 }

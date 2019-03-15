@@ -18,6 +18,7 @@ package com.dimowner.charttemplate.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Typeface;
@@ -29,6 +30,7 @@ import android.view.View;
 
 import com.dimowner.charttemplate.AppConstants;
 import com.dimowner.charttemplate.R;
+import com.dimowner.charttemplate.model.Data2;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.util.TimeUtils;
 
@@ -41,10 +43,12 @@ public class ChartView extends View {
 	private static int STEP = (int) AndroidUtils.dpToPx(AppConstants.DEFAULT_STEP);
 	private static int PADDING_NORMAL = (int) AndroidUtils.dpToPx(16);
 
+	private Data2 data;
+
 	private Paint gridPaint;
 	private TextPaint textPaint;
 
-	private Paint scrubberPaint;
+	private Paint linePaint;
 
 	private long playProgressPx;
 
@@ -84,11 +88,11 @@ public class ChartView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 
-		scrubberPaint = new Paint();
-		scrubberPaint.setAntiAlias(false);
-		scrubberPaint.setStyle(Paint.Style.STROKE);
-		scrubberPaint.setStrokeWidth(AndroidUtils.dpToPx(2));
-		scrubberPaint.setColor(context.getResources().getColor(R.color.md_yellow_A700));
+		linePaint = new Paint();
+		linePaint.setAntiAlias(false);
+		linePaint.setStyle(Paint.Style.STROKE);
+		linePaint.setStrokeWidth(AndroidUtils.dpToPx(2));
+		linePaint.setColor(context.getResources().getColor(R.color.md_yellow_A700));
 
 		gridPaint = new Paint();
 		gridPaint.setColor(context.getResources().getColor(R.color.md_grey_100));
@@ -128,9 +132,11 @@ public class ChartView extends View {
 							break;
 						case MotionEvent.ACTION_MOVE:
 							int shift = (int) (prevScreenShift + (motionEvent.getX()) - startX);
-							//Right char move edge
-							if (shift <= -ChartData.getValues().length*STEP - END_PADD + WIDTH) {
-								shift = -ChartData.getValues().length*STEP - END_PADD + WIDTH;
+							if (data != null) {
+								//Right char move edge
+								if (shift <= -data.getLength() * STEP - END_PADD + WIDTH) {
+									shift = -data.getLength() * STEP - END_PADD + WIDTH;
+								}
 							}
 							//Left chart move edge
 							if (shift > 0) {
@@ -155,15 +161,6 @@ public class ChartView extends View {
 				return gestureDetector.onTouchEvent(motionEvent);
 			}
 		});
-
-
-		for (int i = 0; i < ChartData.getValues().length; i++) {
-			if (ChartData.getValues()[i] > maxValue) {
-				maxValue = ChartData.getValues()[i];
-			}
-		}
-		Timber.v("maxValue = " + maxValue);
-
 	}
 
 	public void seekPx(int px) {
@@ -189,50 +186,59 @@ public class ChartView extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 
-		//===================Draw chart
-		Timber.v("drawPath2 screenShift = " + screenShift + " height = " + HEIGHT  + " maxVal = " + maxValue*valueScale
+		if (data != null) {
+
+			//==================Draw grid ==============
+			int lineCount = 6;
+			int gridValue = (maxValue / lineCount);
+			int lineStep = (int) (gridValue * valueScale);
+			for (int i = 0; i < lineCount; i++) {
+				canvas.drawLine(0, HEIGHT - lineStep * i, WIDTH, HEIGHT - lineStep * i, gridPaint);
+				if (i > 0) {
+					canvas.drawText(Integer.toString((gridValue * i)), PADDING_NORMAL, HEIGHT - lineStep * i - PADD, textPaint);
+				}
+			}
+
+			for (int i = 0; i < data.getNames().length; i++) {
+				drawChart(canvas, data.getValues(i), data.getColors()[i]);
+			}
+		}
+	}
+
+	private void drawChart(Canvas canvas, int[] vals, String color) {
+		Timber.v("drawPath2 screenShift = " + screenShift + " height = " + HEIGHT + " maxVal = " + maxValue * valueScale
 				+ " valScale = " + valueScale);
+		linePaint.setColor(Color.parseColor(color));
 		int bottomPadd = 0;
 		int pos = 0;
 		Path path2 = new Path();
-		int start = screenShift <= 0 ? -screenShift/STEP: 0;
-		int offset = screenShift%STEP;
+		int start = screenShift <= 0 ? -screenShift / STEP : 0;
+		int offset = screenShift % STEP;
 
 		int w = 150;//TODO: textWidth to DP
-		for (int i = start; i < ChartData.getValues().length; i++) {
+		for (int i = start; i < vals.length; i++) {
 			if (pos == 0) {
-				path2.moveTo(pos + offset, HEIGHT - bottomPadd - ChartData.getValues()[i] * valueScale);
+				path2.moveTo(pos + offset, HEIGHT - bottomPadd - vals[i] * valueScale);
 			} else {
-				path2.lineTo(pos + offset, HEIGHT - bottomPadd - ChartData.getValues()[i] * valueScale);
+				path2.lineTo(pos + offset, HEIGHT - bottomPadd - vals[i] * valueScale);
 			}
 
-			String text = TimeUtils.formatDate(ChartData.getTime()[i]);
+			String text = TimeUtils.formatDate(data.getTime()[i]);
 
-			Timber.v("textWidth = " + w + " step = " + STEP + " t/s = " + w/(float)STEP
-					+ " i = " + i%(Math.ceil(w/(float)STEP)) + " round = " + Math.ceil(w/(float)STEP));
+			Timber.v("textWidth = " + w + " step = " + STEP + " t/s = " + w / (float) STEP
+					+ " i = " + i % (Math.ceil(w / (float) STEP)) + " round = " + Math.ceil(w / (float) STEP));
 			if (w < STEP) {
 				canvas.drawText(text, pos + offset, HEIGHT - PADD, textPaint);
-			} else if (i%(Math.ceil(w/(float)STEP)) == 0) {
+			} else if (i % (Math.ceil(w / (float) STEP)) == 0) {
 				canvas.drawText(text, pos + offset, HEIGHT - PADD, textPaint);
 			}
 
-			if (pos-STEP > WIDTH) {
+			if (pos - STEP > WIDTH) {
 				break;
 			}
 			pos += STEP;
 		}
-		canvas.drawPath(path2, scrubberPaint);
-
-		//==================Draw grid
-		int lineCount = 6;
-		int gridValue = (maxValue/lineCount);
-		int lineStep = (int)(gridValue*valueScale);
-		for (int i = 0; i < lineCount; i++) {
-			canvas.drawLine(0, HEIGHT-lineStep*i, WIDTH, HEIGHT-lineStep*i, gridPaint);
-			if (i > 0) {
-				canvas.drawText(Integer.toString((gridValue * i)), PADDING_NORMAL, HEIGHT - lineStep * i - PADD, textPaint);
-			}
-		}
+		canvas.drawPath(path2, linePaint);
 	}
 
 	private void updateShifts(int px) {
@@ -247,6 +253,19 @@ public class ChartView extends View {
 		ChartView.STEP = s;
 	}
 
+	public void setData(Data2 d) {
+		this.data = d;
+		if (data != null) {
+			for (int i = 0; i < data.getLength(); i++) {
+				if (data.getValues(0)[i] > maxValue) {
+					maxValue = data.getValues(0)[i];
+				}
+			}
+			Timber.v("maxValue = " + maxValue);
+		}
+		linePaint.setColor(Color.parseColor(data.getColors()[0]));
+		invalidate();
+	}
 
 	public void setOnSeekListener(OnSeekListener onSeekListener) {
 		this.onSeekListener = onSeekListener;

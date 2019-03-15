@@ -20,8 +20,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.SeekBar;
 
+import com.dimowner.charttemplate.model.Data;
+import com.dimowner.charttemplate.model.Data2;
 import com.dimowner.charttemplate.model.DataArray;
-import com.dimowner.charttemplate.widget.ChartData;
 import com.dimowner.charttemplate.widget.ChartView;
 import com.google.gson.Gson;
 
@@ -32,6 +33,8 @@ import java.util.Arrays;
 import timber.log.Timber;
 
 public class MainActivity extends Activity {
+
+	private Data2 data = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +64,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				if (fromUser) {
-					int val = progress * ChartData.getValues().length*ChartView.getStep() / 1000;
+					int val = progress * data.getLength()*ChartView.getStep() / 1000;
 					chartView.seekPx(val);
 				}
 			}
@@ -69,6 +72,7 @@ public class MainActivity extends Activity {
 			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
 		});
 		readDemoData();
+		chartView.setData(data);
 	}
 
 	public void readDemoData() {
@@ -100,6 +104,22 @@ public class MainActivity extends Activity {
 						+ ", Name = " + dataArray.getDataArray()[0].getName(key0)
 						+ ", Type = " + dataArray.getDataArray()[0].getType(key0));
 				Timber.v("Values = %s", Arrays.toString(dataArray.getDataArray()[0].getValues(key0)));
+
+				Data d = dataArray.getDataArray()[0];
+				String[] keys = d.getColumnsKeys();
+				int[][] vals = new int[keys.length][d.getDataLength()];
+				String[] names = new String[keys.length];
+				String[] types = new String[keys.length];
+				String[] colors = new String[keys.length];
+				for (int i = 0; i < keys.length; i++) {
+					vals[i] = d.getValues(keys[i]);
+					names[i] = d.getName(keys[i]);
+					types[i] = d.getType(keys[i]);
+					colors[i] = d.getColor(keys[i]);
+				}
+
+				data = new Data2(d.getTimeArray(), vals, names, types, colors);
+				Timber.v("Data = %s", data.toString());
 			}
 		} catch (IOException | ClassCastException ex) {
 			Timber.e(ex);
