@@ -46,6 +46,10 @@ public class ChartData {
 		return time.length;
 	}
 
+	public int getLinesCount() {
+		return names.length;
+	}
+
 	@Override
 	public String toString() {
 		return "ChartData{" +

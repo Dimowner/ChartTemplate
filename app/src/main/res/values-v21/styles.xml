@@ -18,8 +18,8 @@
 
 	<style name="AppTheme" parent="@android:style/Theme.Material.Light">
 
-		<item name="android:colorPrimary">@color/md_blue_700</item>
-		<item name="android:colorPrimaryDark">@color/md_blue_700</item>
+		<!--<item name="android:colorPrimary">@color/white</item>-->
+		<!--<item name="android:colorPrimaryDark">@color/white</item>-->
 		<item name="android:colorAccent">@color/md_yellow_A700</item>
 		<item name="android:statusBarColor">#00000000</item>
 

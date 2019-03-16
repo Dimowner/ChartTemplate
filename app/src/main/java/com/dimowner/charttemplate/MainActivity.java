@@ -24,6 +24,7 @@ import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.model.DataArray;
 import com.dimowner.charttemplate.widget.ChartView;
+import com.dimowner.charttemplate.widget.ChipsView;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ import timber.log.Timber;
 public class MainActivity extends Activity {
 
 	private ChartData data = null;
+//	private boolean isChecked = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +73,24 @@ public class MainActivity extends Activity {
 			@Override public void onStartTrackingTouch(SeekBar seekBar) { }
 			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
 		});
+
 		readDemoData();
 		chartView.setData(data);
+
+		ChipsView chipsView = findViewById(R.id.chipView);
+		chipsView.setData(data.getNames(), data.getColors());
+		chipsView.setOnChipCheckListener(new ChipsView.OnChipCheckListener() {
+			@Override
+			public void onChipCheck(int id, String name, boolean checked) {
+				Timber.v("onChipCheck id = " + id + " name = " + name + " checked = " + checked);
+				if (checked) {
+					chartView.showLine(name);
+				} else {
+					chartView.hideLine(name);
+				}
+			}
+		});
+
 	}
 
 	public void readDemoData() {

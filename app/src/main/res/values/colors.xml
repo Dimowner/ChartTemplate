@@ -18,11 +18,10 @@
 <resources>
 
 	<color name="md_yellow_A700">#FFD600</color>
-	<color name="md_blue_500">#2196F3</color>
-	<color name="md_blue_700">#1976D2</color>
 	<color name="md_grey_100">#F5F5F5</color>
 
 	<color name="white">#ffffff</color>
+	<color name="grey">#e6ecf0</color>
 	<color name="grid_color">#E3E6E7</color>
 	<color name="text_color">#96a2aa</color>
 

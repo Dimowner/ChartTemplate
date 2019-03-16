@@ -49,6 +49,8 @@ public class ChartView extends View {
 
 	private Path chartPath;
 	private Date date;
+	private boolean[] linesVisibility;
+
 	private String dateText;
 
 	private Paint gridPaint;
@@ -101,7 +103,7 @@ public class ChartView extends View {
 		linePaint.setAntiAlias(false);
 		linePaint.setDither(false);
 		linePaint.setStyle(Paint.Style.STROKE);
-		linePaint.setStrokeWidth(AndroidUtils.dpToPx(3));
+		linePaint.setStrokeWidth(AndroidUtils.dpToPx(2.2f));
 		linePaint.setStrokeJoin(Paint.Join.ROUND);
 		linePaint.setStrokeCap(Paint.Cap.ROUND);
 //		linePaint.setPathEffect(new CornerPathEffect(AndroidUtils.dpToPx(8)));
@@ -207,7 +209,9 @@ public class ChartView extends View {
 
 			textPaint.setTextAlign(Paint.Align.CENTER);
 			for (int i = 0; i < data.getNames().length; i++) {
-				drawChart(canvas, data.getValues(i), data.getColors()[i]);
+				if (linesVisibility[i]) {
+					drawChart(canvas, data.getValues(i), data.getColors()[i]);
+				}
 			}
 		}
 	}
@@ -268,6 +272,22 @@ public class ChartView extends View {
 		ChartView.STEP = s;
 	}
 
+	public void hideLine(String name) {
+		int pos = findLinePosition(name);
+		if (pos >= 0) {
+			linesVisibility[pos] = false;
+		}
+		invalidate();
+	}
+
+	public void showLine(String name) {
+		int pos = findLinePosition(name);
+		if (pos >= 0) {
+			linesVisibility[pos] = true;
+		}
+		invalidate();
+	}
+
 	public void setData(ChartData d) {
 		this.data = d;
 		if (data != null) {
@@ -276,10 +296,23 @@ public class ChartView extends View {
 					maxValue = data.getValues(0)[i];
 				}
 			}
-			Timber.v("maxValue = " + maxValue);
+			Timber.v("maxValue = %s", maxValue);
+			//Init lines visibility state, all visible by default.
+			linesVisibility = new boolean[data.getLinesCount()];
+			for (int i = 0; i < linesVisibility.length; i++) {
+				linesVisibility[i] = true;
+			}
 		}
-		linePaint.setColor(Color.parseColor(data.getColors()[0]));
 		invalidate();
+	}
+
+	private int findLinePosition(String name) {
+		for (int i = 0; i < data.getLinesCount(); i++) {
+			if (data.getNames()[i].equalsIgnoreCase(name)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	public void setOnSeekListener(OnSeekListener onSeekListener) {

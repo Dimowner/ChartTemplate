@@ -22,12 +22,24 @@
 		android:layout_height="match_parent"
 		tools:context=".MainActivity">
 
-	<com.dimowner.charttemplate.widget.ChartView
-			android:id="@+id/chartView"
+	<LinearLayout
 			android:layout_width="match_parent"
-			android:layout_height="300dp"
-			android:layout_gravity="center"
-			/>
+			android:layout_height="wrap_content"
+			android:layout_gravity="top"
+			android:orientation="vertical">
+
+		<com.dimowner.charttemplate.widget.ChartView
+				android:id="@+id/chartView"
+				android:layout_width="match_parent"
+				android:layout_height="400dp"
+				/>
+
+		<com.dimowner.charttemplate.widget.ChipsView
+				android:id="@+id/chipView"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"/>
+
+	</LinearLayout>
 
 	<SeekBar
 			android:id="@+id/seekBarScroll"
