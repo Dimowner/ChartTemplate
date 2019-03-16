@@ -17,12 +17,35 @@
 
 <resources>
 
+	<color name="primary">#517da2</color>
+	<color name="primary_dark">#426382</color>
+	<color name="window_background">#f0f0f0</color>
+	<color name="view_background">#ffffff</color>
+
+	<color name="primary_night">#212d3b</color>
+	<color name="primary_night_dark">#1a242e</color>
+	<color name="window_background_night">#151e27</color>
+	<color name="view_background_night">#1d2733</color>
+
+	<color name="text_blue">#3896d4</color>
+
 	<color name="md_yellow_A700">#FFD600</color>
 	<color name="md_grey_100">#F5F5F5</color>
 
 	<color name="white">#ffffff</color>
+
 	<color name="grey">#e6ecf0</color>
-	<color name="grid_color">#E3E6E7</color>
+	<color name="grey_night">#273442</color>
+
+	<color name="grid_base_line">#e7e8e9</color>
+	<color name="grid_base_line_night">#101924</color>
+
+	<!--<color name="grid_color">#E3E6E7</color>-->
+
+	<color name="grid_color2">#f1f1f2</color>
+	<color name="grid_color2_night">#161f2b</color>
+
 	<color name="text_color">#96a2aa</color>
+	<color name="text_color_night">#506372</color>
 
 </resources>

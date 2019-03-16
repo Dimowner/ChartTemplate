@@ -36,6 +36,7 @@
 	<dimen name="divider_height">1dp</dimen>
 
 	<dimen name="toolbar_height">56dp</dimen>
+	<dimen name="elevation">1dp</dimen>
 
 	<dimen name="gradient_radius">320dp</dimen>
 

@@ -18,14 +18,39 @@
 
 	<style name="AppTheme" parent="@android:style/Theme.Material.Light">
 
-		<!--<item name="android:colorPrimary">@color/white</item>-->
-		<!--<item name="android:colorPrimaryDark">@color/white</item>-->
+		<item name="android:colorPrimary">@color/primary</item>
+		<item name="android:colorPrimaryDark">@color/primary_dark</item>
 		<item name="android:colorAccent">@color/md_yellow_A700</item>
-		<item name="android:statusBarColor">#00000000</item>
 
 		<item name="android:windowActionBar">false</item>
 		<item name="android:windowNoTitle">true</item>
 		<item name="android:windowActionBarOverlay">true</item>
+
+		<item name="android:windowBackground">@color/window_background</item>
+
+		<item name="viewBackground">@color/view_background</item>
+		<item name="gridColor">@color/grid_color2</item>
+		<item name="gridBaseLineColor">@color/grid_base_line</item>
+		<item name="gridTextColor">@color/text_color</item>
+
+	</style>
+
+	<style name="AppTheme.Night" parent="AppTheme">
+
+		<item name="android:colorPrimary">@color/primary_night</item>
+		<item name="android:colorPrimaryDark">@color/primary_night_dark</item>
+		<item name="android:colorAccent">@color/md_yellow_A700</item>
+
+		<item name="android:windowActionBar">false</item>
+		<item name="android:windowNoTitle">true</item>
+		<item name="android:windowActionBarOverlay">true</item>
+
+		<item name="android:windowBackground">@color/window_background_night</item>
+
+		<item name="viewBackground">@color/view_background_night</item>
+		<item name="gridColor">@color/grid_color2_night</item>
+		<item name="gridBaseLineColor">@color/grid_base_line_night</item>
+		<item name="gridTextColor">@color/text_color_night</item>
 
 	</style>
 

@@ -21,6 +21,8 @@ import timber.log.Timber;
 
 public class CTApplication extends Application {
 
+	private static boolean isNightMode = false;
+
 	@Override
 	public void onCreate() {
 		if (BuildConfig.DEBUG) {
@@ -33,5 +35,13 @@ public class CTApplication extends Application {
 			});
 		}
 		super.onCreate();
+	}
+
+	public static boolean isNightMode() {
+		return isNightMode;
+	}
+
+	public static void setNightMode(boolean b) {
+		CTApplication.isNightMode = b;
 	}
 }

@@ -17,6 +17,7 @@
 package com.dimowner.charttemplate.widget;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -24,6 +25,7 @@ import android.graphics.Path;
 import android.graphics.Typeface;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -99,6 +101,29 @@ public class ChartView extends View {
 		date = new Date();
 		dateText = null;
 
+		int gridColor;
+		int gridBaseLineColor;
+		int gridTextColor;
+
+		Resources res = context.getResources();
+		TypedValue typedValue = new TypedValue();
+		Resources.Theme theme = context.getTheme();
+		if (theme.resolveAttribute(R.attr.gridColor, typedValue, true)) {
+			gridColor = typedValue.data;
+		} else {
+			gridColor = res.getColor(R.color.grid_color2);
+		}
+		if (theme.resolveAttribute(R.attr.gridBaseLineColor, typedValue, true)) {
+			gridBaseLineColor = typedValue.data;
+		} else {
+			gridBaseLineColor = res.getColor(R.color.grid_base_line);
+		}
+		if (theme.resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
+			gridTextColor = typedValue.data;
+		} else {
+			gridTextColor = res.getColor(R.color.text_color);
+		}
+
 		linePaint = new Paint();
 		linePaint.setAntiAlias(false);
 		linePaint.setDither(false);
@@ -113,12 +138,12 @@ public class ChartView extends View {
 		gridPaint.setAntiAlias(false);
 		linePaint.setDither(false);
 		gridPaint.setStyle(Paint.Style.STROKE);
-		gridPaint.setColor(context.getResources().getColor(R.color.grid_color));
+		gridPaint.setColor(gridColor);
 		gridPaint.setStrokeWidth(AndroidUtils.dpToPx(1));
 
 		textHeight = context.getResources().getDimension(R.dimen.text_normal);
 		textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-		textPaint.setColor(context.getResources().getColor(R.color.text_color));
+		textPaint.setColor(gridTextColor);
 		textPaint.setStrokeWidth(AndroidUtils.dpToPx(1));
 		textPaint.setTextAlign(Paint.Align.CENTER);
 		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
@@ -243,6 +268,7 @@ public class ChartView extends View {
 				chartPath.lineTo(pos + offset, HEIGHT - values[i] * valueScale);
 			}
 
+			//TODO: Fix this!!! draw dates only once.
 			//Draw dates
 			date.setTime(data.getTime()[i]);
 			dateText = TimeUtils.formatDate(date);

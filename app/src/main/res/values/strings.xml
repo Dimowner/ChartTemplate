@@ -16,4 +16,6 @@
 
 <resources>
 	<string name="app_name">ChartTemplate</string>
+	<string name="followers">Followers</string>
+	<string name="statistics">Statistics</string>
 </resources>

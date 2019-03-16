@@ -15,23 +15,76 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout
+<LinearLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:tools="http://schemas.android.com/tools"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		android:orientation="vertical"
 		tools:context=".MainActivity">
+
+	<FrameLayout
+			android:id="@+id/toolbar"
+			android:layout_width="match_parent"
+			android:layout_height="@dimen/toolbar_height"
+			android:elevation="4dp"
+			android:background="?android:attr/colorPrimary"
+			>
+
+		<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:gravity="start|center_vertical"
+				android:layout_margin="@dimen/spacing_normal"
+				android:text="@string/statistics"
+				android:fontFamily="sans-serif-medium"
+				android:textColor="@color/white"
+				android:textSize="@dimen/text_large"
+				/>
+
+		<ImageButton
+				android:id="@+id/btnNightMode"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="end|center_vertical"
+				android:background="?android:selectableItemBackgroundBorderless"
+				android:contentDescription="@null"
+				android:padding="@dimen/spacing_normal"
+				android:src="@drawable/moon"
+				/>
+
+	</FrameLayout>
+
+	<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:gravity="start|center_vertical"
+			android:paddingTop="@dimen/spacing_normal"
+			android:paddingStart="@dimen/spacing_normal"
+			android:paddingLeft="@dimen/spacing_normal"
+			android:paddingEnd="@dimen/spacing_normal"
+			android:paddingRight="@dimen/spacing_normal"
+			android:text="@string/followers"
+			android:fontFamily="sans-serif-medium"
+			android:textColor="@color/text_blue"
+			android:textSize="@dimen/text_xmedium"
+			android:background="?attr/viewBackground"
+			android:elevation="@dimen/elevation"
+			/>
 
 	<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_gravity="top"
-			android:orientation="vertical">
+			android:orientation="vertical"
+			android:background="?attr/viewBackground"
+			android:elevation="@dimen/elevation"
+			>
 
 		<com.dimowner.charttemplate.widget.ChartView
 				android:id="@+id/chartView"
 				android:layout_width="match_parent"
-				android:layout_height="400dp"
+				android:layout_height="250dp"
+				android:layout_margin="@dimen/spacing_normal"
 				/>
 
 		<com.dimowner.charttemplate.widget.ChipsView
@@ -46,9 +99,11 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_gravity="bottom"
-			android:layout_margin="@dimen/spacing_normal"
+			android:padding="@dimen/spacing_normal"
 			android:max="1000"
 			android:progress="20"
+			android:background="?attr/viewBackground"
+			android:elevation="@dimen/elevation"
 			/>
 
 	<SeekBar
@@ -56,10 +111,10 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_gravity="bottom"
-			android:layout_marginStart="@dimen/spacing_normal"
-			android:layout_marginEnd="@dimen/spacing_normal"
-			android:layout_marginBottom="@dimen/spacing_huge"
+			android:padding="@dimen/spacing_normal"
 			android:max="200"
 			android:progress="20"
+			android:background="?attr/viewBackground"
+			android:elevation="@dimen/elevation"
 			/>
-</FrameLayout>
+</LinearLayout>

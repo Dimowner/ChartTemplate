@@ -21,12 +21,14 @@ import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.dimowner.charttemplate.CTApplication;
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
@@ -38,6 +40,7 @@ public class ChipsView extends LinearLayout {
 
 	private LinearLayout container;
 	private boolean[] chipState;
+	private int gridTextColor;
 
 	private OnChipCheckListener listener;
 
@@ -57,13 +60,20 @@ public class ChipsView extends LinearLayout {
 	}
 
 	private void init(Context context) {
+		TypedValue typedValue = new TypedValue();
+		if (context.getTheme().resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
+			gridTextColor = typedValue.data;
+		} else {
+			gridTextColor = context.getResources().getColor(R.color.text_color);
+		}
+
 		//TODO: consider adding HorizontalScrollView as root view.
 		container = new LinearLayout(context);
 		container.setOrientation(LinearLayout.HORIZONTAL);
 		this.addView(container);
 	}
 
-	public TextView createChipView(int id, final Context context, final String name, final String color) {
+	public TextView createChipView(int id, final Context context, final String name, final String color, int textColor) {
 		final TextView textView = new TextView(context);
 		ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -73,8 +83,13 @@ public class ChipsView extends LinearLayout {
 				ContextCompat.getDrawable(context, R.drawable.ic_check_circle), null, null, null);
 		textView.getCompoundDrawables()[0].mutate();
 		DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
-		textView.setBackgroundResource(R.drawable.bg_chip);
+		if (CTApplication.isNightMode()) {
+			textView.setBackgroundResource(R.drawable.bg_chip_night);
+		} else {
+			textView.setBackgroundResource(R.drawable.bg_chip);
+		}
 		textView.setGravity(Gravity.CENTER);
+		textView.setTextColor(textColor);
 
 		textView.setText(name);
 		ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(textView.getLayoutParams());
@@ -117,7 +132,7 @@ public class ChipsView extends LinearLayout {
 			container.removeAllViews();
 			for (int i = 0; i < names.length; i++) {
 				chipState[i] = true;
-				container.addView(createChipView(i, getContext(), names[i], colors[i]));
+				container.addView(createChipView(i, getContext(), names[i], colors[i], gridTextColor));
 			}
 		}
 	}

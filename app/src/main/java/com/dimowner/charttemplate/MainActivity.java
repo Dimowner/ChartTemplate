@@ -18,6 +18,8 @@ package com.dimowner.charttemplate;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 
 import com.dimowner.charttemplate.model.ChartData;
@@ -36,12 +38,25 @@ import timber.log.Timber;
 public class MainActivity extends Activity {
 
 	private ChartData data = null;
-//	private boolean isChecked = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		if (CTApplication.isNightMode()) {
+			setTheme(R.style.AppTheme_Night);
+		} else {
+			setTheme(R.style.AppTheme);
+		}
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		ImageButton btnNightMode = findViewById(R.id.btnNightMode);
+		btnNightMode.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				CTApplication.setNightMode(!CTApplication.isNightMode());
+				recreate();
+			}
+		});
 
 		SeekBar seekBarScale = findViewById(R.id.seekBarScale);
 		SeekBar seekBarScroll = findViewById(R.id.seekBarScroll);
