@@ -62,7 +62,11 @@ public class Data {
 		if (pos >= 0 && columns[pos].length > 1) {
 			long array[] = new long[columns[pos].length - 1];
 			for (int i = 1; i < columns[pos].length; i++) {
-				array[i - 1] = ((Double) columns[pos][i]).longValue();
+				if (columns[pos][i] instanceof Double) {
+					array[i - 1] = ((Double) columns[pos][i]).longValue();
+				} else {
+					array[i - 1] = ((long) columns[pos][i]);
+				}
 			}
 			return array;
 		}
@@ -106,7 +110,11 @@ public class Data {
 		if (pos >= 0 && columns[pos].length > 1) {
 			int array[] = new int [columns[pos].length - 1];
 			for (int i = 1; i < columns[pos].length; i++) {
-				array[i - 1] = ((Double) columns[pos][i]).intValue();
+				if (columns[pos][i] instanceof Double) {
+					array[i - 1] = ((Double) columns[pos][i]).intValue();
+				} else {
+					array[i - 1] = ((int)columns[pos][i]);
+				}
 			}
 			return array;
 		}

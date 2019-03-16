@@ -44,6 +44,7 @@ public class ChartView extends View {
 
 	private static int STEP = (int) AndroidUtils.dpToPx(AppConstants.DEFAULT_STEP);
 	private static int PADDING_SMALL = (int) AndroidUtils.dpToPx(8);
+	private static int PADDING_TINY = (int) AndroidUtils.dpToPx(4);
 	private static int GRID_LINES_COUNT = 6;
 	private static int TEXT_SPACE = (int) AndroidUtils.dpToPx(65);
 
@@ -125,7 +126,7 @@ public class ChartView extends View {
 		}
 
 		linePaint = new Paint();
-		linePaint.setAntiAlias(false);
+		linePaint.setAntiAlias(true);
 		linePaint.setDither(false);
 		linePaint.setStyle(Paint.Style.STROKE);
 		linePaint.setStrokeWidth(AndroidUtils.dpToPx(2.2f));
@@ -247,7 +248,7 @@ public class ChartView extends View {
 		for (int i = 0; i < GRID_LINES_COUNT; i++) {
 			canvas.drawLine(0, HEIGHT - gridStep * i, WIDTH, HEIGHT - gridStep * i, gridPaint);
 			if (i > 0) {
-				canvas.drawText(Integer.toString((gridValueText * i)), PADDING_SMALL, HEIGHT - gridStep * i - PADDING_SMALL, textPaint);
+				canvas.drawText(Integer.toString((gridValueText * i)), 0, HEIGHT - gridStep * i - PADDING_TINY, textPaint);
 			}
 		}
 	}

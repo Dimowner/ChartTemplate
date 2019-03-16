@@ -15,92 +15,99 @@
   ~ limitations under the License.
   -->
 
-<LinearLayout
+<ScrollView
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:tools="http://schemas.android.com/tools"
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:orientation="vertical"
-		android:elevation="@dimen/elevation"
-		android:background="?attr/viewBackground"
-		tools:context=".MainActivity">
+		android:layout_height="wrap_content">
 
-	<FrameLayout
-			android:id="@+id/toolbar"
+	<LinearLayout
+			xmlns:android="http://schemas.android.com/apk/res/android"
+			xmlns:tools="http://schemas.android.com/tools"
 			android:layout_width="match_parent"
-			android:layout_height="@dimen/toolbar_height"
-			android:elevation="4dp"
-			android:background="?android:attr/colorPrimary"
-			>
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
+			android:elevation="@dimen/elevation"
+			android:background="?attr/viewBackground"
+			tools:context=".MainActivity">
+
+		<FrameLayout
+				android:id="@+id/toolbar"
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/toolbar_height"
+				android:elevation="4dp"
+				android:background="?android:attr/colorPrimary"
+				>
+
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:gravity="start|center_vertical"
+					android:layout_margin="@dimen/spacing_normal"
+					android:text="@string/statistics"
+					android:fontFamily="sans-serif-medium"
+					android:textColor="@color/white"
+					android:textSize="@dimen/text_large"
+					/>
+
+			<ImageButton
+					android:id="@+id/btnNightMode"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_gravity="end|center_vertical"
+					android:background="?android:selectableItemBackgroundBorderless"
+					android:contentDescription="@null"
+					android:padding="@dimen/spacing_normal"
+					android:src="@drawable/moon"
+					/>
+
+		</FrameLayout>
 
 		<TextView
-				android:layout_width="wrap_content"
+				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:gravity="start|center_vertical"
-				android:layout_margin="@dimen/spacing_normal"
-				android:text="@string/statistics"
-				android:fontFamily="sans-serif-medium"
-				android:textColor="@color/white"
-				android:textSize="@dimen/text_large"
-				/>
-
-		<ImageButton
-				android:id="@+id/btnNightMode"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="end|center_vertical"
-				android:background="?android:selectableItemBackgroundBorderless"
-				android:contentDescription="@null"
 				android:padding="@dimen/spacing_normal"
-				android:src="@drawable/moon"
+				android:text="@string/followers"
+				android:fontFamily="sans-serif-medium"
+				android:textColor="@color/text_blue"
+				android:textSize="@dimen/text_xmedium"
 				/>
 
-	</FrameLayout>
+		<com.dimowner.charttemplate.widget.ChartView
+				android:id="@+id/chartView"
+				android:layout_width="match_parent"
+				android:layout_height="250dp"
+				android:layout_marginStart="@dimen/spacing_normal"
+				android:layout_marginLeft="@dimen/spacing_normal"
+				android:layout_marginEnd="@dimen/spacing_normal"
+				android:layout_marginRight="@dimen/spacing_normal"
+				/>
 
-	<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:gravity="start|center_vertical"
-			android:padding="@dimen/spacing_normal"
-			android:text="@string/followers"
-			android:fontFamily="sans-serif-medium"
-			android:textColor="@color/text_blue"
-			android:textSize="@dimen/text_xmedium"
-			/>
+		<SeekBar
+				android:id="@+id/seekBarScroll"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="bottom"
+				android:padding="@dimen/spacing_normal"
+				android:max="1000"
+				android:progress="20"
+				/>
 
-	<com.dimowner.charttemplate.widget.ChartView
-			android:id="@+id/chartView"
-			android:layout_width="match_parent"
-			android:layout_height="250dp"
-			android:layout_marginStart="@dimen/spacing_normal"
-			android:layout_marginLeft="@dimen/spacing_normal"
-			android:layout_marginEnd="@dimen/spacing_normal"
-			android:layout_marginRight="@dimen/spacing_normal"
-			/>
+		<SeekBar
+				android:id="@+id/seekBarScale"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="bottom"
+				android:padding="@dimen/spacing_normal"
+				android:max="200"
+				android:progress="20"
+				/>
 
-	<SeekBar
-			android:id="@+id/seekBarScroll"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_gravity="bottom"
-			android:padding="@dimen/spacing_normal"
-			android:max="1000"
-			android:progress="20"
-			/>
+		<com.dimowner.charttemplate.widget.CheckersView
+				android:id="@+id/checkersView"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"/>
 
-	<SeekBar
-			android:id="@+id/seekBarScale"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_gravity="bottom"
-			android:padding="@dimen/spacing_normal"
-			android:max="200"
-			android:progress="20"
-			/>
-
-	<com.dimowner.charttemplate.widget.CheckersView
-			android:id="@+id/chipView"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"/>
-
-</LinearLayout>
+	</LinearLayout>
+</ScrollView>

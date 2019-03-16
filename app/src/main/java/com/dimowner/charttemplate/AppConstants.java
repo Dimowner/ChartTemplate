@@ -24,7 +24,7 @@ public class AppConstants {
 	private AppConstants() {
 	}
 
-	public static final String APPLICATION_NAME = "ChartTemplate";
+	public static final String JSON_ASSET_NAME = "telegram_chart_data.json";
 
 	public static final int DEFAULT_STEP = 25;
 }

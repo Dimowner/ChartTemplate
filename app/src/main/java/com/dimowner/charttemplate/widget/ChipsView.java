@@ -17,9 +17,8 @@
 package com.dimowner.charttemplate.widget;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
+//import android.support.v4.content.ContextCompat;
+//import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -84,9 +83,11 @@ public class ChipsView extends LinearLayout {
 				ViewGroup.LayoutParams.WRAP_CONTENT);
 		textView.setLayoutParams(lp);
 		textView.setCompoundDrawablesWithIntrinsicBounds(
-				ContextCompat.getDrawable(context, R.drawable.ic_check_circle), null, null, null);
-		textView.getCompoundDrawables()[0].mutate();
-		DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
+				context.getResources().getDrawable(R.drawable.ic_check_circle), null, null, null);
+//		textView.setCompoundDrawablesWithIntrinsicBounds(
+//				ContextCompat.getDrawable(context, R.drawable.ic_check_circle), null, null, null);
+//		textView.getCompoundDrawables()[0].mutate();
+//		DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
 		if (CTApplication.isNightMode()) {
 			textView.setBackgroundResource(R.drawable.bg_chip_night);
 		} else {
@@ -109,17 +110,21 @@ public class ChipsView extends LinearLayout {
 				if (chipState[v.getId()]) {
 					//TODO: need to be optimized.
 					textView.setCompoundDrawablesWithIntrinsicBounds(
-							ContextCompat.getDrawable(context, R.drawable.ic_circle), null, null, null);
-					textView.getCompoundDrawables()[0].mutate();
-					DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
+							context.getResources().getDrawable(R.drawable.ic_circle), null, null, null);
+//					textView.setCompoundDrawablesWithIntrinsicBounds(
+//							ContextCompat.getDrawable(context, R.drawable.ic_circle), null, null, null);
+//					textView.getCompoundDrawables()[0].mutate();
+//					DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
 					if (listener != null) {
 						listener.onChipCheck(v.getId(), name, false);
 					}
 				} else {
 					textView.setCompoundDrawablesWithIntrinsicBounds(
-							ContextCompat.getDrawable(context, R.drawable.ic_check_circle), null, null, null);
-					textView.getCompoundDrawables()[0].mutate();
-					DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
+							context.getResources().getDrawable(R.drawable.ic_check_circle), null, null, null);
+//					textView.setCompoundDrawablesWithIntrinsicBounds(
+//							ContextCompat.getDrawable(context, R.drawable.ic_check_circle), null, null, null);
+//					textView.getCompoundDrawables()[0].mutate();
+//					DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
 					if (listener != null) {
 						listener.onChipCheck(v.getId(), name, true);
 					}

@@ -16,7 +16,13 @@
 
 package com.dimowner.charttemplate.util;
 
+import android.content.Context;
 import android.content.res.Resources;
+
+import com.dimowner.charttemplate.AppConstants;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Android related utilities methods.
@@ -60,5 +66,14 @@ public class AndroidUtils {
 	 */
 	public static float pxToDp(float px) {
 		return (px / Resources.getSystem().getDisplayMetrics().density);
+	}
+
+	public static String readJsonAsset(Context context) throws IOException {
+		InputStream is = context.getAssets().open(AppConstants.JSON_ASSET_NAME);
+		int size = is.available();
+		byte[] buffer = new byte[size];
+		is.read(buffer);
+		is.close();
+		return new String(buffer, "UTF-8");
 	}
 }

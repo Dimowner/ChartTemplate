@@ -25,20 +25,27 @@ import android.widget.SeekBar;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.model.DataArray;
+import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.CheckersView;
 import com.dimowner.charttemplate.widget.OnCheckListener;
-import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import timber.log.Timber;
 
 public class MainActivity extends Activity {
 
-	private ChartData data = null;
+	private int dataLength;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +69,13 @@ public class MainActivity extends Activity {
 		SeekBar seekBarScale = findViewById(R.id.seekBarScale);
 		SeekBar seekBarScroll = findViewById(R.id.seekBarScroll);
 		final ChartView chartView = findViewById(R.id.chartView);
+		CheckersView checkersView = findViewById(R.id.checkersView);
+
+		final ChartData data = readDemoData();
+		chartView.setData(data);
+		checkersView.setData(data.getNames(), data.getColors());
+		dataLength = data.getLength();
+
 		seekBarScale.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -82,7 +96,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				if (fromUser) {
-					int val = progress * data.getLength()*ChartView.getStep() / 1000;
+					int val = progress * dataLength*ChartView.getStep() / 1000;
 					chartView.seekPx(val);
 				}
 			}
@@ -90,15 +104,9 @@ public class MainActivity extends Activity {
 			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
 		});
 
-		readDemoData();
-		chartView.setData(data);
-
-		CheckersView chipsView = findViewById(R.id.chipView);
-		chipsView.setData(data.getNames(), data.getColors());
-		chipsView.setOnChipCheckListener(new OnCheckListener() {
+		checkersView.setOnChipCheckListener(new OnCheckListener() {
 			@Override
 			public void onChipCheck(int id, String name, boolean checked) {
-				Timber.v("onChipCheck id = " + id + " name = " + name + " checked = " + checked);
 				if (checked) {
 					chartView.showLine(name);
 				} else {
@@ -106,57 +114,107 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
-
 	}
 
-	public void readDemoData() {
-		String json;
+	public ChartData readDemoData() {
 		try {
-			InputStream is = getAssets().open("telegram_chart_data.json");
-			int size = is.available();
-			byte[] buffer = new byte[size];
-			is.read(buffer);
-			is.close();
-			json = new String(buffer, "UTF-8");
+			String DATA_ARRAY = "dataArray";
+			String COLUMNS = "columns";
+			String TYPES = "types";
+			String COLORS = "colors";
+			String NAMES = "names";
 
-			Gson gson = new Gson();
-			DataArray dataArray = gson.fromJson(json, DataArray.class);
-			if (dataArray != null) {
-				Timber.v("READ DATA = %s", dataArray.toString());
-				Timber.v("Test color y0 = %s", dataArray.getDataArray()[0].getColors().get("y0"));
-				Timber.v("Test names y0 = %s", dataArray.getDataArray()[0].getNames().get("y0"));
-				Timber.v("Test types y0 = %s", dataArray.getDataArray()[0].getTypes().get("y0"));
-				Timber.v("Test types x = %s", dataArray.getDataArray()[0].getTypes().get("x"));
-				Timber.v("Test column x = %s", (String) dataArray.getDataArray()[0].getColumns()[0][0]);
+			JSONObject jo = new JSONObject(AndroidUtils.readJsonAsset(getApplicationContext()));
+			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
+			Data[] dataValues = new Data[joArray.length()];
+			for (int i = 0; i < joArray.length(); i++) {
+				Object[][] columns;
+				Map<String, String> types;
+				Map<String, String> names;
+				Map<String, String> colors;
+				JSONObject joItem = (JSONObject)joArray.get(i);
 
-				Timber.v("TimeLine = %s", Arrays.toString(dataArray.getDataArray()[0].getTimeArray()));
-				Timber.v("ColumnCount = %s", dataArray.getDataArray()[0].getColumnCount());
-				Timber.v("ColumnKeys = %s", Arrays.toString(dataArray.getDataArray()[0].getColumnsKeys()));
+				names = jsonToMap(joItem.getJSONObject(NAMES));
+				types = jsonToMap(joItem.getJSONObject(TYPES));
+				colors = jsonToMap(joItem.getJSONObject(COLORS));
 
-				String key0 = dataArray.getDataArray()[0].getColumnsKeys()[0];
-				Timber.v("Color0 = " + dataArray.getDataArray()[0].getColor(key0)
-						+ ", Name = " + dataArray.getDataArray()[0].getName(key0)
-						+ ", Type = " + dataArray.getDataArray()[0].getType(key0));
-				Timber.v("Values = %s", Arrays.toString(dataArray.getDataArray()[0].getValues(key0)));
+				JSONArray colArray = joItem.getJSONArray(COLUMNS);
+				List<Object> list = toList(colArray);
+				columns = new Object[list.size()][];
 
-				Data d = dataArray.getDataArray()[0];
-				String[] keys = d.getColumnsKeys();
-				int[][] vals = new int[keys.length][d.getDataLength()];
-				String[] names = new String[keys.length];
-				String[] types = new String[keys.length];
-				String[] colors = new String[keys.length];
-				for (int i = 0; i < keys.length; i++) {
-					vals[i] = d.getValues(keys[i]);
-					names[i] = d.getName(keys[i]);
-					types[i] = d.getType(keys[i]);
-					colors[i] = d.getColor(keys[i]);
+				for (int j = 0; j < list.size(); j++) {
+					List<Object> l2 = (List<Object>)list.get(j);
+//						Timber.v("L2 size = %s", l2.size());
+					Object[] a = new Object[l2.size()];
+					for (int k = 0; k < l2.size(); k++) {
+						a[k] = l2.get(k);
+					}
+					columns[j] = a;
+//					Timber.v("subArray size = " + a.length + " j = " + j);
 				}
-
-				data = new ChartData(d.getTimeArray(), vals, names, types, colors);
-				Timber.v("Data = %s", data.toString());
+//				Timber.v("Column size = %s", columns.length);
+				dataValues[i] = new Data(columns, types, names, colors);
 			}
-		} catch (IOException | ClassCastException ex) {
+
+//			Gson gson = new Gson();
+//			DataArray dataArray = gson.fromJson(json, DataArray.class);
+			DataArray dataArray = new DataArray(dataValues);
+			return toChartData(dataArray.getDataArray()[0]);
+		} catch (IOException | ClassCastException | JSONException ex) {
 			Timber.e(ex);
+			return null;
 		}
+	}
+
+	public static Map<String, String> jsonToMap(JSONObject json) throws JSONException {
+		Map<String, String> retMap = new HashMap<>();
+
+		if(json != JSONObject.NULL) {
+			retMap = toMap(json);
+		}
+		return retMap;
+	}
+
+	public static Map<String, String> toMap(JSONObject object) throws JSONException {
+		Map<String, String> map = new HashMap<>();
+
+		Iterator<String> keysItr = object.keys();
+		while(keysItr.hasNext()) {
+			String key = keysItr.next();
+			String value = (String) object.get(key);
+			map.put(key, value);
+		}
+		return map;
+	}
+
+	public static List<Object> toList(JSONArray array) throws JSONException {
+		List<Object> list = new ArrayList<>();
+		for(int i = 0; i < array.length(); i++) {
+			Object value = array.get(i);
+			if(value instanceof JSONArray) {
+				value = toList((JSONArray) value);
+			}
+
+			else if(value instanceof JSONObject) {
+				value = toMap((JSONObject) value);
+			}
+			list.add(value);
+		}
+		return list;
+	}
+
+	private ChartData toChartData(Data d) {
+		String[] keys = d.getColumnsKeys();
+		int[][] vals = new int[keys.length][d.getDataLength()];
+		String[] names2 = new String[keys.length];
+		String[] types2 = new String[keys.length];
+		String[] colors2 = new String[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			vals[i] = d.getValues(keys[i]);
+			names2[i] = d.getName(keys[i]);
+			types2[i] = d.getType(keys[i]);
+			colors2[i] = d.getColor(keys[i]);
+		}
+		return new ChartData(d.getTimeArray(), vals, names2, types2, colors2);
 	}
 }
