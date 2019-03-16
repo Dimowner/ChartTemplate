@@ -19,8 +19,10 @@
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:tools="http://schemas.android.com/tools"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
+		android:layout_height="wrap_content"
 		android:orientation="vertical"
+		android:elevation="@dimen/elevation"
+		android:background="?attr/viewBackground"
 		tools:context=".MainActivity">
 
 	<FrameLayout
@@ -59,40 +61,22 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:gravity="start|center_vertical"
-			android:paddingTop="@dimen/spacing_normal"
-			android:paddingStart="@dimen/spacing_normal"
-			android:paddingLeft="@dimen/spacing_normal"
-			android:paddingEnd="@dimen/spacing_normal"
-			android:paddingRight="@dimen/spacing_normal"
+			android:padding="@dimen/spacing_normal"
 			android:text="@string/followers"
 			android:fontFamily="sans-serif-medium"
 			android:textColor="@color/text_blue"
 			android:textSize="@dimen/text_xmedium"
-			android:background="?attr/viewBackground"
-			android:elevation="@dimen/elevation"
 			/>
 
-	<LinearLayout
+	<com.dimowner.charttemplate.widget.ChartView
+			android:id="@+id/chartView"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:orientation="vertical"
-			android:background="?attr/viewBackground"
-			android:elevation="@dimen/elevation"
-			>
-
-		<com.dimowner.charttemplate.widget.ChartView
-				android:id="@+id/chartView"
-				android:layout_width="match_parent"
-				android:layout_height="250dp"
-				android:layout_margin="@dimen/spacing_normal"
-				/>
-
-		<com.dimowner.charttemplate.widget.ChipsView
-				android:id="@+id/chipView"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"/>
-
-	</LinearLayout>
+			android:layout_height="250dp"
+			android:layout_marginStart="@dimen/spacing_normal"
+			android:layout_marginLeft="@dimen/spacing_normal"
+			android:layout_marginEnd="@dimen/spacing_normal"
+			android:layout_marginRight="@dimen/spacing_normal"
+			/>
 
 	<SeekBar
 			android:id="@+id/seekBarScroll"
@@ -102,8 +86,6 @@
 			android:padding="@dimen/spacing_normal"
 			android:max="1000"
 			android:progress="20"
-			android:background="?attr/viewBackground"
-			android:elevation="@dimen/elevation"
 			/>
 
 	<SeekBar
@@ -114,7 +96,11 @@
 			android:padding="@dimen/spacing_normal"
 			android:max="200"
 			android:progress="20"
-			android:background="?attr/viewBackground"
-			android:elevation="@dimen/elevation"
 			/>
+
+	<com.dimowner.charttemplate.widget.CheckersView
+			android:id="@+id/chipView"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+
 </LinearLayout>

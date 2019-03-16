@@ -42,7 +42,7 @@ public class ChipsView extends LinearLayout {
 	private boolean[] chipState;
 	private int gridTextColor;
 
-	private OnChipCheckListener listener;
+	private OnCheckListener listener;
 
 	public ChipsView(Context context) {
 		super(context);
@@ -69,6 +69,10 @@ public class ChipsView extends LinearLayout {
 
 		//TODO: consider adding HorizontalScrollView as root view.
 		container = new LinearLayout(context);
+		LinearLayout.LayoutParams containerLp = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+		container.setLayoutParams(containerLp);
 		container.setOrientation(LinearLayout.HORIZONTAL);
 		this.addView(container);
 	}
@@ -137,11 +141,7 @@ public class ChipsView extends LinearLayout {
 		}
 	}
 
-	public void setOnChipCheckListener(OnChipCheckListener l) {
+	public void setOnChipCheckListener(OnCheckListener l) {
 		this.listener = l;
-	}
-
-	public interface OnChipCheckListener {
-		void onChipCheck(int id, String name, boolean checked);
 	}
 }

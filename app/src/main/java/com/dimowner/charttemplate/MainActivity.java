@@ -26,7 +26,8 @@ import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.model.DataArray;
 import com.dimowner.charttemplate.widget.ChartView;
-import com.dimowner.charttemplate.widget.ChipsView;
+import com.dimowner.charttemplate.widget.CheckersView;
+import com.dimowner.charttemplate.widget.OnCheckListener;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -92,9 +93,9 @@ public class MainActivity extends Activity {
 		readDemoData();
 		chartView.setData(data);
 
-		ChipsView chipsView = findViewById(R.id.chipView);
+		CheckersView chipsView = findViewById(R.id.chipView);
 		chipsView.setData(data.getNames(), data.getColors());
-		chipsView.setOnChipCheckListener(new ChipsView.OnChipCheckListener() {
+		chipsView.setOnChipCheckListener(new OnCheckListener() {
 			@Override
 			public void onChipCheck(int id, String name, boolean checked) {
 				Timber.v("onChipCheck id = " + id + " name = " + name + " checked = " + checked);
