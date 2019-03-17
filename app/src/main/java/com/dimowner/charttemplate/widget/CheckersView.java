@@ -35,12 +35,13 @@ public class CheckersView extends LinearLayout {
 
 	//TODO: Use attributes
 	private static int PADD_NORMAL = (int) AndroidUtils.dpToPx(16);
+	private static int PADD_SMALL = (int) AndroidUtils.dpToPx(8);
 	private static int START_INSET = (int) AndroidUtils.dpToPx(62);
 	private static int DIVIDER_HEIGHT = (int) AndroidUtils.dpToPx(1);
 
 	private LinearLayout container;
-	private boolean[] chipState;
-	private int gridTextColor;
+	private boolean[] checkerState;
+	private int textColor;
 	private int dividerColor;
 
 	private OnCheckListener listener;
@@ -64,10 +65,10 @@ public class CheckersView extends LinearLayout {
 		Resources res = context.getResources();
 		TypedValue typedValue = new TypedValue();
 		Resources.Theme theme = context.getTheme();
-		if (theme.resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
-			gridTextColor = typedValue.data;
+		if (theme.resolveAttribute(R.attr.textCheckerColor, typedValue, true)) {
+			textColor = typedValue.data;
 		} else {
-			gridTextColor = res.getColor(R.color.text_color);
+			textColor = res.getColor(R.color.text_dark);
 		}
 		if (theme.resolveAttribute(R.attr.gridColor, typedValue, true)) {
 			dividerColor = typedValue.data;
@@ -86,11 +87,11 @@ public class CheckersView extends LinearLayout {
 
 	public void setData(String[] names, String[] colors) {
 		if (names != null && colors != null) {
-			chipState = new boolean[names.length];
+			checkerState = new boolean[names.length];
 			container.removeAllViews();
 			for (int i = 0; i < names.length; i++) {
-				chipState[i] = true;
-				container.addView(createChipView(i, names[i], colors[i]));
+				checkerState[i] = true;
+				container.addView(createCheckerView(i, names[i], colors[i]));
 				if (i < names.length-1) {
 					container.addView(createDivider());
 				}
@@ -98,9 +99,9 @@ public class CheckersView extends LinearLayout {
 		}
 	}
 
-	public CheckBox createChipView(int id, final String name, final String color) {
+	public CheckBox createCheckerView(int id, final String name, final String color) {
 		final CheckBox checkBox = new CheckBox(getContext());
-		checkBox.setTextColor(gridTextColor);
+		checkBox.setTextColor(textColor);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			ColorStateList colorStateList = new ColorStateList(
 					new int[][]{
@@ -118,7 +119,7 @@ public class CheckersView extends LinearLayout {
 		checkBox.setText(name);
 		ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		params.setMargins(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
+		params.setMargins(PADD_SMALL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
 		checkBox.setLayoutParams(params);
 		checkBox.setPadding(PADD_NORMAL, 0, 0, 0);
 		checkBox.setId(id);
@@ -128,16 +129,16 @@ public class CheckersView extends LinearLayout {
 		checkBox.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (chipState[v.getId()]) {
+				if (checkerState[v.getId()]) {
 					if (listener != null) {
-						listener.onChipCheck(v.getId(), name, false);
+						listener.onCheck(v.getId(), name, false);
 					}
 				} else {
 					if (listener != null) {
-						listener.onChipCheck(v.getId(), name, true);
+						listener.onCheck(v.getId(), name, true);
 					}
 				}
-				chipState[v.getId()] = !chipState[v.getId()];
+				checkerState[v.getId()] = !checkerState[v.getId()];
 			}
 		});
 		return checkBox;
@@ -154,7 +155,7 @@ public class CheckersView extends LinearLayout {
 		return divider;
 	}
 
-	public void setOnChipCheckListener(OnCheckListener l) {
+	public void setOnCheckListener(OnCheckListener l) {
 		this.listener = l;
 	}
 }

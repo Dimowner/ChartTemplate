@@ -116,7 +116,7 @@ public class ChipsView extends LinearLayout {
 //					textView.getCompoundDrawables()[0].mutate();
 //					DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
 					if (listener != null) {
-						listener.onChipCheck(v.getId(), name, false);
+						listener.onCheck(v.getId(), name, false);
 					}
 				} else {
 					textView.setCompoundDrawablesWithIntrinsicBounds(
@@ -126,7 +126,7 @@ public class ChipsView extends LinearLayout {
 //					textView.getCompoundDrawables()[0].mutate();
 //					DrawableCompat.setTint(textView.getCompoundDrawables()[0], Color.parseColor(color));
 					if (listener != null) {
-						listener.onChipCheck(v.getId(), name, true);
+						listener.onCheck(v.getId(), name, true);
 					}
 				}
 				chipState[v.getId()] = !chipState[v.getId()];

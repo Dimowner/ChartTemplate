@@ -30,6 +30,7 @@
 		<item name="gridTextColor">@color/text_color</item>
 		<item name="selectionColor">@color/selection_color</item>
 		<item name="overlayColor">@color/overlay_color</item>
+		<item name="textCheckerColor">@color/text_dark</item>
 
 	</style>
 
@@ -47,6 +48,7 @@
 		<item name="gridTextColor">@color/text_color_night</item>
 		<item name="selectionColor">@color/selection_color_night</item>
 		<item name="overlayColor">@color/overlay_color_night</item>
+		<item name="textCheckerColor">@color/text_light</item>
 
 	</style>
 

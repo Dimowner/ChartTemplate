@@ -30,7 +30,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.dimowner.charttemplate.AppConstants;
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
@@ -42,7 +41,7 @@ import timber.log.Timber;
 
 public class ChartView extends View {
 
-	private static float STEP = AndroidUtils.dpToPx(AppConstants.DEFAULT_STEP);
+	private static float STEP = AndroidUtils.dpToPx(25);
 	private static int PADDING_SMALL = (int) AndroidUtils.dpToPx(8);
 	private static int PADDING_TINY = (int) AndroidUtils.dpToPx(4);
 	private static int GRID_LINES_COUNT = 6;
@@ -69,8 +68,8 @@ public class ChartView extends View {
 	private float startX = 0;
 	private float screenShift = 0;
 
-	private int WIDTH = 0;
-	private int HEIGHT = 0;
+	private float WIDTH = 0;
+	private float HEIGHT = 0;
 	private int maxValue = 0;
 	private float valueScale = 0;
 
@@ -207,7 +206,7 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScale = (float)HEIGHT/(float)(maxValue+PADDING_SMALL);
+		valueScale = HEIGHT/(maxValue+PADDING_SMALL);
 		Timber.v("Width = "+ WIDTH + " HEIGHT = " + HEIGHT + " valScale = " + valueScale);
 	}
 
@@ -261,7 +260,7 @@ public class ChartView extends View {
 			dateText = TimeUtils.formatDate(date);
 			if (TEXT_SPACE < STEP) {
 				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_SMALL, textPaint);
-			} else if (i % (Math.ceil(TEXT_SPACE/(float) STEP)) == 0) {
+			} else if (i % (Math.ceil(TEXT_SPACE/STEP)) == 0) {
 				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_SMALL, textPaint);
 			}
 
@@ -296,18 +295,19 @@ public class ChartView extends View {
 	public void setData(ChartData d) {
 		this.data = d;
 		if (data != null) {
+			maxValue = 0;
 			for (int i = 0; i < data.getLength(); i++) {
 				if (data.getValues(0)[i] > maxValue) {
 					maxValue = data.getValues(0)[i];
 				}
 			}
-			Timber.v("maxValue = %s", maxValue);
 			//Init lines visibility state, all visible by default.
 			linesVisibility = new boolean[data.getLinesCount()];
 			for (int i = 0; i < linesVisibility.length; i++) {
 				linesVisibility[i] = true;
 			}
 		}
+		valueScale = HEIGHT/(maxValue+PADDING_SMALL);
 		invalidate();
 	}
 

@@ -48,6 +48,9 @@
 	<color name="text_color">#96a2aa</color>
 	<color name="text_color_night">#506372</color>
 
+	<color name="text_dark">#222222</color>
+	<color name="text_light">#ffffff</color>
+
 	<color name="selection_color">#33517DA2</color>
 	<color name="selection_color_night">#4F517DA2</color>
 

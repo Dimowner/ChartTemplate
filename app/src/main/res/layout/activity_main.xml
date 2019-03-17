@@ -82,7 +82,7 @@
 		<com.dimowner.charttemplate.widget.ChartView
 				android:id="@+id/chartView"
 				android:layout_width="match_parent"
-				android:layout_height="250dp"
+				android:layout_height="260dp"
 				android:layout_marginStart="@dimen/spacing_normal"
 				android:layout_marginLeft="@dimen/spacing_normal"
 				android:layout_marginEnd="@dimen/spacing_normal"
@@ -92,7 +92,7 @@
 		<com.dimowner.charttemplate.widget.ChartScrollView
 				android:id="@+id/chartScrollView"
 				android:layout_width="match_parent"
-				android:layout_height="70dp"
+				android:layout_height="60dp"
 				android:layout_marginStart="@dimen/spacing_normal"
 				android:layout_marginLeft="@dimen/spacing_normal"
 				android:layout_marginEnd="@dimen/spacing_normal"
@@ -105,6 +105,27 @@
 				android:id="@+id/checkersView"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"/>
+		<FrameLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+
+			<Button
+					android:id="@+id/btnNext"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_gravity="end|right"
+					android:background="?android:selectableItemBackground"
+					android:text="NEXT"/>
+			<Button
+					android:id="@+id/btnPrev"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_gravity="start|left"
+					android:background="?android:selectableItemBackground"
+					android:text="PREV"/>
+
+		</FrameLayout>
 
 	</LinearLayout>
 </ScrollView>

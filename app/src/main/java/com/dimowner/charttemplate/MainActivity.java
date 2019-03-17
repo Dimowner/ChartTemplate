@@ -19,17 +19,16 @@ package com.dimowner.charttemplate;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
-import com.dimowner.charttemplate.model.DataArray;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.widget.ChartScrollView;
 import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.CheckersView;
 import com.dimowner.charttemplate.widget.OnCheckListener;
-import com.dimowner.charttemplate.widget.OnScrollListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,7 +43,16 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener {
+
+	private Data[] dataArray = null;
+	private int activeItem = 0;
+
+	private ChartView chartView;
+	private ChartScrollView chartScrollView;
+	private CheckersView checkersView;
+	private Button btnNext;
+	private Button btnPrev;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,25 +73,22 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		final ChartView chartView = findViewById(R.id.chartView);
-		final ChartScrollView chartScrollView = findViewById(R.id.chartScrollView);
-		CheckersView checkersView = findViewById(R.id.checkersView);
+		chartView = findViewById(R.id.chartView);
+		chartScrollView = findViewById(R.id.chartScrollView);
+		checkersView = findViewById(R.id.checkersView);
 
-		ChartData data = readDemoData();
-		chartView.setData(data);
-		chartScrollView.setData(data);
-		checkersView.setData(data.getNames(), data.getColors());
+		setData(readDemoData(activeItem));
 
-		chartScrollView.setOnScrollListener(new OnScrollListener() {
+		chartScrollView.setOnScrollListener(new ChartScrollView.OnScrollListener() {
 			@Override
 			public void onScroll(float x, float size) {
 				chartView.scrollPos(x, size);
 			}
 		});
 
-		checkersView.setOnChipCheckListener(new OnCheckListener() {
+		checkersView.setOnCheckListener(new OnCheckListener() {
 			@Override
-			public void onChipCheck(int id, String name, boolean checked) {
+			public void onCheck(int id, String name, boolean checked) {
 				if (checked) {
 					chartView.showLine(name);
 					chartScrollView.showLine(name);
@@ -93,57 +98,74 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
+
+		btnNext = findViewById(R.id.btnNext);
+		btnPrev = findViewById(R.id.btnPrev);
+		if (activeItem == 0) {
+			btnPrev.setVisibility(View.GONE);
+		}
+		if (activeItem == dataArray.length-1) {
+			btnNext.setVisibility(View.GONE);
+		}
+		btnNext.setOnClickListener(this);
+		btnPrev.setOnClickListener(this);
 	}
 
-	public ChartData readDemoData() {
-		try {
-			String DATA_ARRAY = "dataArray";
-			String COLUMNS = "columns";
-			String TYPES = "types";
-			String COLORS = "colors";
-			String NAMES = "names";
+	public void setData(ChartData d) {
+		chartView.setData(d);
+		chartScrollView.setData(d);
+		checkersView.setData(d.getNames(), d.getColors());
+	}
 
-			JSONObject jo = new JSONObject(
-					AndroidUtils.readAsset(getApplicationContext(), AppConstants.JSON_ASSET_NAME));
-			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
-			Data[] dataValues = new Data[joArray.length()];
-			for (int i = 0; i < joArray.length(); i++) {
-				Object[][] columns;
-				Map<String, String> types;
-				Map<String, String> names;
-				Map<String, String> colors;
-				JSONObject joItem = (JSONObject)joArray.get(i);
+	public ChartData readDemoData(int pos) {
+		if (dataArray == null) {
+			try {
+				String DATA_ARRAY = "dataArray";
+				String COLUMNS = "columns";
+				String TYPES = "types";
+				String COLORS = "colors";
+				String NAMES = "names";
 
-				names = jsonToMap(joItem.getJSONObject(NAMES));
-				types = jsonToMap(joItem.getJSONObject(TYPES));
-				colors = jsonToMap(joItem.getJSONObject(COLORS));
+				JSONObject jo = new JSONObject(
+						AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json"));
+				JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
+				Data[] dataValues = new Data[joArray.length()];
+				for (int i = 0; i < joArray.length(); i++) {
+					Object[][] columns;
+					Map<String, String> types;
+					Map<String, String> names;
+					Map<String, String> colors;
+					JSONObject joItem = (JSONObject) joArray.get(i);
 
-				JSONArray colArray = joItem.getJSONArray(COLUMNS);
-				List<Object> list = toList(colArray);
-				columns = new Object[list.size()][];
+					names = jsonToMap(joItem.getJSONObject(NAMES));
+					types = jsonToMap(joItem.getJSONObject(TYPES));
+					colors = jsonToMap(joItem.getJSONObject(COLORS));
 
-				for (int j = 0; j < list.size(); j++) {
-					List<Object> l2 = (List<Object>)list.get(j);
-//						Timber.v("L2 size = %s", l2.size());
-					Object[] a = new Object[l2.size()];
-					for (int k = 0; k < l2.size(); k++) {
-						a[k] = l2.get(k);
+					JSONArray colArray = joItem.getJSONArray(COLUMNS);
+					List<Object> list = toList(colArray);
+					columns = new Object[list.size()][];
+
+					for (int j = 0; j < list.size(); j++) {
+						List<Object> l2 = (List<Object>) list.get(j);
+						Object[] a = new Object[l2.size()];
+						for (int k = 0; k < l2.size(); k++) {
+							a[k] = l2.get(k);
+						}
+						columns[j] = a;
 					}
-					columns[j] = a;
-//					Timber.v("subArray size = " + a.length + " j = " + j);
+					dataValues[i] = new Data(columns, types, names, colors);
 				}
-//				Timber.v("Column size = %s", columns.length);
-				dataValues[i] = new Data(columns, types, names, colors);
-			}
 
-//			Gson gson = new Gson();
-//			DataArray dataArray = gson.fromJson(json, DataArray.class);
-			DataArray dataArray = new DataArray(dataValues);
-			return toChartData(dataArray.getDataArray()[0]);
-		} catch (IOException | ClassCastException | JSONException ex) {
-			Timber.e(ex);
-			return null;
+//				Gson gson = new Gson();
+//				DataArray array = gson.fromJson(json, DataArray.class);
+//				dataArray = array.getDataArray();
+				dataArray = dataValues;
+			} catch (IOException | ClassCastException | JSONException ex) {
+				Timber.e(ex);
+				return null;
+			}
 		}
+		return toChartData(dataArray[pos]);
 	}
 
 	public static Map<String, String> jsonToMap(JSONObject json) throws JSONException {
@@ -196,5 +218,37 @@ public class MainActivity extends Activity {
 			colors[i] = d.getColor(keys[i]);
 		}
 		return new ChartData(d.getTimeArray(), vals, names, types, colors);
+	}
+
+	@Override
+	public void onClick(View v) {
+		if (v.getId() == R.id.btnNext) {
+			int prev = activeItem;
+			activeItem++;
+			if (activeItem >= dataArray.length-1) {
+				activeItem = dataArray.length-1;
+				btnNext.setVisibility(View.GONE);
+			}
+			if (btnPrev.getVisibility() == View.GONE) {
+				btnPrev.setVisibility(View.VISIBLE);
+			}
+			if (activeItem != prev) {
+				setData(toChartData(dataArray[activeItem]));
+			}
+		} else if (v.getId() == R.id.btnPrev) {
+			int prev = activeItem;
+			activeItem--;
+			if (activeItem <= 0) {
+				activeItem = 0;
+				btnPrev.setVisibility(View.GONE);
+			}
+			if (btnNext.getVisibility() == View.GONE) {
+				btnNext.setVisibility(View.VISIBLE);
+			}
+			if (activeItem != prev) {
+				setData(toChartData(dataArray[activeItem]));
+			}
+		}
+		Timber.v("Active item change = %s", activeItem);
 	}
 }

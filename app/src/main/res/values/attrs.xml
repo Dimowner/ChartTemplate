@@ -7,5 +7,6 @@
 	<attr name="gridTextColor" format="color" />
 	<attr name="selectionColor" format="color" />
 	<attr name="overlayColor" format="color" />
+	<attr name="textCheckerColor" format="color" />
 
 </resources>

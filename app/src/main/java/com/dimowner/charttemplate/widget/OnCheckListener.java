@@ -17,5 +17,5 @@
 package com.dimowner.charttemplate.widget;
 
 public interface OnCheckListener {
-	void onChipCheck(int id, String name, boolean checked);
+	void onCheck(int id, String name, boolean checked);
 }

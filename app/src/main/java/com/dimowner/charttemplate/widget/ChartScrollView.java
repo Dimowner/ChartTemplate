@@ -31,8 +31,6 @@ import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
-import timber.log.Timber;
-
 public class ChartScrollView extends View {
 
 	private final static int CURSOR_UNSELECTED = 2000;
@@ -222,7 +220,7 @@ public class ChartScrollView extends View {
 			STEP = (WIDTH/data.getLength());
 		}
 
-		scrollX = WIDTH- selectionWidth;
+		scrollX = WIDTH - selectionWidth;
 	}
 
 	@Override
@@ -310,17 +308,18 @@ public class ChartScrollView extends View {
 	public void setData(ChartData d) {
 		this.data = d;
 		if (data != null) {
+			maxValueY = 0;
 			for (int i = 0; i < data.getLength(); i++) {
 				if (data.getValues(0)[i] > maxValueY) {
 					maxValueY = data.getValues(0)[i];
 				}
 			}
-			Timber.v("maxValueY = %s", maxValueY);
 			//Init lines visibility state, all visible by default.
 			linesVisibility = new boolean[data.getLinesCount()];
 			for (int i = 0; i < linesVisibility.length; i++) {
 				linesVisibility[i] = true;
 			}
+			valueScaleY = HEIGHT/(maxValueY + SELECTION);
 			if (WIDTH > 0 && data.getLength() > 0) {
 				STEP = (WIDTH / data.getLength());
 			}
@@ -339,5 +338,9 @@ public class ChartScrollView extends View {
 
 	public void setOnScrollListener(OnScrollListener onScrollListener) {
 		this.onScrollListener = onScrollListener;
+	}
+
+	public interface OnScrollListener {
+		void onScroll(float x, float size);
 	}
 }
