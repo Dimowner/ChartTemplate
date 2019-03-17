@@ -61,9 +61,7 @@ public class ChartView extends View {
 
 	private Paint linePaint;
 
-	private long playProgressPx;
-
-	private boolean showRecording = false;
+	private long scrollPos;
 
 	private float textHeight;
 
@@ -137,7 +135,7 @@ public class ChartView extends View {
 
 		gridPaint = new Paint();
 		gridPaint.setAntiAlias(false);
-		linePaint.setDither(false);
+		gridPaint.setDither(false);
 		gridPaint.setStyle(Paint.Style.STROKE);
 		gridPaint.setColor(gridColor);
 		gridPaint.setStrokeWidth(AndroidUtils.dpToPx(1));
@@ -150,7 +148,7 @@ public class ChartView extends View {
 		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
 		textPaint.setTextSize(textHeight);
 
-		playProgressPx = -1;
+		scrollPos = -1;
 
 		gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
 			@Override
@@ -168,38 +166,36 @@ public class ChartView extends View {
 		setOnTouchListener(new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent motionEvent) {
-				if (!showRecording) {
-					switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-						case MotionEvent.ACTION_DOWN:
-							startX = motionEvent.getX();
-							break;
-						case MotionEvent.ACTION_MOVE:
-							int shift = (int) (prevScreenShift + (motionEvent.getX()) - startX);
-							if (data != null) {
-								//Right char move edge
-								if (shift <= -data.getLength() * STEP - PADDING_SMALL + WIDTH) {
-									shift = -data.getLength() * STEP - PADDING_SMALL + WIDTH;
-								}
+				switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+					case MotionEvent.ACTION_DOWN:
+						startX = motionEvent.getX();
+						break;
+					case MotionEvent.ACTION_MOVE:
+						int shift = (int) (prevScreenShift + (motionEvent.getX()) - startX);
+						if (data != null) {
+							//Right char move edge
+							if (shift <= -data.getLength() * STEP - PADDING_SMALL + WIDTH) {
+								shift = -data.getLength() * STEP - PADDING_SMALL + WIDTH;
 							}
-							//Left chart move edge
-							if (shift > 0) {
-								shift = 0;
-							}
-							if (onSeekListener != null) {
-								onSeekListener.onSeeking(-screenShift);
-							}
-							playProgressPx = -shift;
-							updateShifts(shift);
-							invalidate();
-							break;
-						case MotionEvent.ACTION_UP:
-							if (onSeekListener != null) {
-								onSeekListener.onSeek(-screenShift);
-							}
-							prevScreenShift = screenShift;
-							performClick();
-							break;
-					}
+						}
+						//Left chart move edge
+						if (shift > 0) {
+							shift = 0;
+						}
+						if (onSeekListener != null) {
+							onSeekListener.onSeeking(-screenShift);
+						}
+						scrollPos = -shift;
+						updateShifts(shift);
+						invalidate();
+						break;
+					case MotionEvent.ACTION_UP:
+						if (onSeekListener != null) {
+							onSeekListener.onSeek(-screenShift);
+						}
+						prevScreenShift = screenShift;
+						performClick();
+						break;
 				}
 				return gestureDetector.onTouchEvent(motionEvent);
 			}
@@ -207,8 +203,18 @@ public class ChartView extends View {
 	}
 
 	public void seekPx(int px) {
-		playProgressPx = px;
-		updateShifts((int)-playProgressPx);
+		scrollPos = px;
+		updateShifts((int)-scrollPos);
+		prevScreenShift = screenShift;
+		invalidate();
+		if (onSeekListener != null) {
+			onSeekListener.onSeeking(-screenShift);
+		}
+	}
+
+	public void scrollPos(int index) {
+		scrollPos = index*STEP;
+		updateShifts((int)-scrollPos);
 		prevScreenShift = screenShift;
 		invalidate();
 		if (onSeekListener != null) {
@@ -221,7 +227,7 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScale = (float)HEIGHT/(float)maxValue;
+		valueScale = (float)HEIGHT/(float)(maxValue+PADDING_SMALL);
 		Timber.v("Width = "+ WIDTH + " HEIGHT = " + HEIGHT + " valScale = " + valueScale);
 	}
 

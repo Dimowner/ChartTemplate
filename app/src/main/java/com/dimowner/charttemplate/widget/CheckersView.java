@@ -123,6 +123,7 @@ public class CheckersView extends LinearLayout {
 		checkBox.setPadding(PADD_NORMAL, 0, 0, 0);
 		checkBox.setId(id);
 		checkBox.setChecked(true);
+		checkBox.setSaveEnabled(false);
 
 		checkBox.setOnClickListener(new View.OnClickListener() {
 			@Override

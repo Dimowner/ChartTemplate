@@ -20,15 +20,16 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.SeekBar;
 
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.model.DataArray;
 import com.dimowner.charttemplate.util.AndroidUtils;
+import com.dimowner.charttemplate.widget.ChartScrollView;
 import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.CheckersView;
 import com.dimowner.charttemplate.widget.OnCheckListener;
+import com.dimowner.charttemplate.widget.OnScrollListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,8 +45,6 @@ import java.util.Map;
 import timber.log.Timber;
 
 public class MainActivity extends Activity {
-
-	private int dataLength;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,42 +65,26 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		SeekBar seekBarScale = findViewById(R.id.seekBarScale);
-		SeekBar seekBarScroll = findViewById(R.id.seekBarScroll);
 		final ChartView chartView = findViewById(R.id.chartView);
+		final ChartScrollView chartScrollView = findViewById(R.id.chartScrollView);
 		CheckersView checkersView = findViewById(R.id.checkersView);
 
-		final ChartData data = readDemoData();
+		ChartData data = readDemoData();
 		chartView.setData(data);
+		chartScrollView.setData(data);
 		checkersView.setData(data.getNames(), data.getColors());
-		dataLength = data.getLength();
 
-		seekBarScale.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+		chartScrollView.setOnScrollListener(new OnScrollListener() {
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				if (fromUser) {
-					if (progress < 20) {
-						progress = 20;
-					}
-					ChartView.setStep(progress);
-					chartView.invalidate();
-
-				}
+			public void onScrolled(int index) {
+				Timber.v("onScrolled index = %s", index);
 			}
-			@Override public void onStartTrackingTouch(SeekBar seekBar) { }
-			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
-		});
 
-		seekBarScroll.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				if (fromUser) {
-					int val = progress * dataLength*ChartView.getStep() / 1000;
-					chartView.seekPx(val);
-				}
+			public void onScrolling(int index) {
+				Timber.v("onScrolling index = %s", index);
+				chartView.scrollPos(index);
 			}
-			@Override public void onStartTrackingTouch(SeekBar seekBar) { }
-			@Override public void onStopTrackingTouch(SeekBar seekBar) { }
 		});
 
 		checkersView.setOnChipCheckListener(new OnCheckListener() {
@@ -109,8 +92,10 @@ public class MainActivity extends Activity {
 			public void onChipCheck(int id, String name, boolean checked) {
 				if (checked) {
 					chartView.showLine(name);
+					chartScrollView.showLine(name);
 				} else {
 					chartView.hideLine(name);
+					chartScrollView.hideLine(name);
 				}
 			}
 		});
@@ -124,7 +109,8 @@ public class MainActivity extends Activity {
 			String COLORS = "colors";
 			String NAMES = "names";
 
-			JSONObject jo = new JSONObject(AndroidUtils.readJsonAsset(getApplicationContext()));
+			JSONObject jo = new JSONObject(
+					AndroidUtils.readAsset(getApplicationContext(), AppConstants.JSON_ASSET_NAME));
 			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
 			Data[] dataValues = new Data[joArray.length()];
 			for (int i = 0; i < joArray.length(); i++) {
@@ -206,15 +192,15 @@ public class MainActivity extends Activity {
 	private ChartData toChartData(Data d) {
 		String[] keys = d.getColumnsKeys();
 		int[][] vals = new int[keys.length][d.getDataLength()];
-		String[] names2 = new String[keys.length];
-		String[] types2 = new String[keys.length];
-		String[] colors2 = new String[keys.length];
+		String[] names = new String[keys.length];
+		String[] types = new String[keys.length];
+		String[] colors = new String[keys.length];
 		for (int i = 0; i < keys.length; i++) {
 			vals[i] = d.getValues(keys[i]);
-			names2[i] = d.getName(keys[i]);
-			types2[i] = d.getType(keys[i]);
-			colors2[i] = d.getColor(keys[i]);
+			names[i] = d.getName(keys[i]);
+			types[i] = d.getType(keys[i]);
+			colors[i] = d.getColor(keys[i]);
 		}
-		return new ChartData(d.getTimeArray(), vals, names2, types2, colors2);
+		return new ChartData(d.getTimeArray(), vals, names, types, colors);
 	}
 }

@@ -19,17 +19,15 @@ package com.dimowner.charttemplate.util;
 import android.content.Context;
 import android.content.res.Resources;
 
-import com.dimowner.charttemplate.AppConstants;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Android related utilities methods.
  */
 public class AndroidUtils {
 
-	//Prevent object instantiation
 	private AndroidUtils() {}
 
 	/**
@@ -50,30 +48,16 @@ public class AndroidUtils {
 		return (dp * Resources.getSystem().getDisplayMetrics().density);
 	}
 
-	/**
-	 * Convert pixels value (px) into density independent pixels (dip).
-	 * @param px Value needed to convert
-	 * @return Converted value in pixels.
-	 */
-	public static float pxToDp(int px) {
-		return pxToDp((float) px);
-	}
-
-	/**
-	 * Convert pixels value (px) into density independent pixels (dip).
-	 * @param px Value needed to convert
-	 * @return Converted value in pixels.
-	 */
-	public static float pxToDp(float px) {
-		return (px / Resources.getSystem().getDisplayMetrics().density);
-	}
-
-	public static String readJsonAsset(Context context) throws IOException {
-		InputStream is = context.getAssets().open(AppConstants.JSON_ASSET_NAME);
+	public static String readAsset(Context context, String name) throws IOException {
+		InputStream is = context.getAssets().open(name);
 		int size = is.available();
 		byte[] buffer = new byte[size];
-		is.read(buffer);
+		int i = is.read(buffer);
 		is.close();
-		return new String(buffer, "UTF-8");
+		if (i > 0) {
+			return new String(buffer, StandardCharsets.UTF_8);
+		} else {
+			return "";
+		}
 	}
 }

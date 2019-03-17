@@ -5,5 +5,7 @@
 	<attr name="gridColor" format="color" />
 	<attr name="gridBaseLineColor" format="color" />
 	<attr name="gridTextColor" format="color" />
+	<attr name="selectionColor" format="color" />
+	<attr name="overlayColor" format="color" />
 
 </resources>

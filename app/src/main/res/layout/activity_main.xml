@@ -67,7 +67,12 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:gravity="start|center_vertical"
-				android:padding="@dimen/spacing_normal"
+				android:layout_marginStart="@dimen/spacing_normal"
+				android:layout_marginLeft="@dimen/spacing_normal"
+				android:layout_marginEnd="@dimen/spacing_normal"
+				android:layout_marginRight="@dimen/spacing_normal"
+				android:layout_marginBottom="@dimen/spacing_tiny"
+				android:layout_marginTop="@dimen/spacing_normal"
 				android:text="@string/followers"
 				android:fontFamily="sans-serif-medium"
 				android:textColor="@color/text_blue"
@@ -84,24 +89,16 @@
 				android:layout_marginRight="@dimen/spacing_normal"
 				/>
 
-		<SeekBar
-				android:id="@+id/seekBarScroll"
+		<com.dimowner.charttemplate.widget.ChartScrollView
+				android:id="@+id/chartScrollView"
 				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_gravity="bottom"
-				android:padding="@dimen/spacing_normal"
-				android:max="1000"
-				android:progress="20"
-				/>
-
-		<SeekBar
-				android:id="@+id/seekBarScale"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_gravity="bottom"
-				android:padding="@dimen/spacing_normal"
-				android:max="200"
-				android:progress="20"
+				android:layout_height="70dp"
+				android:layout_marginStart="@dimen/spacing_normal"
+				android:layout_marginLeft="@dimen/spacing_normal"
+				android:layout_marginEnd="@dimen/spacing_normal"
+				android:layout_marginRight="@dimen/spacing_normal"
+				android:layout_marginTop="@dimen/spacing_tiny"
+				android:layout_marginBottom="@dimen/spacing_tiny"
 				/>
 
 		<com.dimowner.charttemplate.widget.CheckersView

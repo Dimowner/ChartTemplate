@@ -32,6 +32,8 @@
 		<item name="gridColor">@color/grid_color2</item>
 		<item name="gridBaseLineColor">@color/grid_base_line</item>
 		<item name="gridTextColor">@color/text_color</item>
+		<item name="selectionColor">@color/selection_color</item>
+		<item name="overlayColor">@color/overlay_color</item>
 
 	</style>
 
@@ -51,6 +53,8 @@
 		<item name="gridColor">@color/grid_color2_night</item>
 		<item name="gridBaseLineColor">@color/grid_base_line_night</item>
 		<item name="gridTextColor">@color/text_color_night</item>
+		<item name="selectionColor">@color/selection_color_night</item>
+		<item name="overlayColor">@color/overlay_color_night</item>
 
 	</style>
 

@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain prevDegree copy of the License at
  *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -14,24 +14,9 @@
  * limitations under the License.
  */
 
-package com.dimowner.charttemplate.util;
+package com.dimowner.charttemplate.widget;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
-public class TimeUtils {
-
-    /** Date format: May 16 */
-    private static SimpleDateFormat dateFormat24H = new SimpleDateFormat("MMM dd", Locale.getDefault());
-
-    private TimeUtils() {
-    }
-
-    public static String formatDate(Date date) {
-        if (date == null) {
-            return "Wrong date!";
-        }
-        return dateFormat24H.format(date);
-    }
+public interface OnScrollListener {
+	void onScrolled(int index);
+	void onScrolling(int index);
 }
