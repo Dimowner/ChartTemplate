@@ -17,6 +17,5 @@
 package com.dimowner.charttemplate.widget;
 
 public interface OnScrollListener {
-	void onScrolled(int index);
-	void onScrolling(int index);
+	void onScroll(float x, float size);
 }

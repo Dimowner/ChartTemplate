@@ -24,7 +24,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -36,10 +35,18 @@ import timber.log.Timber;
 
 public class ChartScrollView extends View {
 
+	private final static int CURSOR_UNSELECTED = 2000;
+	private final static int CURSOR_LEFT = 2001;
+	private final static int CURSOR_CENTER = 2002;
+	private final static int CURSOR_RIGHT = 2003;
+
+	private final static float SMALLEST_SELECTION_WIDTH = AndroidUtils.dpToPx(80);
+
 	private final static float SELECTION = AndroidUtils.dpToPx(5);
 	private final static float SELECTION_HALF = SELECTION/2;
-	private float selectionX = AndroidUtils.dpToPx(80);
+	private float selectionWidth = SMALLEST_SELECTION_WIDTH;
 
+	private int selectionState = CURSOR_UNSELECTED;
 	private ChartData data;
 	private boolean[] linesVisibility;
 	private Path path;
@@ -51,7 +58,8 @@ public class ChartScrollView extends View {
 
 	private float scrollX;
 	private float moveStartX = 0;
-	private boolean isInSelection = false;
+	private float offset = 0;
+	private float prevSelectionWidth = 0;
 
 	private float WIDTH = 0;
 	private float HEIGHT = 0;
@@ -59,8 +67,6 @@ public class ChartScrollView extends View {
 	private float valueScaleY = 0;
 
 	private OnScrollListener onScrollListener;
-
-	private GestureDetector gestureDetector;
 
 	public ChartScrollView(Context context) {
 		super(context);
@@ -80,6 +86,7 @@ public class ChartScrollView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 		path = new Path();
+		scrollX = -1;
 
 		int selectionColor;
 		int overlayColor;
@@ -119,77 +126,90 @@ public class ChartScrollView extends View {
 		overlayPaint.setStyle(Paint.Style.FILL);
 		overlayPaint.setColor(overlayColor);
 
-		scrollX = -1;
-
-		gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-			@Override
-			public boolean onDown(MotionEvent e) {
-				return true;
-			}
-
-			@Override
-			public boolean onDoubleTap(MotionEvent e) {
-				//TODO: zoom view
-				return true;
-			}
-		});
-
 		setOnTouchListener(new OnTouchListener() {
+//			TODO: Fix when selection is whole view it can't be resized to smaller size
+//			TODO: When selection resized to smallest size on right side move selection to the left.
+
 			@Override
 			public boolean onTouch(View v, MotionEvent motionEvent) {
 				switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
 					case MotionEvent.ACTION_DOWN:
 						moveStartX = motionEvent.getX();
-						isInSelection = checkInSelection(moveStartX);
+						offset = moveStartX - scrollX;
+						selectionState = checkSelectionState(moveStartX);
+						prevSelectionWidth = selectionWidth;
 						break;
 					case MotionEvent.ACTION_MOVE:
-						if (isInSelection) {
-							float shift = (motionEvent.getX()) - moveStartX;
-							scrollX = moveStartX + shift;
-							//Set scroll edges.
-							if (scrollX + selectionX > WIDTH) {
-								scrollX = WIDTH - selectionX;
-							} else if (scrollX < 0) {
-								scrollX = 0;
-							}
+						switch (selectionState) {
+							case CURSOR_CENTER:
+								float shift = (motionEvent.getX()) - moveStartX;
+								scrollX = moveStartX + shift - offset;
+								//Set scroll edges.
+								if (scrollX + selectionWidth > WIDTH) {
+									scrollX = WIDTH - selectionWidth;
+								} else if (scrollX < 0) {
+									scrollX = 0;
+								}
 
-							if (onScrollListener != null) {
-								onScrollListener.onScrolling((int)(scrollX/STEP));
-							}
-							invalidate();
+								if (onScrollListener != null) {
+									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
+								}
+								invalidate();
+								break;
+							case CURSOR_LEFT:
+								float shift2 = (motionEvent.getX()) - moveStartX;
+								float prevScroll = scrollX;
+								scrollX = moveStartX + shift2 - offset;
+								selectionWidth += prevScroll-scrollX;
+								//Set scroll edges.
+								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
+									selectionWidth = SMALLEST_SELECTION_WIDTH;
+								}
+								if (scrollX + selectionWidth > WIDTH) {
+									scrollX = WIDTH - selectionWidth;
+								}
+								if (onScrollListener != null) {
+									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
+								}
+								invalidate();
+								break;
+							case CURSOR_RIGHT:
+								float shift3 = (motionEvent.getX()) - moveStartX;
+								selectionWidth = (prevSelectionWidth + shift3);
+								//Set scroll edges.
+								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
+									selectionWidth = SMALLEST_SELECTION_WIDTH;
+								}
+								if (onScrollListener != null) {
+									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
+								}
+								invalidate();
+								break;
+							case CURSOR_UNSELECTED:
+							default:
+								//Do nothing
+								break;
 						}
 						break;
 					case MotionEvent.ACTION_UP:
-						if (onScrollListener != null) {
-							onScrollListener.onScrolled((int)(scrollX/STEP));
-						}
-
 						performClick();
 						break;
 				}
-				return gestureDetector.onTouchEvent(motionEvent);
+				return true;
 			}
 		});
 	}
 
-	private boolean checkInSelection(float x) {
-		return (x > scrollX && x < scrollX + selectionX);
+	private int checkSelectionState(float x) {
+		if (x > scrollX && x < scrollX + selectionWidth) {
+			return CURSOR_CENTER;
+		} else if (x < scrollX + selectionWidth) {
+			return CURSOR_LEFT;
+		} else if (x > scrollX) {
+			return CURSOR_RIGHT;
+		}
+		return CURSOR_UNSELECTED;
 	}
-
-//	private void updateShifts(float px) {
-//		screenShift = px;
-//	}
-
-//
-//	public void seekPx(int px) {
-//		scrollX = px;
-//		updateShifts((int)-scrollX);
-//		prevScreenShift = screenShift;
-//		invalidate();
-//		if (onScrollListener != null) {
-//			onScrollListener.onScrolling((int)-screenShift);
-//		}
-//	}
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
@@ -197,14 +217,12 @@ public class ChartScrollView extends View {
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
 		valueScaleY = HEIGHT/(maxValueY + SELECTION);
-		Timber.v("Width = "+ WIDTH + " HEIGHT = " + HEIGHT + " valScale = " + valueScaleY);
 
 		if (data != null) {
 			STEP = (WIDTH/data.getLength());
 		}
 
-		scrollX = WIDTH-selectionX;
-		Timber.v("STEP = " + STEP);
+		scrollX = WIDTH- selectionWidth;
 	}
 
 	@Override
@@ -228,8 +246,8 @@ public class ChartScrollView extends View {
 		canvas.drawPath(path, overlayPaint);
 
 		path.reset();
-		path.moveTo(scrollX + selectionX + SELECTION_HALF, 0);
-		path.lineTo(scrollX + selectionX + SELECTION_HALF, HEIGHT);
+		path.moveTo(scrollX + selectionWidth + SELECTION_HALF, 0);
+		path.lineTo(scrollX + selectionWidth + SELECTION_HALF, HEIGHT);
 		path.lineTo(WIDTH, HEIGHT);
 		path.lineTo(WIDTH, 0);
 		path.close();
@@ -239,16 +257,16 @@ public class ChartScrollView extends View {
 		path.reset();
 		path.moveTo(scrollX, 0);
 		path.lineTo(scrollX, HEIGHT);
-		path.moveTo(scrollX + selectionX, HEIGHT);
-		path.lineTo(scrollX + selectionX, 0);
+		path.moveTo(scrollX + selectionWidth, HEIGHT);
+		path.lineTo(scrollX + selectionWidth, 0);
 		selectionPaint.setStrokeWidth(SELECTION);
 		canvas.drawPath(path, selectionPaint);
 
 		path.reset();
 		path.moveTo(scrollX + SELECTION_HALF, 0);
-		path.lineTo(scrollX + selectionX - SELECTION_HALF, 0);
+		path.lineTo(scrollX + selectionWidth - SELECTION_HALF, 0);
 		path.moveTo(scrollX + SELECTION_HALF, HEIGHT);
-		path.lineTo(scrollX + selectionX - SELECTION_HALF, HEIGHT);
+		path.lineTo(scrollX + selectionWidth - SELECTION_HALF, HEIGHT);
 		selectionPaint.setStrokeWidth(SELECTION_HALF);
 		canvas.drawPath(path, selectionPaint);
 

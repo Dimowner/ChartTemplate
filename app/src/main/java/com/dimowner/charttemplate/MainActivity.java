@@ -76,14 +76,8 @@ public class MainActivity extends Activity {
 
 		chartScrollView.setOnScrollListener(new OnScrollListener() {
 			@Override
-			public void onScrolled(int index) {
-				Timber.v("onScrolled index = %s", index);
-			}
-
-			@Override
-			public void onScrolling(int index) {
-				Timber.v("onScrolling index = %s", index);
-				chartView.scrollPos(index);
+			public void onScroll(float x, float size) {
+				chartView.scrollPos(x, size);
 			}
 		});
 

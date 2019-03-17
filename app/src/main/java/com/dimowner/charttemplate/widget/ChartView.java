@@ -42,7 +42,7 @@ import timber.log.Timber;
 
 public class ChartView extends View {
 
-	private static int STEP = (int) AndroidUtils.dpToPx(AppConstants.DEFAULT_STEP);
+	private static float STEP = AndroidUtils.dpToPx(AppConstants.DEFAULT_STEP);
 	private static int PADDING_SMALL = (int) AndroidUtils.dpToPx(8);
 	private static int PADDING_TINY = (int) AndroidUtils.dpToPx(4);
 	private static int GRID_LINES_COUNT = 6;
@@ -61,20 +61,18 @@ public class ChartView extends View {
 
 	private Paint linePaint;
 
-	private long scrollPos;
+	private float scrollPos;
 
 	private float textHeight;
 
-	private int prevScreenShift = 0;
+	private float prevScreenShift = 0;
 	private float startX = 0;
-	private int screenShift = 0;
+	private float screenShift = 0;
 
 	private int WIDTH = 0;
 	private int HEIGHT = 0;
 	private int maxValue = 0;
 	private float valueScale = 0;
-
-	private OnSeekListener onSeekListener;
 
 	private GestureDetector gestureDetector;
 
@@ -171,7 +169,7 @@ public class ChartView extends View {
 						startX = motionEvent.getX();
 						break;
 					case MotionEvent.ACTION_MOVE:
-						int shift = (int) (prevScreenShift + (motionEvent.getX()) - startX);
+						float shift = (prevScreenShift + (motionEvent.getX()) - startX);
 						if (data != null) {
 							//Right char move edge
 							if (shift <= -data.getLength() * STEP - PADDING_SMALL + WIDTH) {
@@ -182,17 +180,11 @@ public class ChartView extends View {
 						if (shift > 0) {
 							shift = 0;
 						}
-						if (onSeekListener != null) {
-							onSeekListener.onSeeking(-screenShift);
-						}
 						scrollPos = -shift;
 						updateShifts(shift);
 						invalidate();
 						break;
 					case MotionEvent.ACTION_UP:
-						if (onSeekListener != null) {
-							onSeekListener.onSeek(-screenShift);
-						}
 						prevScreenShift = screenShift;
 						performClick();
 						break;
@@ -202,24 +194,12 @@ public class ChartView extends View {
 		});
 	}
 
-	public void seekPx(int px) {
-		scrollPos = px;
-		updateShifts((int)-scrollPos);
+	public void scrollPos(float x, float size) {
+		STEP = WIDTH/size;
+		scrollPos = (x*STEP);
+		updateShifts(-scrollPos);
 		prevScreenShift = screenShift;
 		invalidate();
-		if (onSeekListener != null) {
-			onSeekListener.onSeeking(-screenShift);
-		}
-	}
-
-	public void scrollPos(int index) {
-		scrollPos = index*STEP;
-		updateShifts((int)-scrollPos);
-		prevScreenShift = screenShift;
-		invalidate();
-		if (onSeekListener != null) {
-			onSeekListener.onSeeking(-screenShift);
-		}
 	}
 
 	@Override
@@ -263,11 +243,11 @@ public class ChartView extends View {
 		linePaint.setColor(Color.parseColor(color));
 
 		chartPath.reset();
-		int start = screenShift <= 0 ? -screenShift / STEP : 0;
-		int offset = screenShift % STEP;
+		float start = screenShift <= 0 ? -screenShift / STEP : 0;
+		float offset = screenShift % STEP;
 
-		int pos = 0;
-		for (int i = start; i < values.length; i++) {
+		float pos = 0;
+		for (int i = (int) start; i < values.length; i++) {
 			//Draw chart
 			if (pos == 0) {
 				chartPath.moveTo(pos + offset, HEIGHT - values[i] * valueScale);
@@ -293,16 +273,8 @@ public class ChartView extends View {
 		canvas.drawPath(chartPath, linePaint);
 	}
 
-	private void updateShifts(int px) {
+	private void updateShifts(float px) {
 		screenShift = px;
-	}
-
-	public static int getStep() {
-		return STEP;
-	}
-
-	public static void setStep(int s) {
-		ChartView.STEP = s;
 	}
 
 	public void hideLine(String name) {
@@ -346,14 +318,5 @@ public class ChartView extends View {
 			}
 		}
 		return -1;
-	}
-
-	public void setOnSeekListener(OnSeekListener onSeekListener) {
-		this.onSeekListener = onSeekListener;
-	}
-
-	public interface OnSeekListener {
-		void onSeek(int px);
-		void onSeeking(int px);
 	}
 }
