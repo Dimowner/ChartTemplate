@@ -281,7 +281,7 @@ public class ChartScrollView extends View {
 		linePaint.setColor(color);
 		path.reset();
 		float x = 0;
-		for (int i = 0; i < values.length; i++) {
+		for (int i = 0; i < values.length; i+=2) {
 			if (x == 0) {
 				path.moveTo(x, HEIGHT - values[i] * valueScaleY);
 			} else {
@@ -291,7 +291,7 @@ public class ChartScrollView extends View {
 			if (x - STEP > WIDTH) {
 				break;
 			}
-			x += STEP;
+			x += 2*STEP;
 		}
 		canvas.drawPath(path, linePaint);
 	}

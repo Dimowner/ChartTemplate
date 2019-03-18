@@ -353,6 +353,10 @@ public class ChartView extends View {
 				canvas.drawLine(selectionX, 0, selectionX, HEIGHT, scrubblerPaint);
 			}
 
+			if (data.getLinesCount() > 0) {
+				drawTimeline(canvas, data.getValues(0).length);
+			}
+
 			//Draw charts
 			textPaint.setTextAlign(Paint.Align.CENTER);
 			for (int i = 0; i < data.getNames().length; i++) {
@@ -426,13 +430,26 @@ public class ChartView extends View {
 				chartPath.lineTo(pos + offset, HEIGHT - values[i] * valueScale);
 			}
 
-			//TODO: Fix this!!! draw dates only once.
-			//Draw dates
+			if (pos - STEP > WIDTH) {
+				break;
+			}
+			pos += STEP;
+		}
+		canvas.drawPath(chartPath, linePaint);
+	}
+
+	private void drawTimeline(Canvas canvas, int length) {
+
+		float start = screenShift <= 0 ? -screenShift / STEP : 0;
+		float offset = screenShift % STEP;
+
+		float pos = 0;
+		for (int i = (int) start; i < length; i++) {
 			date.setTime(data.getTime()[i]);
 			dateText = TimeUtils.formatDate(date);
 			if (TEXT_SPACE < STEP) {
 				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_SMALL, textPaint);
-			} else if (i % (Math.ceil(TEXT_SPACE/STEP)) == 0) {
+			} else if (i % (Math.ceil(TEXT_SPACE / STEP)) == 0) {
 				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_SMALL, textPaint);
 			}
 
@@ -441,7 +458,6 @@ public class ChartView extends View {
 			}
 			pos += STEP;
 		}
-		canvas.drawPath(chartPath, linePaint);
 	}
 
 	public void hideLine(String name) {
