@@ -83,7 +83,7 @@
 		<com.dimowner.charttemplate.widget.ChartView
 				android:id="@+id/chartView"
 				android:layout_width="match_parent"
-				android:layout_height="260dp"
+				android:layout_height="300dp"
 				android:layout_marginStart="@dimen/spacing_normal"
 				android:layout_marginLeft="@dimen/spacing_normal"
 				android:layout_marginEnd="@dimen/spacing_normal"
@@ -93,13 +93,13 @@
 		<com.dimowner.charttemplate.widget.ChartScrollView
 				android:id="@+id/chartScrollView"
 				android:layout_width="match_parent"
-				android:layout_height="60dp"
+				android:layout_height="50dp"
 				android:layout_marginStart="@dimen/spacing_normal"
 				android:layout_marginLeft="@dimen/spacing_normal"
 				android:layout_marginEnd="@dimen/spacing_normal"
 				android:layout_marginRight="@dimen/spacing_normal"
 				android:layout_marginTop="@dimen/spacing_tiny"
-				android:layout_marginBottom="@dimen/spacing_tiny"
+				android:layout_marginBottom="@dimen/spacing_small"
 				/>
 
 		<com.dimowner.charttemplate.widget.CheckersView

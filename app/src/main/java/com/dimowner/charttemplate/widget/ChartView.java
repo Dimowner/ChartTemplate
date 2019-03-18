@@ -46,7 +46,7 @@ public class ChartView extends View {
 	private static int PADDING_TINY = (int) (4*DENSITY);
 	private static int GRID_LINES_COUNT = 6;
 	private static int TEXT_SPACE = (int) (65*DENSITY);
-	private static int BASE_LINE_Y = (int) (25*DENSITY);
+	private static int BASE_LINE_Y = (int) (32*DENSITY);
 	private static int CIRCLE_SIZE = (int) (5*DENSITY);
 	private static int SHADOW_SIZE = (int) (1.5f*DENSITY);
 
@@ -62,6 +62,7 @@ public class ChartView extends View {
 
 	private TextPaint textPaint;
 	private Paint gridPaint;
+	private Paint baselinePaint;
 	private Paint linePaint;
 	private Paint scrubblerPaint;
 	private Paint circlePaint;
@@ -120,6 +121,7 @@ public class ChartView extends View {
 		int gridTextColor;
 		int panelTextColor;
 		int panelColor;
+		int scrubblerColor;
 
 		Resources res = context.getResources();
 		TypedValue typedValue = new TypedValue();
@@ -149,6 +151,11 @@ public class ChartView extends View {
 		} else {
 			panelTextColor = res.getColor(R.color.panel_text_night);
 		}
+		if (theme.resolveAttribute(R.attr.scrubblerColor, typedValue, true)) {
+			scrubblerColor = typedValue.data;
+		} else {
+			scrubblerColor = res.getColor(R.color.scrubbler_color);
+		}
 
 		linePaint = new Paint();
 		linePaint.setAntiAlias(true);
@@ -166,6 +173,13 @@ public class ChartView extends View {
 		gridPaint.setStyle(Paint.Style.STROKE);
 		gridPaint.setColor(gridColor);
 		gridPaint.setStrokeWidth(DENSITY);
+
+		baselinePaint = new Paint();
+		baselinePaint.setAntiAlias(false);
+		baselinePaint.setDither(false);
+		baselinePaint.setStyle(Paint.Style.STROKE);
+		baselinePaint.setColor(gridBaseLineColor);
+		baselinePaint.setStrokeWidth(DENSITY);
 
 		textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		textPaint.setColor(gridTextColor);
@@ -205,8 +219,8 @@ public class ChartView extends View {
 		scrubblerPaint.setAntiAlias(false);
 		scrubblerPaint.setDither(false);
 		scrubblerPaint.setStyle(Paint.Style.STROKE);
-		scrubblerPaint.setColor(gridBaseLineColor);
-		scrubblerPaint.setStrokeWidth(DENSITY);
+		scrubblerPaint.setColor(scrubblerColor);
+		scrubblerPaint.setStrokeWidth(1.5f*DENSITY);
 
 		setOnTouchListener(new OnTouchListener() {
 			@Override
@@ -297,15 +311,15 @@ public class ChartView extends View {
 		rect.bottom = 3.5f*PADDING_NORMAL + selectedDateHeight + selectedNameHeight + selectedValueHeight;
 
 		//Set Panel edges
+		if (rect.right > WIDTH-PADDING_SMALL) {
+			float w = rect.width();
+			rect.right = WIDTH-PADDING_SMALL;
+			rect.left = WIDTH-PADDING_SMALL-w;
+		}
 		if (rect.left < PADDING_SMALL) {
 			float w = rect.width();
 			rect.left = PADDING_SMALL;
 			rect.right = PADDING_SMALL+w;
-		}
-		if (rect.right > WIDTH) {
-			float w = rect.width();
-			rect.right = WIDTH-PADDING_SMALL;
-			rect.left = WIDTH-PADDING_SMALL-w;
 		}
 	}
 
@@ -337,7 +351,7 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScale = HEIGHT/(maxValue+PADDING_SMALL);
+		valueScale = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/maxValue;
 	}
 
 	@Override
@@ -371,17 +385,17 @@ public class ChartView extends View {
 					if (linesVisibility[i]) {
 						linePaint.setColor(data.getColorsInts()[i]);
 						canvas.drawCircle(selectionX,
-								HEIGHT - selectedValues[i] * valueScale,
+								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScale,
 								CIRCLE_SIZE, circlePaint);
 						canvas.drawCircle(selectionX,
-								HEIGHT - selectedValues[i] * valueScale,
+								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScale,
 								CIRCLE_SIZE, linePaint);
 					}
 				}
 				//Draw selection panel
 				canvas.drawRoundRect(rect, PADDING_TINY, PADDING_TINY, panelPaint);
-				scrubblerPaint.setAntiAlias(true);
-				canvas.drawRoundRect(rect, PADDING_TINY, PADDING_TINY, scrubblerPaint);
+				baselinePaint.setAntiAlias(true);
+				canvas.drawRoundRect(rect, PADDING_TINY, PADDING_TINY, baselinePaint);
 				//Draw date on panel
 				canvas.drawText(selectionDate, rect.left+PADDING_NORMAL,
 						rect.top+selectedDateHeight+PADDING_SMALL, selectedDatePaint);
@@ -407,9 +421,16 @@ public class ChartView extends View {
 		int gridValueText = (maxValue / GRID_LINES_COUNT);
 		int gridStep = (int) (gridValueText * valueScale);
 		for (int i = 0; i < GRID_LINES_COUNT; i++) {
-			canvas.drawLine(0, HEIGHT - gridStep * i, WIDTH, HEIGHT - gridStep * i, gridPaint);
+			if (i == 0) {
+				canvas.drawLine(0, HEIGHT - BASE_LINE_Y - gridStep * i,
+						WIDTH, HEIGHT - BASE_LINE_Y - gridStep * i, baselinePaint);
+			} else {
+				canvas.drawLine(0, HEIGHT - BASE_LINE_Y - gridStep * i,
+						WIDTH, HEIGHT - BASE_LINE_Y - gridStep * i, gridPaint);
+			}
 			if (i > 0) {
-				canvas.drawText(Integer.toString((gridValueText * i)), 0, HEIGHT - gridStep * i - PADDING_TINY, textPaint);
+				canvas.drawText(Integer.toString((gridValueText * i)),
+						0, HEIGHT - BASE_LINE_Y - gridStep * i - PADDING_TINY, textPaint);
 			}
 		}
 	}
@@ -425,9 +446,9 @@ public class ChartView extends View {
 		for (int i = (int) start; i < values.length; i++) {
 			//Draw chart
 			if (pos == 0) {
-				chartPath.moveTo(pos + offset, HEIGHT - values[i] * valueScale);
+				chartPath.moveTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScale);
 			} else {
-				chartPath.lineTo(pos + offset, HEIGHT - values[i] * valueScale);
+				chartPath.lineTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScale);
 			}
 
 			if (pos - STEP > WIDTH) {
@@ -448,9 +469,9 @@ public class ChartView extends View {
 			date.setTime(data.getTime()[i]);
 			dateText = TimeUtils.formatDate(date);
 			if (TEXT_SPACE < STEP) {
-				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_SMALL, textPaint);
+				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_NORMAL, textPaint);
 			} else if (i % (Math.ceil(TEXT_SPACE / STEP)) == 0) {
-				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_SMALL, textPaint);
+				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_NORMAL, textPaint);
 			}
 
 			if (pos - STEP > WIDTH) {
@@ -493,7 +514,9 @@ public class ChartView extends View {
 				selectedValues[i] = 0;
 			}
 		}
-		valueScale = HEIGHT/(maxValue+PADDING_SMALL);
+		WIDTH = getWidth();
+		HEIGHT = getHeight();
+		valueScale = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/maxValue;
 		selectionX = -1;
 		invalidate();
 	}

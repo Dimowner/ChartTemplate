@@ -65,4 +65,6 @@
 	<color name="overlay_color">#C3F2F6F7</color>
 	<color name="overlay_color_night">#C319222C</color>
 
+	<color name="scrubbler_color">#27517DA2</color>
+	<color name="scrubbler_color_night">#990D141C</color>
 </resources>
