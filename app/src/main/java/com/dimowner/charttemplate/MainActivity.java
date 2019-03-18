@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ScrollView;
 
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
@@ -73,16 +74,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			}
 		});
 
+		final ScrollView scrollView = findViewById(R.id.scrollView);
 		chartView = findViewById(R.id.chartView);
 		chartScrollView = findViewById(R.id.chartScrollView);
 		checkersView = findViewById(R.id.checkersView);
 
 		setData(readDemoData(activeItem));
 
+		chartView.setOnMoveEventsListener(new ChartView.OnMoveEventsListener() {
+			@Override
+			public void onMoveEvent() {
+				scrollView.requestDisallowInterceptTouchEvent(true);
+			}
+		});
 		chartScrollView.setOnScrollListener(new ChartScrollView.OnScrollListener() {
 			@Override
 			public void onScroll(float x, float size) {
 				chartView.scrollPos(x, size);
+				scrollView.requestDisallowInterceptTouchEvent(true);
 			}
 		});
 

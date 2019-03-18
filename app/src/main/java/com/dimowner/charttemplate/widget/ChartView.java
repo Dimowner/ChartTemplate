@@ -37,8 +37,6 @@ import com.dimowner.charttemplate.util.TimeUtils;
 
 import java.util.Date;
 
-import timber.log.Timber;
-
 public class ChartView extends View {
 
 	private static final float DENSITY = AndroidUtils.dpToPx(1);
@@ -88,6 +86,8 @@ public class ChartView extends View {
 	private float HEIGHT = 0;
 	private int maxValue = 0;
 	private float valueScale = 0;
+
+	private OnMoveEventsListener onMoveEventsListener;
 
 	public ChartView(Context context) {
 		super(context);
@@ -179,7 +179,7 @@ public class ChartView extends View {
 		panelPaint.setAntiAlias(true);
 		panelPaint.setShadowLayer(SHADOW_SIZE, 0, 0, context.getResources().getColor(R.color.shadow));
 //		TODO: investigate how it influences on performance. Find way to increase performance.
-		setLayerType(LAYER_TYPE_SOFTWARE, panelPaint);
+//		setLayerType(LAYER_TYPE_SOFTWARE, panelPaint);
 
 		circlePaint = new Paint();
 		circlePaint.setStyle(Paint.Style.FILL);
@@ -223,6 +223,9 @@ public class ChartView extends View {
 							selectionX = -1;
 						}
 						calculatePanelSize();
+						if (onMoveEventsListener != null) {
+							onMoveEventsListener.onMoveEvent();
+						}
 						invalidate();
 						break;
 					case MotionEvent.ACTION_UP:
@@ -373,6 +376,8 @@ public class ChartView extends View {
 				}
 				//Draw selection panel
 				canvas.drawRoundRect(rect, PADDING_TINY, PADDING_TINY, panelPaint);
+				scrubblerPaint.setAntiAlias(true);
+				canvas.drawRoundRect(rect, PADDING_TINY, PADDING_TINY, scrubblerPaint);
 				//Draw date on panel
 				canvas.drawText(selectionDate, rect.left+PADDING_NORMAL,
 						rect.top+selectedDateHeight+PADDING_SMALL, selectedDatePaint);
@@ -473,6 +478,7 @@ public class ChartView extends View {
 			}
 		}
 		valueScale = HEIGHT/(maxValue+PADDING_SMALL);
+		selectionX = -1;
 		invalidate();
 	}
 
@@ -483,5 +489,13 @@ public class ChartView extends View {
 			}
 		}
 		return -1;
+	}
+
+	public void setOnMoveEventsListener(OnMoveEventsListener onMoveEventsListener) {
+		this.onMoveEventsListener = onMoveEventsListener;
+	}
+
+	public interface OnMoveEventsListener {
+		void onMoveEvent();
 	}
 }

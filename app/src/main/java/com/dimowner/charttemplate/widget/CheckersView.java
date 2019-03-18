@@ -19,7 +19,6 @@ package com.dimowner.charttemplate.widget;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -27,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.util.AndroidUtils;
@@ -34,10 +34,9 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 public class CheckersView extends LinearLayout {
 
 	private static final float DENSITY = AndroidUtils.dpToPx(1);
-	//TODO: Use attributes
 	private static int PADD_NORMAL = (int) (16*DENSITY);
-	private static int PADD_SMALL = (int) (8*DENSITY);
-	private static int START_INSET = (int) (62*DENSITY);
+	private static int PADD_XSMALL = (int) (10*DENSITY);
+	private static int START_INSET = (int) (56*DENSITY);
 	private static int DIVIDER_HEIGHT = (int) DENSITY;
 
 	private LinearLayout container;
@@ -100,9 +99,17 @@ public class CheckersView extends LinearLayout {
 		}
 	}
 
-	public CheckBox createCheckerView(int id, final String name, final int color) {
+	public LinearLayout createCheckerView(int id, final String name, final int color) {
+		// Use LinearLayout with TextView here because CheckBox works improperly on different devices.
+		LinearLayout ll = new LinearLayout(getContext());
+		LinearLayout.LayoutParams llLp = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+		llLp.setMargins(PADD_XSMALL, PADD_XSMALL, PADD_NORMAL, PADD_XSMALL);
+		ll.setLayoutParams(llLp);
+		ll.setOrientation(LinearLayout.HORIZONTAL);
+
 		final CheckBox checkBox = new CheckBox(getContext());
-		checkBox.setTextColor(textColor);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			ColorStateList colorStateList = new ColorStateList(
 					new int[][]{
@@ -117,15 +124,10 @@ public class CheckersView extends LinearLayout {
 			checkBox.setButtonTintList(colorStateList);
 		}
 
-		checkBox.setText(name);
-		ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		params.setMargins(PADD_SMALL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
-		checkBox.setLayoutParams(params);
-		checkBox.setPadding(PADD_NORMAL, 0, 0, 0);
 		checkBox.setId(id);
 		checkBox.setChecked(true);
 		checkBox.setSaveEnabled(false);
+		checkBox.setPadding(0, 0, 0, 0);
 
 		checkBox.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -142,7 +144,21 @@ public class CheckersView extends LinearLayout {
 				checkerState[v.getId()] = !checkerState[v.getId()];
 			}
 		});
-		return checkBox;
+
+		final TextView textView = new TextView(getContext());
+		ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+
+		textView.setLayoutParams(lp);
+		textView.setPadding(PADD_NORMAL, 0, 0, 0);
+		textView.setTextColor(textColor);
+		textView.setText(name);
+
+		ll.addView(checkBox);
+		ll.addView(textView);
+
+		return ll;
 	}
 
 	private View createDivider() {
@@ -153,6 +169,7 @@ public class CheckersView extends LinearLayout {
 		params.setMargins(START_INSET, 0, 0, 0);
 		divider.setLayoutParams(params);
 		divider.setBackgroundColor(dividerColor);
+		divider.requestLayout();
 		return divider;
 	}
 

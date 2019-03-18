@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+	<attr name="primaryColor" format="color" />
 	<attr name="viewBackground" format="color" />
 	<attr name="gridColor" format="color" />
 	<attr name="gridBaseLineColor" format="color" />
