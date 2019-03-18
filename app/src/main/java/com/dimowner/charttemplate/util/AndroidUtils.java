@@ -21,7 +21,6 @@ import android.content.res.Resources;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Android related utilities methods.
@@ -55,7 +54,7 @@ public class AndroidUtils {
 		int i = is.read(buffer);
 		is.close();
 		if (i > 0) {
-			return new String(buffer, StandardCharsets.UTF_8);
+			return new String(buffer, "UTF-8");
 		} else {
 			return "";
 		}

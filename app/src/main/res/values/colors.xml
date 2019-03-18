@@ -34,6 +34,8 @@
 
 	<color name="white">#ffffff</color>
 
+	<color name="shadow">#4D000000</color>
+
 	<color name="grey">#e6ecf0</color>
 	<color name="grey_night">#273442</color>
 
@@ -50,6 +52,12 @@
 
 	<color name="text_dark">#222222</color>
 	<color name="text_light">#ffffff</color>
+
+	<color name="panel_text">#222222</color>
+	<color name="panel_text_night">#e5eff5</color>
+
+	<color name="panel_background">#ffffff</color>
+	<color name="panel_background_night">#202b38</color>
 
 	<color name="selection_color">#33517DA2</color>
 	<color name="selection_color_night">#4F517DA2</color>

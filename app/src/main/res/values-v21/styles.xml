@@ -35,6 +35,8 @@
 		<item name="selectionColor">@color/selection_color</item>
 		<item name="overlayColor">@color/overlay_color</item>
 		<item name="textCheckerColor">@color/text_dark</item>
+		<item name="panelColor">@color/panel_background</item>
+		<item name="panelTextColor">@color/panel_text</item>
 
 	</style>
 
@@ -57,6 +59,8 @@
 		<item name="selectionColor">@color/selection_color_night</item>
 		<item name="overlayColor">@color/overlay_color_night</item>
 		<item name="textCheckerColor">@color/text_light</item>
+		<item name="panelColor">@color/panel_background_night</item>
+		<item name="panelTextColor">@color/panel_text_night</item>
 
 	</style>
 

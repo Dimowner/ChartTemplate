@@ -33,14 +33,15 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChartScrollView extends View {
 
+	private static final float DENSITY = AndroidUtils.dpToPx(1);
 	private final static int CURSOR_UNSELECTED = 2000;
 	private final static int CURSOR_LEFT = 2001;
 	private final static int CURSOR_CENTER = 2002;
 	private final static int CURSOR_RIGHT = 2003;
 
-	private final static float SMALLEST_SELECTION_WIDTH = AndroidUtils.dpToPx(80);
+	private final static float SMALLEST_SELECTION_WIDTH = 80*DENSITY;
 
-	private final static float SELECTION = AndroidUtils.dpToPx(5);
+	private final static float SELECTION = 5*DENSITY;
 	private final static float SELECTION_HALF = SELECTION/2;
 	private float selectionWidth = SMALLEST_SELECTION_WIDTH;
 
@@ -166,6 +167,9 @@ public class ChartScrollView extends View {
 								if (scrollX + selectionWidth > WIDTH) {
 									scrollX = WIDTH - selectionWidth;
 								}
+								if (scrollX < 0) {
+									scrollX = 0;
+								}
 								if (onScrollListener != null) {
 									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
 								}
@@ -177,6 +181,9 @@ public class ChartScrollView extends View {
 								//Set scroll edges.
 								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
 									selectionWidth = SMALLEST_SELECTION_WIDTH;
+								}
+								if (selectionWidth + scrollX > WIDTH) {
+									selectionWidth = WIDTH-scrollX;
 								}
 								if (onScrollListener != null) {
 									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
@@ -229,7 +236,7 @@ public class ChartScrollView extends View {
 		if (data != null) {
 			for (int i = 0; i < data.getNames().length; i++) {
 				if (linesVisibility[i]) {
-					drawChart(canvas, data.getValues(i), data.getColors()[i]);
+					drawChart(canvas, data.getValues(i), data.getColorsInts()[i]);
 				}
 			}
 		}
@@ -270,8 +277,8 @@ public class ChartScrollView extends View {
 
 	}
 
-	private void drawChart(Canvas canvas, int[] values, String color) {
-		linePaint.setColor(Color.parseColor(color));
+	private void drawChart(Canvas canvas, int[] values, int color) {
+		linePaint.setColor(color);
 		path.reset();
 		float x = 0;
 		for (int i = 0; i < values.length; i++) {

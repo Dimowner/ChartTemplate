@@ -1,5 +1,7 @@
 package com.dimowner.charttemplate.model;
 
+import android.graphics.Color;
+
 import java.util.Arrays;
 
 public class ChartData {
@@ -9,6 +11,7 @@ public class ChartData {
 	private String[] names;
 	private String[] types;
 	private String[] colors;
+	private int[] colorsInts;
 
 	public ChartData(long[] time, int[][] columns, String[] names, String[] types, String[] colors) {
 		this.time = time;
@@ -16,6 +19,15 @@ public class ChartData {
 		this.names = names;
 		this.types = types;
 		this.colors = colors;
+		this.colorsInts = parseColor(colors);
+	}
+
+	private int[] parseColor(String[] s) {
+		int[] c = new int[s.length];
+		for (int i = 0; i < s.length; i++) {
+			c[i] = Color.parseColor(s[i]);
+		}
+		return c;
 	}
 
 	public long[] getTime() {
@@ -36,6 +48,10 @@ public class ChartData {
 
 	public String[] getColors() {
 		return colors;
+	}
+
+	public int[] getColorsInts() {
+		return colorsInts;
 	}
 
 	public int[] getValues(int p) {

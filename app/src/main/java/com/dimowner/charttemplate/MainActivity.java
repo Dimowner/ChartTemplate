@@ -114,7 +114,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	public void setData(ChartData d) {
 		chartView.setData(d);
 		chartScrollView.setData(d);
-		checkersView.setData(d.getNames(), d.getColors());
+		checkersView.setData(d.getNames(), d.getColorsInts());
 	}
 
 	public ChartData readDemoData(int pos) {

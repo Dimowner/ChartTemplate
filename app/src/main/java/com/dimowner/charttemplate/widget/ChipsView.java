@@ -33,9 +33,9 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChipsView extends LinearLayout {
 
-	//TODO: Use attributes
-	private static int PADD_SMALL = (int) AndroidUtils.dpToPx(8);
-	private static int PADD_NORMAL = (int) AndroidUtils.dpToPx(16);
+	private static final float DENSITY = AndroidUtils.dpToPx(1);
+	private static int PADD_SMALL = (int) (8*DENSITY);
+	private static int PADD_NORMAL = (int) (16*DENSITY);
 
 	private LinearLayout container;
 	private boolean[] chipState;

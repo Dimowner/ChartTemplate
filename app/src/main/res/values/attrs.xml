@@ -8,5 +8,7 @@
 	<attr name="selectionColor" format="color" />
 	<attr name="overlayColor" format="color" />
 	<attr name="textCheckerColor" format="color" />
+	<attr name="panelColor" format="color" />
+	<attr name="panelTextColor" format="color" />
 
 </resources>

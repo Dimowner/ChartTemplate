@@ -33,11 +33,12 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class CheckersView extends LinearLayout {
 
+	private static final float DENSITY = AndroidUtils.dpToPx(1);
 	//TODO: Use attributes
-	private static int PADD_NORMAL = (int) AndroidUtils.dpToPx(16);
-	private static int PADD_SMALL = (int) AndroidUtils.dpToPx(8);
-	private static int START_INSET = (int) AndroidUtils.dpToPx(62);
-	private static int DIVIDER_HEIGHT = (int) AndroidUtils.dpToPx(1);
+	private static int PADD_NORMAL = (int) (16*DENSITY);
+	private static int PADD_SMALL = (int) (8*DENSITY);
+	private static int START_INSET = (int) (62*DENSITY);
+	private static int DIVIDER_HEIGHT = (int) DENSITY;
 
 	private LinearLayout container;
 	private boolean[] checkerState;
@@ -85,7 +86,7 @@ public class CheckersView extends LinearLayout {
 		this.addView(container);
 	}
 
-	public void setData(String[] names, String[] colors) {
+	public void setData(String[] names, int[] colors) {
 		if (names != null && colors != null) {
 			checkerState = new boolean[names.length];
 			container.removeAllViews();
@@ -99,7 +100,7 @@ public class CheckersView extends LinearLayout {
 		}
 	}
 
-	public CheckBox createCheckerView(int id, final String name, final String color) {
+	public CheckBox createCheckerView(int id, final String name, final int color) {
 		final CheckBox checkBox = new CheckBox(getContext());
 		checkBox.setTextColor(textColor);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -109,8 +110,8 @@ public class CheckersView extends LinearLayout {
 							new int[]{android.R.attr.state_checked}  // checked
 					},
 					new int[]{
-							Color.parseColor(color),
-							Color.parseColor(color)
+							color,
+							color
 					}
 			);
 			checkBox.setButtonTintList(colorStateList);
