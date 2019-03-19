@@ -17,11 +17,13 @@
 package com.dimowner.charttemplate;
 
 import android.app.Activity;
+import android.content.res.TypedArray;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
@@ -47,13 +49,12 @@ import timber.log.Timber;
 public class MainActivity extends Activity implements View.OnClickListener {
 
 	private Data[] dataArray = null;
-	private int activeItem = 0;
+	private int activeItem = 4;
 
 	private ChartView chartView;
 	private ChartScrollView chartScrollView;
 	private CheckersView checkersView;
-	private Button btnNext;
-	private Button btnPrev;
+	private TextView btnNext;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +80,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		chartScrollView = findViewById(R.id.chartScrollView);
 		checkersView = findViewById(R.id.checkersView);
 
-		setData(readDemoData(activeItem));
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				final ChartData d = readDemoData(activeItem);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() { setData(d); }});
+			}
+		});
+		thread.start();
 
 		chartView.setOnMoveEventsListener(new ChartView.OnMoveEventsListener() {
 			@Override
@@ -109,15 +119,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		});
 
 		btnNext = findViewById(R.id.btnNext);
-		btnPrev = findViewById(R.id.btnPrev);
-		if (activeItem == 0) {
-			btnPrev.setVisibility(View.GONE);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			int[] attrs = new int[]{android.R.attr.selectableItemBackgroundBorderless};
+			TypedArray typedArray = getApplicationContext().obtainStyledAttributes(attrs);
+			int bg = typedArray.getResourceId(0, 0);
+			btnNext.setBackgroundResource(bg);
+			btnNightMode.setBackgroundResource(bg);
+			typedArray.recycle();
 		}
-		if (activeItem == dataArray.length-1) {
+
+		if (dataArray != null && activeItem == dataArray.length-1) {
 			btnNext.setVisibility(View.GONE);
 		}
 		btnNext.setOnClickListener(this);
-		btnPrev.setOnClickListener(this);
 	}
 
 	public void setData(ChartData d) {
@@ -233,31 +248,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	public void onClick(View v) {
 		if (v.getId() == R.id.btnNext) {
 			int prev = activeItem;
-			activeItem++;
-			if (activeItem >= dataArray.length-1) {
-				activeItem = dataArray.length-1;
-				btnNext.setVisibility(View.GONE);
-			}
-			if (btnPrev.getVisibility() == View.GONE) {
-				btnPrev.setVisibility(View.VISIBLE);
-			}
-			if (activeItem != prev) {
-				setData(toChartData(dataArray[activeItem]));
-			}
-		} else if (v.getId() == R.id.btnPrev) {
-			int prev = activeItem;
 			activeItem--;
-			if (activeItem <= 0) {
-				activeItem = 0;
-				btnPrev.setVisibility(View.GONE);
-			}
-			if (btnNext.getVisibility() == View.GONE) {
-				btnNext.setVisibility(View.VISIBLE);
+			if (activeItem < 0) {
+				activeItem = 4;
 			}
 			if (activeItem != prev) {
 				setData(toChartData(dataArray[activeItem]));
 			}
 		}
-		Timber.v("Active item change = %s", activeItem);
 	}
 }

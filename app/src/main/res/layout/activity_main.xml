@@ -41,10 +41,22 @@
 				>
 
 			<TextView
+					android:id="@+id/btnNext"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:gravity="start|center_vertical"
-					android:layout_margin="@dimen/spacing_normal"
+					android:layout_gravity="start|left|center_vertical"
+					android:padding="@dimen/spacing_normal"
+					android:textColor="@color/white"
+					android:background="?android:selectableItemBackground"
+					android:text="@string/next"/>
+
+			<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_gravity="start"
+					android:padding="@dimen/spacing_normal"
+					android:layout_marginStart="62dp"
+					android:layout_marginLeft="62dp"
 					android:text="@string/statistics"
 					android:fontFamily="sans-serif-medium"
 					android:textColor="@color/white"
@@ -106,27 +118,6 @@
 				android:id="@+id/checkersView"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"/>
-		<FrameLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:orientation="horizontal">
-
-			<Button
-					android:id="@+id/btnNext"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="end|right"
-					android:background="?android:selectableItemBackground"
-					android:text="NEXT"/>
-			<Button
-					android:id="@+id/btnPrev"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="start|left"
-					android:background="?android:selectableItemBackground"
-					android:text="PREV"/>
-
-		</FrameLayout>
 
 	</LinearLayout>
 </ScrollView>

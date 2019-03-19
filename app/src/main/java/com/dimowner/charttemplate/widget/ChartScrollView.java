@@ -330,6 +330,9 @@ public class ChartScrollView extends View {
 			if (WIDTH > 0 && data.getLength() > 0) {
 				STEP = (WIDTH / data.getLength());
 			}
+			if (onScrollListener != null) {
+				onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
+			}
 		}
 		invalidate();
 	}

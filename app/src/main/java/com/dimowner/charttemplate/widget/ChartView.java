@@ -514,8 +514,6 @@ public class ChartView extends View {
 				selectedValues[i] = 0;
 			}
 		}
-		WIDTH = getWidth();
-		HEIGHT = getHeight();
 		valueScale = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/maxValue;
 		selectionX = -1;
 		invalidate();
