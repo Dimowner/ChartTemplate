@@ -16,6 +16,7 @@
 
 package com.dimowner.charttemplate.widget;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -29,6 +30,9 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
@@ -58,13 +62,15 @@ public class ChartView extends View {
 
 	private Date date;
 	private boolean[] linesVisibility;
+	private boolean[] linesCalculated;
 
 	private String dateText;
 
 	private TextPaint textPaint;
 	private Paint gridPaint;
 	private Paint baselinePaint;
-	private Paint linePaint;
+//	private Paint linePaint;
+	private Paint[] linePaints;
 	private Paint scrubblerPaint;
 	private Paint circlePaint;
 	private TextPaint selectedDatePaint;
@@ -72,6 +78,9 @@ public class ChartView extends View {
 	private TextPaint selectedValuePaint;
 	private Paint panelPaint;
 	private String selectionDate;
+
+	private ValueAnimator animator;
+	private ValueAnimator alphaAnimator;
 
 	private float scrollPos;
 
@@ -158,15 +167,16 @@ public class ChartView extends View {
 			scrubblerColor = res.getColor(R.color.scrubbler_color);
 		}
 
-		linePaint = new Paint();
-		linePaint.setAntiAlias(true);
-		linePaint.setDither(false);
-		linePaint.setStyle(Paint.Style.STROKE);
-		linePaint.setStrokeWidth(2.2f*DENSITY);
-		linePaint.setStrokeJoin(Paint.Join.ROUND);
-		linePaint.setStrokeCap(Paint.Cap.ROUND);
-//		linePaint.setPathEffect(new CornerPathEffect(AndroidUtils.dpToPx(8)));
-		linePaint.setColor(context.getResources().getColor(R.color.md_yellow_A700));
+//		linePaint = new Paint();
+//		linePaint.setAntiAlias(true);
+//		linePaint.setDither(false);
+//		linePaint.setStyle(Paint.Style.STROKE);
+//		linePaint.setStrokeWidth(2.2f*DENSITY);
+//		linePaint.setStrokeJoin(Paint.Join.ROUND);
+//		linePaint.setStrokeCap(Paint.Cap.ROUND);
+////		linePaint.setAlpha();
+////		linePaint.setPathEffect(new CornerPathEffect(AndroidUtils.dpToPx(8)));
+//		linePaint.setColor(context.getResources().getColor(R.color.md_yellow_A700));
 
 		gridPaint = new Paint();
 		gridPaint.setAntiAlias(false);
@@ -264,7 +274,8 @@ public class ChartView extends View {
 		String v;
 		//Calculate intermediate Y val for each line. It will be used for drawing line circles.
 		for (int i = 0; i < data.getLinesCount(); i++) {
-			if (linesVisibility[i]) {
+//			if (linesVisibility[i]) {
+			if (linesCalculated[i]) {
 				if (selectionIndex + 1 < data.getLength()) {
 					selectedValues[i] = calculateValY(
 							scrollPos + selectionX,  //X
@@ -340,6 +351,51 @@ public class ChartView extends View {
 		return  (x - x2)*(y2 - y1)/(x2 - x1) + y2;
 	}
 
+	private void animation(float prev, final float newVal, final boolean invalidate) {
+		if (animator != null && animator.isStarted()) {
+			animator.cancel();
+		}
+		animator = ValueAnimator.ofFloat(prev, newVal);
+		animator.setInterpolator(new AccelerateDecelerateInterpolator());
+		animator.setDuration(200);
+		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				maxValueY = (int) adjustToGrid((float) animation.getAnimatedValue(), GRID_LINES_COUNT);
+				valueScaleY = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/ maxValueY;
+				if (invalidate) {
+					invalidate();
+				}
+			}
+		});
+		animator.start();
+	}
+
+	private void alphaAnimator(float start, final float end, final int index, final boolean show) {
+		if (alphaAnimator != null && alphaAnimator.isRunning()) {
+			alphaAnimator.cancel();
+		}
+		alphaAnimator = ValueAnimator.ofFloat(start, end);
+		if (show) {
+			alphaAnimator.setInterpolator(new DecelerateInterpolator());
+		} else {
+			alphaAnimator.setInterpolator(new AccelerateInterpolator());
+		}
+		alphaAnimator.setDuration(200);
+		alphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				float val = (float) animation.getAnimatedValue();
+				linePaints[index].setAlpha((int)val);
+				if (val == end) {
+					linesVisibility[index] = show;
+				}
+				invalidate();
+			}
+		});
+		alphaAnimator.start();
+	}
+
 	public void scrollPos(float x, float size) {
 		STEP = WIDTH/size;
 		scrollPos = (x*STEP);
@@ -366,7 +422,7 @@ public class ChartView extends View {
 
 			//Draw scrubbler
 			if (selectionX >= 0) {
-				canvas.drawLine(selectionX, 0, selectionX, HEIGHT, scrubblerPaint);
+				canvas.drawLine(selectionX, 0, selectionX, HEIGHT - BASE_LINE_Y, scrubblerPaint);
 			}
 
 			if (data.getLinesCount() > 0) {
@@ -377,7 +433,7 @@ public class ChartView extends View {
 			textPaint.setTextAlign(Paint.Align.CENTER);
 			for (int i = 0; i < data.getNames().length; i++) {
 				if (linesVisibility[i]) {
-					drawChart(canvas, data.getValues(i), data.getColorsInts()[i]);
+					drawChart(canvas, data.getValues(i), i);
 				}
 			}
 
@@ -385,13 +441,13 @@ public class ChartView extends View {
 				//Draw circles on charts
 				for (int i = 0; i < data.getNames().length; i++) {
 					if (linesVisibility[i]) {
-						linePaint.setColor(data.getColorsInts()[i]);
+//						linePaint.setColor(data.getColorsInts()[i]);
 						canvas.drawCircle(selectionX,
 								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
 								CIRCLE_SIZE, circlePaint);
 						canvas.drawCircle(selectionX,
 								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
-								CIRCLE_SIZE, linePaint);
+								CIRCLE_SIZE, linePaints[i]);
 					}
 				}
 				//Draw selection panel
@@ -430,16 +486,12 @@ public class ChartView extends View {
 				canvas.drawLine(0, HEIGHT - BASE_LINE_Y - gridStep * i,
 						WIDTH, HEIGHT - BASE_LINE_Y - gridStep * i, gridPaint);
 			}
-			if (i > 0) {
-				canvas.drawText(Integer.toString((gridValueText * i)),
-						0, HEIGHT - BASE_LINE_Y - gridStep * i - PADDING_TINY, textPaint);
-			}
+			canvas.drawText(Integer.toString((gridValueText * i)),
+					0, HEIGHT - BASE_LINE_Y - gridStep * i - PADDING_TINY, textPaint);
 		}
 	}
 
-	private void drawChart(Canvas canvas, int[] values, int color) {
-		linePaint.setColor(color);
-
+	private void drawChart(Canvas canvas, int[] values, int index) {
 		chartPath.reset();
 		float start = screenShift <= 0 ? -screenShift / STEP : 0;
 		float offset = screenShift % STEP;
@@ -458,7 +510,7 @@ public class ChartView extends View {
 			}
 			pos += STEP;
 		}
-		canvas.drawPath(chartPath, linePaint);
+		canvas.drawPath(chartPath, linePaints[index]);
 	}
 
 	private void drawTimeline(Canvas canvas, int length) {
@@ -486,19 +538,20 @@ public class ChartView extends View {
 	public void hideLine(String name) {
 		int pos = findLinePosition(name);
 		if (pos >= 0) {
-			linesVisibility[pos] = false;
+			linesCalculated[pos] = false;
+			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
 		}
-		calculateMaxValue();
-		invalidate();
+		calculateMaxValue(false);
 	}
 
 	public void showLine(String name) {
 		int pos = findLinePosition(name);
 		if (pos >= 0) {
 			linesVisibility[pos] = true;
+			linesCalculated[pos] = true;
+			alphaAnimator(linePaints[pos].getAlpha(), 255, pos, true);
 		}
-		calculateMaxValue();
-		invalidate();
+		calculateMaxValue(false);
 	}
 
 	public void setData(ChartData d) {
@@ -506,23 +559,35 @@ public class ChartView extends View {
 		if (data != null) {
 			//Init lines visibility state, all visible by default.
 			linesVisibility = new boolean[data.getLinesCount()];
+			linesCalculated = new boolean[data.getLinesCount()];
 			selectedValues = new float[data.getLinesCount()];
-			for (int i = 0; i < linesVisibility.length; i++) {
+			linePaints = new Paint[data.getLinesCount()];
+			for (int i = 0; i < data.getLinesCount(); i++) {
 				linesVisibility[i] = true;
+				linesCalculated[i] = true;
 				selectedValues[i] = 0;
+				Paint lp = new Paint();
+				lp.setAntiAlias(true);
+				lp.setDither(false);
+				lp.setStyle(Paint.Style.STROKE);
+				lp.setStrokeWidth(2.2f*DENSITY);
+				lp.setStrokeJoin(Paint.Join.ROUND);
+				lp.setStrokeCap(Paint.Cap.ROUND);
+				lp.setColor(data.getColorsInts()[i]);
+				linePaints[i] = lp;
 			}
-			calculateMaxValue();
+			calculateMaxValue(true);
 		}
 		selectionX = -1;
-		invalidate();
 	}
 
-	private void calculateMaxValue() {
+	private void calculateMaxValue(boolean invalidate) {
+		int prev = maxValueY;
 		maxValueY = 0;
 //		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
 		for (int j = 0; j < data.getLinesCount(); j++) {
 			for (int i = 0; i < data.getLength(); i++) {
-				if (linesVisibility[j]) {
+				if (linesCalculated[j]) {
 					if (data.getValues(j)[i] > maxValueY) {
 						maxValueY = data.getValues(j)[i];
 					}
@@ -531,6 +596,9 @@ public class ChartView extends View {
 		}
 		maxValueY = (int) adjustToGrid((float) maxValueY, GRID_LINES_COUNT);
 		valueScaleY = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/ maxValueY;
+		if (prev != maxValueY) {
+			animation(prev, maxValueY, invalidate);
+		}
 	}
 
 	private float adjustToGrid(float val, int scale) {
