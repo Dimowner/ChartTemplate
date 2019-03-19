@@ -1,10 +1,10 @@
 package com.dimowner.charttemplate.model;
 
 import android.graphics.Color;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import java.util.Arrays;
-
-public class ChartData {
+public class ChartData implements Parcelable {
 
 	private long[] time;
 	private int[][] columns;
@@ -21,6 +21,48 @@ public class ChartData {
 		this.colors = colors;
 		this.colorsInts = parseColor(colors);
 	}
+
+	//----- START Parcelable implementation ----------
+	private ChartData(Parcel in) {
+		in.readIntArray(colorsInts);
+		in.readLongArray(time);
+		in.readStringArray(names);
+		in.readStringArray(types);
+		in.readStringArray(colors);
+		int size = in.readInt();
+		columns = new int[size][];
+		for (int i = 0; i < size; i++) {
+			in.readIntArray(columns[i]);
+		}
+	}
+
+	public int describeContents() {
+		return 0;
+	}
+
+	public void writeToParcel(Parcel out, int flags) {
+		out.writeIntArray(colorsInts);
+		out.writeLongArray(time);
+		out.writeStringArray(names);
+		out.writeStringArray(types);
+		out.writeStringArray(colors);
+		out.writeInt(columns.length);
+		for (int i = 0; i < columns.length; i++) {
+			out.writeIntArray(columns[i]);
+		}
+	}
+
+	public static final Parcelable.Creator<ChartData> CREATOR
+			= new Parcelable.Creator<ChartData>() {
+		public ChartData createFromParcel(Parcel in) {
+			return new ChartData(in);
+		}
+
+		public ChartData[] newArray(int size) {
+			return new ChartData[size];
+		}
+	};
+	//----- END Parcelable implementation ----------
 
 	private int[] parseColor(String[] s) {
 		int[] c = new int[s.length];
@@ -64,16 +106,5 @@ public class ChartData {
 
 	public int getLinesCount() {
 		return names.length;
-	}
-
-	@Override
-	public String toString() {
-		return "ChartData{" +
-				"time=" + Arrays.toString(time) +
-				", columns=" + Arrays.toString(columns) +
-				", names=" + Arrays.toString(names) +
-				", types=" + Arrays.toString(types) +
-				", colors=" + Arrays.toString(colors) +
-				'}';
 	}
 }

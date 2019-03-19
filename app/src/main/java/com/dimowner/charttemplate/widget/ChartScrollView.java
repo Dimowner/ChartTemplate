@@ -21,6 +21,8 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -42,9 +44,9 @@ public class ChartScrollView extends View {
 	private final static int PADDING_SMALL = (int) (8*DENSITY);
 	private final static float SELECTION = 5*DENSITY;
 	private final static float SELECTION_HALF = SELECTION/2;
+
 	private float selectionWidth = SMALLEST_SELECTION_WIDTH;
 
-	private int selectionState = CURSOR_UNSELECTED;
 	private ChartData data;
 	private boolean[] linesVisibility;
 	private Path path;
@@ -54,10 +56,7 @@ public class ChartScrollView extends View {
 	private Paint overlayPaint;
 	private Paint selectionPaint;
 
-	private float scrollX;
-	private float moveStartX = 0;
-	private float offset = 0;
-	private float prevSelectionWidth = 0;
+	private float scrollX = -1;
 
 	private float WIDTH = 0;
 	private float HEIGHT = 0;
@@ -84,7 +83,6 @@ public class ChartScrollView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 		path = new Path();
-		scrollX = -1;
 
 		int selectionColor;
 		int overlayColor;
@@ -125,8 +123,12 @@ public class ChartScrollView extends View {
 		overlayPaint.setColor(overlayColor);
 
 		setOnTouchListener(new OnTouchListener() {
-//			TODO: Fix when selection is whole view it can't be resized to smaller size
 //			TODO: When selection resized to smallest size on right side move selection to the left.
+
+			float moveStartX = 0;
+			float prevSelectionWidth = 0;
+			float offset = 0;
+			int selectionState = 0;
 
 			@Override
 			public boolean onTouch(View v, MotionEvent motionEvent) {
@@ -230,7 +232,9 @@ public class ChartScrollView extends View {
 			STEP = (WIDTH/data.getLength());
 		}
 
-		scrollX = WIDTH - selectionWidth;
+		if (scrollX < 0) {
+			scrollX = WIDTH - selectionWidth;
+		}
 	}
 
 	@Override
@@ -373,5 +377,74 @@ public class ChartScrollView extends View {
 
 	public interface OnScrollListener {
 		void onScroll(float x, float size);
+	}
+
+	@Override
+	public Parcelable onSaveInstanceState() {
+		Parcelable superState = super.onSaveInstanceState();
+		SavedState ss = new SavedState(superState);
+
+		ss.maxValueY = maxValueY;
+		ss.linesVisibility = linesVisibility;
+		ss.selectionWidth = selectionWidth;
+		ss.scrollX = scrollX;
+		ss.data = data;
+		return ss;
+	}
+
+	@Override
+	public void onRestoreInstanceState(Parcelable state) {
+		SavedState ss = (SavedState) state;
+		super.onRestoreInstanceState(ss.getSuperState());
+		maxValueY = ss.maxValueY;
+		linesVisibility = ss.linesVisibility;
+		selectionWidth = ss.selectionWidth;
+		scrollX = ss.scrollX;
+		data = ss.data;
+	}
+
+	static class SavedState extends View.BaseSavedState {
+		SavedState(Parcelable superState) {
+			super(superState);
+		}
+
+		private SavedState(Parcel in) {
+			super(in);
+			maxValueY = in.readInt();
+			in.readBooleanArray(linesVisibility);
+			float[] floats = new float[2];
+			in.readFloatArray(floats);
+			selectionWidth = floats[0];
+			scrollX = floats[1];
+			data = in.readParcelable(ChartData.class.getClassLoader());
+		}
+
+		@Override
+		public void writeToParcel(Parcel out, int flags) {
+			super.writeToParcel(out, flags);
+			out.writeInt(maxValueY);
+			out.writeBooleanArray(linesVisibility);
+			out.writeFloatArray(new float[] {selectionWidth, scrollX});
+			out.writeParcelable(data, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
+		}
+
+		private ChartData data;
+		private int maxValueY = 0;
+		private boolean[] linesVisibility;
+		private float selectionWidth = SMALLEST_SELECTION_WIDTH;
+		private float scrollX;
+
+		public static final Parcelable.Creator<SavedState> CREATOR =
+				new Parcelable.Creator<SavedState>() {
+					@Override
+					public SavedState createFromParcel(Parcel in) {
+						return new SavedState(in);
+					}
+
+					@Override
+					public SavedState[] newArray(int size) {
+						return new SavedState[size];
+					}
+				};
 	}
 }

@@ -17,11 +17,16 @@
 package com.dimowner.charttemplate;
 
 import android.app.Application;
+
+import com.dimowner.charttemplate.model.Data;
+
 import timber.log.Timber;
 
 public class CTApplication extends Application {
 
 	private static boolean isNightMode = false;
+
+	private static Data[] data;
 
 	@Override
 	public void onCreate() {
@@ -42,6 +47,14 @@ public class CTApplication extends Application {
 	}
 
 	public static void setNightMode(boolean b) {
-		CTApplication.isNightMode = b;
+		isNightMode = b;
+	}
+
+	public static Data[] getData() {
+		return data;
+	}
+
+	public static void setData(Data[] d) {
+		data = d;
 	}
 }

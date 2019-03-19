@@ -20,6 +20,8 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -43,6 +45,8 @@ public class CheckersView extends LinearLayout {
 	private boolean[] checkerState;
 	private int textColor;
 	private int dividerColor;
+	private String[] names;
+	private int[] colors;
 
 	private OnCheckListener listener;
 
@@ -87,11 +91,13 @@ public class CheckersView extends LinearLayout {
 
 	public void setData(String[] names, int[] colors) {
 		if (names != null && colors != null) {
+			this.names = names;
+			this.colors = colors;
 			checkerState = new boolean[names.length];
 			container.removeAllViews();
 			for (int i = 0; i < names.length; i++) {
 				checkerState[i] = true;
-				container.addView(createCheckerView(i, names[i], colors[i]));
+				container.addView(createCheckerView(i, names[i], colors[i], i));
 				if (i < names.length-1) {
 					container.addView(createDivider());
 				}
@@ -99,7 +105,7 @@ public class CheckersView extends LinearLayout {
 		}
 	}
 
-	public LinearLayout createCheckerView(int id, final String name, final int color) {
+	public LinearLayout createCheckerView(int id, final String name, final int color, int index) {
 		// Use LinearLayout with TextView here because CheckBox works improperly on different devices.
 		LinearLayout ll = new LinearLayout(getContext());
 		LinearLayout.LayoutParams llLp = new LinearLayout.LayoutParams(
@@ -125,7 +131,7 @@ public class CheckersView extends LinearLayout {
 		}
 
 		checkBox.setId(id);
-		checkBox.setChecked(true);
+		checkBox.setChecked(checkerState[index]);
 		checkBox.setSaveEnabled(false);
 		checkBox.setPadding(0, 0, 0, 0);
 
@@ -175,5 +181,71 @@ public class CheckersView extends LinearLayout {
 
 	public void setOnCheckListener(OnCheckListener l) {
 		this.listener = l;
+	}
+
+	@Override
+	public Parcelable onSaveInstanceState() {
+		Parcelable superState = super.onSaveInstanceState();
+		SavedState ss = new SavedState(superState);
+
+		ss.checkerState = checkerState;
+		ss.names = names;
+		ss.colors = colors;
+		return ss;
+	}
+
+	@Override
+	public void onRestoreInstanceState(Parcelable state) {
+		SavedState ss = (SavedState) state;
+		super.onRestoreInstanceState(ss.getSuperState());
+		checkerState = ss.checkerState;
+		names = ss.names;
+		colors = ss.colors;
+		container.removeAllViews();
+		for (int i = 0; i < names.length; i++) {
+			container.addView(createCheckerView(i, names[i], colors[i], i));
+			if (i < names.length-1) {
+				container.addView(createDivider());
+			}
+		}
+	}
+
+	static class SavedState extends View.BaseSavedState {
+		SavedState(Parcelable superState) {
+			super(superState);
+		}
+
+		private SavedState(Parcel in) {
+			super(in);
+			in.readBooleanArray(checkerState);
+			in.writeStringArray(names);
+			in.writeIntArray(colors);
+		}
+
+		@Override
+		public void writeToParcel(Parcel out, int flags) {
+			super.writeToParcel(out, flags);
+			out.writeBooleanArray(checkerState);
+			out.writeStringArray(names);
+			out.writeIntArray(colors);
+		}
+
+		private boolean[] checkerState;
+		private String[] names;
+		private int[] colors;
+
+
+		public static final Parcelable.Creator<SavedState> CREATOR =
+				new Parcelable.Creator<SavedState>() {
+					@Override
+					public SavedState createFromParcel(Parcel in) {
+						return new SavedState(in);
+					}
+
+					@Override
+					public SavedState[] newArray(int size) {
+						return new SavedState[size];
+					}
+				};
 	}
 }

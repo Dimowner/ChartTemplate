@@ -48,7 +48,6 @@ import timber.log.Timber;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
-	private Data[] dataArray = null;
 	private int activeItem = 4;
 
 	private ChartView chartView;
@@ -80,16 +79,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		chartScrollView = findViewById(R.id.chartScrollView);
 		checkersView = findViewById(R.id.checkersView);
 
-		Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				final ChartData d = readDemoData(activeItem);
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() { setData(d); }});
-			}
-		});
-		thread.start();
+		if (savedInstanceState == null) {
+			Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					final ChartData d = readDemoData(activeItem);
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							setData(d);
+						}
+					});
+				}
+			});
+			thread.start();
+		}
 
 		chartView.setOnMoveEventsListener(new ChartView.OnMoveEventsListener() {
 			@Override
@@ -129,68 +133,80 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			btnNightMode.setBackgroundResource(bg);
 			typedArray.recycle();
 		}
-
-		if (dataArray != null && activeItem == dataArray.length-1) {
-			btnNext.setVisibility(View.GONE);
-		}
 		btnNext.setOnClickListener(this);
 	}
 
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt("active_item", activeItem);
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle state) {
+		super.onRestoreInstanceState(state);
+		activeItem = state.getInt("active_item", 4);
+	}
+
 	public void setData(ChartData d) {
-		chartView.setData(d);
-		chartScrollView.setData(d);
-		checkersView.setData(d.getNames(), d.getColorsInts());
+		if (chartView != null) {
+			chartView.setData(d);
+		}
+		if (chartScrollView != null) {
+			chartScrollView.setData(d);
+		}
+		if (checkersView != null) {
+			checkersView.setData(d.getNames(), d.getColorsInts());
+		}
 	}
 
 	public ChartData readDemoData(int pos) {
-		if (dataArray == null) {
-			try {
-				String DATA_ARRAY = "dataArray";
-				String COLUMNS = "columns";
-				String TYPES = "types";
-				String COLORS = "colors";
-				String NAMES = "names";
+		try {
+			String DATA_ARRAY = "dataArray";
+			String COLUMNS = "columns";
+			String TYPES = "types";
+			String COLORS = "colors";
+			String NAMES = "names";
 
-				JSONObject jo = new JSONObject(
-						AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json"));
-				JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
-				Data[] dataValues = new Data[joArray.length()];
-				for (int i = 0; i < joArray.length(); i++) {
-					Object[][] columns;
-					Map<String, String> types;
-					Map<String, String> names;
-					Map<String, String> colors;
-					JSONObject joItem = (JSONObject) joArray.get(i);
+			JSONObject jo = new JSONObject(
+					AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json"));
+			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
+			Data[] dataValues = new Data[joArray.length()];
+			for (int i = 0; i < joArray.length(); i++) {
+				Object[][] columns;
+				Map<String, String> types;
+				Map<String, String> names;
+				Map<String, String> colors;
+				JSONObject joItem = (JSONObject) joArray.get(i);
 
-					names = jsonToMap(joItem.getJSONObject(NAMES));
-					types = jsonToMap(joItem.getJSONObject(TYPES));
-					colors = jsonToMap(joItem.getJSONObject(COLORS));
+				names = jsonToMap(joItem.getJSONObject(NAMES));
+				types = jsonToMap(joItem.getJSONObject(TYPES));
+				colors = jsonToMap(joItem.getJSONObject(COLORS));
 
-					JSONArray colArray = joItem.getJSONArray(COLUMNS);
-					List<Object> list = toList(colArray);
-					columns = new Object[list.size()][];
+				JSONArray colArray = joItem.getJSONArray(COLUMNS);
+				List<Object> list = toList(colArray);
+				columns = new Object[list.size()][];
 
-					for (int j = 0; j < list.size(); j++) {
-						List<Object> l2 = (List<Object>) list.get(j);
-						Object[] a = new Object[l2.size()];
-						for (int k = 0; k < l2.size(); k++) {
-							a[k] = l2.get(k);
-						}
-						columns[j] = a;
+				for (int j = 0; j < list.size(); j++) {
+					List<Object> l2 = (List<Object>) list.get(j);
+					Object[] a = new Object[l2.size()];
+					for (int k = 0; k < l2.size(); k++) {
+						a[k] = l2.get(k);
 					}
-					dataValues[i] = new Data(columns, types, names, colors);
+					columns[j] = a;
 				}
-
-//				Gson gson = new Gson();
-//				DataArray array = gson.fromJson(json, DataArray.class);
-//				dataArray = array.getDataArray();
-				dataArray = dataValues;
-			} catch (IOException | ClassCastException | JSONException ex) {
-				Timber.e(ex);
-				return null;
+				dataValues[i] = new Data(columns, types, names, colors);
 			}
+
+//			Gson gson = new Gson();
+//			DataArray array = gson.fromJson(json, DataArray.class);
+//			dataArray = array.getDataArray();
+			CTApplication.setData(dataValues);
+		} catch (IOException | ClassCastException | JSONException ex) {
+			Timber.e(ex);
+			return null;
 		}
-		return toChartData(dataArray[pos]);
+		return toChartData(CTApplication.getData()[pos]);
 	}
 
 	public static Map<String, String> jsonToMap(JSONObject json) throws JSONException {
@@ -254,7 +270,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				activeItem = 4;
 			}
 			if (activeItem != prev) {
-				setData(toChartData(dataArray[activeItem]));
+				setData(toChartData(CTApplication.getData()[activeItem]));
 			}
 		}
 	}

@@ -25,6 +25,8 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -52,6 +54,7 @@ public class ChartView extends View {
 	private static final int BASE_LINE_Y = (int) (32*DENSITY);
 	private static final int CIRCLE_SIZE = (int) (5*DENSITY);
 	private static final int SHADOW_SIZE = (int) (1.5f*DENSITY);
+	private static final int ANIMATION_DURATION = 200; //mills
 
 	private float STEP = 25*DENSITY;
 
@@ -69,7 +72,6 @@ public class ChartView extends View {
 	private TextPaint textPaint;
 	private Paint gridPaint;
 	private Paint baselinePaint;
-//	private Paint linePaint;
 	private Paint[] linePaints;
 	private Paint scrubblerPaint;
 	private Paint circlePaint;
@@ -357,7 +359,7 @@ public class ChartView extends View {
 		}
 		animator = ValueAnimator.ofFloat(prev, newVal);
 		animator.setInterpolator(new AccelerateDecelerateInterpolator());
-		animator.setDuration(200);
+		animator.setDuration(ANIMATION_DURATION);
 		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 			@Override
 			public void onAnimationUpdate(ValueAnimator animation) {
@@ -381,7 +383,7 @@ public class ChartView extends View {
 		} else {
 			alphaAnimator.setInterpolator(new AccelerateInterpolator());
 		}
-		alphaAnimator.setDuration(200);
+		alphaAnimator.setDuration(ANIMATION_DURATION);
 		alphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 			@Override
 			public void onAnimationUpdate(ValueAnimator animation) {
@@ -627,7 +629,108 @@ public class ChartView extends View {
 		this.onMoveEventsListener = onMoveEventsListener;
 	}
 
+	@Override
+	public Parcelable onSaveInstanceState() {
+		Parcelable superState = super.onSaveInstanceState();
+		SavedState ss = new SavedState(superState);
+
+		ss.linesVisibility = linesVisibility;
+		ss.linesCalculated = linesCalculated;
+		ss.scrollPos = scrollPos;
+		ss.selectionX = selectionX;
+		ss.screenShift = screenShift;
+		ss.valueScaleY = valueScaleY;
+		ss.STEP = STEP;
+		ss.maxValueY = maxValueY;
+		ss.data = data;
+		return ss;
+	}
+
+	@Override
+	public void onRestoreInstanceState(Parcelable state) {
+		SavedState ss = (SavedState) state;
+		super.onRestoreInstanceState(ss.getSuperState());
+
+		linesVisibility = ss.linesVisibility;
+		linesCalculated = ss.linesCalculated;
+		scrollPos = ss.scrollPos;
+		selectionX = ss.selectionX;
+		screenShift = ss.screenShift;
+		valueScaleY = ss.valueScaleY;
+		STEP = ss.STEP;
+		maxValueY = ss.maxValueY;
+		data = ss.data;
+		selectedValues = new float[data.getLinesCount()];
+		linePaints = new Paint[data.getLinesCount()];
+		for (int i = 0; i < data.getLinesCount(); i++) {
+			selectedValues[i] = 0;
+			Paint lp = new Paint();
+			lp.setAntiAlias(true);
+			lp.setDither(false);
+			lp.setStyle(Paint.Style.STROKE);
+			lp.setStrokeWidth(2.2f*DENSITY);
+			lp.setStrokeJoin(Paint.Join.ROUND);
+			lp.setStrokeCap(Paint.Cap.ROUND);
+			lp.setColor(data.getColorsInts()[i]);
+			linePaints[i] = lp;
+		}
+	}
+
 	public interface OnMoveEventsListener {
 		void onMoveEvent();
+	}
+
+	static class SavedState extends View.BaseSavedState {
+		SavedState(Parcelable superState) {
+			super(superState);
+		}
+
+		private SavedState(Parcel in) {
+			super(in);
+			in.readBooleanArray(linesVisibility);
+			in.readBooleanArray(linesCalculated);
+			float[] floats = new float[5];
+			in.readFloatArray(floats);
+			scrollPos = floats[0];
+			selectionX = floats[1];
+			screenShift = floats[2];
+			valueScaleY = floats[3];
+			STEP = floats[4];
+			maxValueY = in.readInt();
+			data = in.readParcelable(ChartData.class.getClassLoader());
+		}
+
+		@Override
+		public void writeToParcel(Parcel out, int flags) {
+			super.writeToParcel(out, flags);
+			out.writeBooleanArray(linesVisibility);
+			out.writeBooleanArray(linesCalculated);
+			out.writeFloatArray(new float[] {scrollPos, selectionX, screenShift, valueScaleY, STEP});
+			out.writeInt(maxValueY);
+			out.writeParcelable(data, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
+		}
+
+		ChartData data;
+		float STEP;
+		boolean[] linesVisibility;
+		boolean[] linesCalculated;
+		float scrollPos;
+		float selectionX = -1;
+		float screenShift = 0;
+		float valueScaleY = 0;
+		int maxValueY = 0;
+
+		public static final Parcelable.Creator<SavedState> CREATOR =
+				new Parcelable.Creator<SavedState>() {
+					@Override
+					public SavedState createFromParcel(Parcel in) {
+						return new SavedState(in);
+					}
+
+					@Override
+					public SavedState[] newArray(int size) {
+						return new SavedState[size];
+					}
+				};
 	}
 }
