@@ -529,7 +529,21 @@ public class ChartView extends View {
 				}
 			}
 		}
+		maxValueY = (int) adjustToGrid((float) maxValueY, GRID_LINES_COUNT);
 		valueScaleY = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/ maxValueY;
+	}
+
+	private float adjustToGrid(float val, int scale) {
+		int amp = 1;
+		while (val > scale*100) {
+			val = (int)Math.floor(val/(scale*10));
+			amp *=(scale*10);
+		}
+		if (val > (scale*10)) {
+			val = (float) Math.ceil(val/scale);
+			amp *=scale;
+		}
+		return val*amp;
 	}
 
 	private int findLinePosition(String name) {
