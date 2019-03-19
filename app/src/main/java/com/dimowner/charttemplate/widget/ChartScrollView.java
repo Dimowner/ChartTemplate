@@ -19,7 +19,6 @@ package com.dimowner.charttemplate.widget;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
@@ -33,7 +32,7 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChartScrollView extends View {
 
-	private static final float DENSITY = AndroidUtils.dpToPx(1);
+	private final static float DENSITY = AndroidUtils.dpToPx(1);
 	private final static int CURSOR_UNSELECTED = 2000;
 	private final static int CURSOR_LEFT = 2001;
 	private final static int CURSOR_CENTER = 2002;
@@ -301,6 +300,7 @@ public class ChartScrollView extends View {
 		if (pos >= 0) {
 			linesVisibility[pos] = false;
 		}
+		calculateMaxValue();
 		invalidate();
 	}
 
@@ -309,24 +309,26 @@ public class ChartScrollView extends View {
 		if (pos >= 0) {
 			linesVisibility[pos] = true;
 		}
+		calculateMaxValue();
 		invalidate();
 	}
 
 	public void setData(ChartData d) {
 		this.data = d;
 		if (data != null) {
-			maxValueY = 0;
-			for (int i = 0; i < data.getLength(); i++) {
-				if (data.getValues(0)[i] > maxValueY) {
-					maxValueY = data.getValues(0)[i];
-				}
-			}
+//			maxValueY = 0;
+//			for (int i = 0; i < data.getLength(); i++) {
+//				if (data.getValues(0)[i] > maxValueY) {
+//					maxValueY = data.getValues(0)[i];
+//				}
+//			}
 			//Init lines visibility state, all visible by default.
 			linesVisibility = new boolean[data.getLinesCount()];
 			for (int i = 0; i < linesVisibility.length; i++) {
 				linesVisibility[i] = true;
 			}
-			valueScaleY = HEIGHT/(maxValueY + SELECTION);
+			calculateMaxValue();
+//			valueScaleY = HEIGHT/(maxValueY + SELECTION);
 			if (WIDTH > 0 && data.getLength() > 0) {
 				STEP = (WIDTH / data.getLength());
 			}
@@ -335,6 +337,21 @@ public class ChartScrollView extends View {
 			}
 		}
 		invalidate();
+	}
+
+	private void calculateMaxValue() {
+		maxValueY = 0;
+//		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
+		for (int j = 0; j < data.getLinesCount(); j++) {
+			if (linesVisibility[j]) {
+				for (int i = 0; i < data.getLength(); i++) {
+					if (data.getValues(j)[i] > maxValueY) {
+						maxValueY = data.getValues(j)[i];
+					}
+				}
+			}
+		}
+		valueScaleY = (HEIGHT-SELECTION)/maxValueY;
 	}
 
 	private int findLinePosition(String name) {

@@ -34,10 +34,10 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 public class CheckersView extends LinearLayout {
 
 	private static final float DENSITY = AndroidUtils.dpToPx(1);
-	private static int PADD_NORMAL = (int) (16*DENSITY);
-	private static int PADD_XSMALL = (int) (10*DENSITY);
-	private static int START_INSET = (int) (56*DENSITY);
-	private static int DIVIDER_HEIGHT = (int) DENSITY;
+	private static final int PADD_NORMAL = (int) (16*DENSITY);
+	private static final int PADD_XSMALL = (int) (10*DENSITY);
+	private static final int START_INSET = (int) (56*DENSITY);
+	private static final int DIVIDER_HEIGHT = (int) DENSITY;
 
 	private LinearLayout container;
 	private boolean[] checkerState;

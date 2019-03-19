@@ -121,6 +121,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		btnNext = findViewById(R.id.btnNext);
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			//Apply better looking ripple for buttons on Android higher than API 21.
 			int[] attrs = new int[]{android.R.attr.selectableItemBackgroundBorderless};
 			TypedArray typedArray = getApplicationContext().obtainStyledAttributes(attrs);
 			int bg = typedArray.getResourceId(0, 0);

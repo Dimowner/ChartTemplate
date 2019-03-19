@@ -22,16 +22,26 @@ import java.util.Locale;
 
 public class TimeUtils {
 
-    /** Date format: May 16 */
-    private static SimpleDateFormat dateFormat24H = new SimpleDateFormat("MMM dd", Locale.getDefault());
+	/** Date format: May 16 */
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
 
-    private TimeUtils() {
-    }
+	/** Date format: Sat, May 16 */
+	private static SimpleDateFormat dateFormatWeek = new SimpleDateFormat("EEE, MMM dd", Locale.getDefault());
 
-    public static String formatDate(Date date) {
-        if (date == null) {
-            return "Wrong date!";
-        }
-        return dateFormat24H.format(date);
-    }
+	private TimeUtils() {
+	}
+
+	public static String formatDate(Date date) {
+		if (date == null) {
+			return "Wrong date!";
+		}
+		return dateFormat.format(date);
+	}
+
+	public static String formatDateWeek(Date date) {
+		if (date == null) {
+			return "Wrong date!";
+		}
+		return dateFormatWeek.format(date);
+	}
 }

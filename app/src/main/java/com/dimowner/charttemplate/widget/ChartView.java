@@ -40,15 +40,16 @@ import java.util.Date;
 public class ChartView extends View {
 
 	private static final float DENSITY = AndroidUtils.dpToPx(1);
-	private static float STEP = 25*DENSITY;
-	private static int PADDING_NORMAL = (int) (16*DENSITY);
-	private static int PADDING_SMALL = (int) (8*DENSITY);
-	private static int PADDING_TINY = (int) (4*DENSITY);
-	private static int GRID_LINES_COUNT = 6;
-	private static int TEXT_SPACE = (int) (65*DENSITY);
-	private static int BASE_LINE_Y = (int) (32*DENSITY);
-	private static int CIRCLE_SIZE = (int) (5*DENSITY);
-	private static int SHADOW_SIZE = (int) (1.5f*DENSITY);
+	private static final int PADDING_NORMAL = (int) (16*DENSITY);
+	private static final int PADDING_SMALL = (int) (8*DENSITY);
+	private static final int PADDING_TINY = (int) (4*DENSITY);
+	private static final int GRID_LINES_COUNT = 6;
+	private static final int TEXT_SPACE = (int) (65*DENSITY);
+	private static final int BASE_LINE_Y = (int) (32*DENSITY);
+	private static final int CIRCLE_SIZE = (int) (5*DENSITY);
+	private static final int SHADOW_SIZE = (int) (1.5f*DENSITY);
+
+	private float STEP = 25*DENSITY;
 
 	private ChartData data;
 
@@ -85,8 +86,8 @@ public class ChartView extends View {
 
 	private float WIDTH = 0;
 	private float HEIGHT = 0;
-	private int maxValue = 0;
-	private float valueScale = 0;
+	private int maxValueY = 0;
+	private float valueScaleY = 0;
 
 	private OnMoveEventsListener onMoveEventsListener;
 
@@ -290,7 +291,7 @@ public class ChartView extends View {
 
 		//Calculate date size
 		date.setTime(data.getTime()[selectionIndex]);
-		selectionDate = TimeUtils.formatDate(date);
+		selectionDate = TimeUtils.formatDateWeek(date);
 		selectedDatePaint.getTextBounds(selectionDate, 0, selectionDate.length(), r);
 
 		if (selectedDateHeight == 0) {
@@ -343,6 +344,7 @@ public class ChartView extends View {
 		STEP = WIDTH/size;
 		scrollPos = (x*STEP);
 		screenShift = -scrollPos;
+//		calculateMaxValue();
 		invalidate();
 	}
 
@@ -351,7 +353,7 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScale = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/maxValue;
+		valueScaleY = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/ maxValueY;
 	}
 
 	@Override
@@ -385,10 +387,10 @@ public class ChartView extends View {
 					if (linesVisibility[i]) {
 						linePaint.setColor(data.getColorsInts()[i]);
 						canvas.drawCircle(selectionX,
-								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScale,
+								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
 								CIRCLE_SIZE, circlePaint);
 						canvas.drawCircle(selectionX,
-								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScale,
+								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
 								CIRCLE_SIZE, linePaint);
 					}
 				}
@@ -418,8 +420,8 @@ public class ChartView extends View {
 	}
 
 	private void drawGrid(Canvas canvas) {
-		int gridValueText = (maxValue / GRID_LINES_COUNT);
-		int gridStep = (int) (gridValueText * valueScale);
+		int gridValueText = (maxValueY / GRID_LINES_COUNT);
+		int gridStep = (int) (gridValueText * valueScaleY);
 		for (int i = 0; i < GRID_LINES_COUNT; i++) {
 			if (i == 0) {
 				canvas.drawLine(0, HEIGHT - BASE_LINE_Y - gridStep * i,
@@ -446,9 +448,9 @@ public class ChartView extends View {
 		for (int i = (int) start; i < values.length; i++) {
 			//Draw chart
 			if (pos == 0) {
-				chartPath.moveTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScale);
+				chartPath.moveTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScaleY);
 			} else {
-				chartPath.lineTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScale);
+				chartPath.lineTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScaleY);
 			}
 
 			if (pos - STEP > WIDTH) {
@@ -486,6 +488,7 @@ public class ChartView extends View {
 		if (pos >= 0) {
 			linesVisibility[pos] = false;
 		}
+		calculateMaxValue();
 		invalidate();
 	}
 
@@ -494,18 +497,13 @@ public class ChartView extends View {
 		if (pos >= 0) {
 			linesVisibility[pos] = true;
 		}
+		calculateMaxValue();
 		invalidate();
 	}
 
 	public void setData(ChartData d) {
 		this.data = d;
 		if (data != null) {
-			maxValue = 0;
-			for (int i = 0; i < data.getLength(); i++) {
-				if (data.getValues(0)[i] > maxValue) {
-					maxValue = data.getValues(0)[i];
-				}
-			}
 			//Init lines visibility state, all visible by default.
 			linesVisibility = new boolean[data.getLinesCount()];
 			selectedValues = new float[data.getLinesCount()];
@@ -513,10 +511,25 @@ public class ChartView extends View {
 				linesVisibility[i] = true;
 				selectedValues[i] = 0;
 			}
+			calculateMaxValue();
 		}
-		valueScale = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/maxValue;
 		selectionX = -1;
 		invalidate();
+	}
+
+	private void calculateMaxValue() {
+		maxValueY = 0;
+//		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
+		for (int j = 0; j < data.getLinesCount(); j++) {
+			for (int i = 0; i < data.getLength(); i++) {
+				if (linesVisibility[j]) {
+					if (data.getValues(j)[i] > maxValueY) {
+						maxValueY = data.getValues(j)[i];
+					}
+				}
+			}
+		}
+		valueScaleY = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/ maxValueY;
 	}
 
 	private int findLinePosition(String name) {
