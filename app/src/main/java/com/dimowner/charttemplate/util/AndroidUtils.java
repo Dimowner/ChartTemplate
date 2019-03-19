@@ -19,12 +19,18 @@ package com.dimowner.charttemplate.util;
 import android.content.Context;
 import android.content.res.Resources;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Android related utilities methods.
- */
 public class AndroidUtils {
 
 	private AndroidUtils() {}
@@ -35,15 +41,6 @@ public class AndroidUtils {
 	 * @return Converted value in pixels.
 	 */
 	public static float dpToPx(int dp) {
-		return dpToPx((float) dp);
-	}
-
-	/**
-	 * Convert density independent pixels value (dip) into pixels value (px).
-	 * @param dp Value needed to convert
-	 * @return Converted value in pixels.
-	 */
-	public static float dpToPx(float dp) {
 		return (dp * Resources.getSystem().getDisplayMetrics().density);
 	}
 
@@ -58,5 +55,42 @@ public class AndroidUtils {
 		} else {
 			return "";
 		}
+	}
+
+	public static Map<String, String> jsonToMap(JSONObject json) throws JSONException {
+		Map<String, String> retMap = new HashMap<>();
+
+		if(json != JSONObject.NULL) {
+			retMap = toMap(json);
+		}
+		return retMap;
+	}
+
+	public static Map<String, String> toMap(JSONObject object) throws JSONException {
+		Map<String, String> map = new HashMap<>();
+
+		Iterator<String> keysItr = object.keys();
+		while(keysItr.hasNext()) {
+			String key = keysItr.next();
+			String value = (String) object.get(key);
+			map.put(key, value);
+		}
+		return map;
+	}
+
+	public static List<Object> toList(JSONArray array) throws JSONException {
+		List<Object> list = new ArrayList<>();
+		for(int i = 0; i < array.length(); i++) {
+			Object value = array.get(i);
+			if(value instanceof JSONArray) {
+				value = toList((JSONArray) value);
+			}
+
+			else if(value instanceof JSONObject) {
+				value = toMap((JSONObject) value);
+			}
+			list.add(value);
+		}
+		return list;
 	}
 }

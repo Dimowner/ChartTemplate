@@ -29,20 +29,14 @@
 
 	<color name="text_blue">#3896d4</color>
 
-	<color name="md_yellow_A700">#FFD600</color>
-	<color name="md_grey_100">#F5F5F5</color>
+	<!--<color name="md_yellow_A700">#FFD600</color>-->
 
 	<color name="white">#ffffff</color>
 
 	<color name="shadow">#4D000000</color>
 
-	<color name="grey">#e6ecf0</color>
-	<color name="grey_night">#273442</color>
-
 	<color name="grid_base_line">#e7e8e9</color>
 	<color name="grid_base_line_night">#101924</color>
-
-	<!--<color name="grid_color">#E3E6E7</color>-->
 
 	<color name="grid_color2">#f1f1f2</color>
 	<color name="grid_color2_night">#161f2b</color>

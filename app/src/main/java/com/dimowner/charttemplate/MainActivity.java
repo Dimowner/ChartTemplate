@@ -38,9 +38,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -179,12 +176,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				Map<String, String> colors;
 				JSONObject joItem = (JSONObject) joArray.get(i);
 
-				names = jsonToMap(joItem.getJSONObject(NAMES));
-				types = jsonToMap(joItem.getJSONObject(TYPES));
-				colors = jsonToMap(joItem.getJSONObject(COLORS));
+				names = AndroidUtils.jsonToMap(joItem.getJSONObject(NAMES));
+				types = AndroidUtils.jsonToMap(joItem.getJSONObject(TYPES));
+				colors = AndroidUtils.jsonToMap(joItem.getJSONObject(COLORS));
 
 				JSONArray colArray = joItem.getJSONArray(COLUMNS);
-				List<Object> list = toList(colArray);
+				List<Object> list = AndroidUtils.toList(colArray);
 				columns = new Object[list.size()][];
 
 				for (int j = 0; j < list.size(); j++) {
@@ -207,43 +204,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			return null;
 		}
 		return toChartData(CTApplication.getData()[pos]);
-	}
-
-	public static Map<String, String> jsonToMap(JSONObject json) throws JSONException {
-		Map<String, String> retMap = new HashMap<>();
-
-		if(json != JSONObject.NULL) {
-			retMap = toMap(json);
-		}
-		return retMap;
-	}
-
-	public static Map<String, String> toMap(JSONObject object) throws JSONException {
-		Map<String, String> map = new HashMap<>();
-
-		Iterator<String> keysItr = object.keys();
-		while(keysItr.hasNext()) {
-			String key = keysItr.next();
-			String value = (String) object.get(key);
-			map.put(key, value);
-		}
-		return map;
-	}
-
-	public static List<Object> toList(JSONArray array) throws JSONException {
-		List<Object> list = new ArrayList<>();
-		for(int i = 0; i < array.length(); i++) {
-			Object value = array.get(i);
-			if(value instanceof JSONArray) {
-				value = toList((JSONArray) value);
-			}
-
-			else if(value instanceof JSONObject) {
-				value = toMap((JSONObject) value);
-			}
-			list.add(value);
-		}
-		return list;
 	}
 
 	private ChartData toChartData(Data d) {

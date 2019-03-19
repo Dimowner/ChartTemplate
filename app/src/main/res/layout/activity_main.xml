@@ -33,7 +33,6 @@
 			tools:context=".MainActivity">
 
 		<FrameLayout
-				android:id="@+id/toolbar"
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/toolbar_height"
 				android:elevation="4dp"

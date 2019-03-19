@@ -104,10 +104,9 @@ public class ChartScrollView extends View {
 		linePaint.setAntiAlias(true);
 		linePaint.setDither(false);
 		linePaint.setStyle(Paint.Style.STROKE);
-		linePaint.setStrokeWidth(AndroidUtils.dpToPx(1.2f));
+		linePaint.setStrokeWidth(1.2f*DENSITY);
 		linePaint.setStrokeJoin(Paint.Join.ROUND);
 		linePaint.setStrokeCap(Paint.Cap.ROUND);
-		linePaint.setColor(context.getResources().getColor(R.color.md_yellow_A700));
 
 		selectionPaint = new Paint();
 		selectionPaint.setAntiAlias(false);

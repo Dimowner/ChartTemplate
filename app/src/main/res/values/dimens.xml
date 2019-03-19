@@ -38,6 +38,4 @@
 	<dimen name="toolbar_height">56dp</dimen>
 	<dimen name="elevation">1dp</dimen>
 
-	<dimen name="gradient_radius">320dp</dimen>
-
 </resources>
