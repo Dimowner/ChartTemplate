@@ -16,6 +16,7 @@
 
 package com.dimowner.charttemplate.widget;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -27,6 +28,9 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
@@ -38,6 +42,7 @@ public class ChartScrollView extends View {
 	private static final int CURSOR_LEFT = 2001;
 	private static final int CURSOR_CENTER = 2002;
 	private static final int CURSOR_RIGHT = 2003;
+	private static final int ANIMATION_DURATION = 150; //mills
 
 	private final float DENSITY;
 	private final float SMALLEST_SELECTION_WIDTH;
@@ -57,10 +62,11 @@ public class ChartScrollView extends View {
 
 	private ChartData data;
 	private boolean[] linesVisibility;
+	private boolean[] linesCalculated;
 	private Path path;
 	private float STEP = 1;
 
-	private Paint linePaint;
+	private Paint[] linePaints;
 	private Paint overlayPaint;
 	private Paint selectionPaint;
 
@@ -70,6 +76,9 @@ public class ChartScrollView extends View {
 	private float HEIGHT = 0;
 	private int maxValueY = 0;
 	private float valueScaleY = 0;
+
+	private ValueAnimator animator;
+	private ValueAnimator alphaAnimator;
 
 	private OnScrollListener onScrollListener;
 
@@ -107,14 +116,6 @@ public class ChartScrollView extends View {
 		} else {
 			overlayColor = res.getColor(R.color.overlay_color);
 		}
-
-		linePaint = new Paint();
-		linePaint.setAntiAlias(true);
-		linePaint.setDither(false);
-		linePaint.setStyle(Paint.Style.STROKE);
-		linePaint.setStrokeWidth(1.2f*DENSITY);
-		linePaint.setStrokeJoin(Paint.Join.ROUND);
-		linePaint.setStrokeCap(Paint.Cap.ROUND);
 
 		selectionPaint = new Paint();
 		selectionPaint.setAntiAlias(false);
@@ -217,6 +218,18 @@ public class ChartScrollView extends View {
 		});
 	}
 
+	private Paint createLinePaint(int color) {
+		Paint lp = new Paint();
+		lp.setAntiAlias(true);
+		lp.setDither(false);
+		lp.setStyle(Paint.Style.STROKE);
+		lp.setStrokeWidth(1.2f*DENSITY);
+		lp.setStrokeJoin(Paint.Join.ROUND);
+		lp.setStrokeCap(Paint.Cap.ROUND);
+		lp.setColor(color);
+		return lp;
+	}
+
 	private int checkSelectionState(float x) {
 		if (x > scrollX && x < scrollX + selectionWidth) {
 			return CURSOR_CENTER;
@@ -233,7 +246,7 @@ public class ChartScrollView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScaleY = HEIGHT/(maxValueY + SELECTION);
+		valueScaleY = (HEIGHT-SELECTION)/maxValueY;
 
 		if (data != null) {
 			STEP = (WIDTH/data.getLength());
@@ -250,7 +263,7 @@ public class ChartScrollView extends View {
 		if (data != null) {
 			for (int i = 0; i < data.getNames().length; i++) {
 				if (linesVisibility[i]) {
-					drawChart(canvas, data.getValues(i), data.getColorsInts()[i]);
+					drawChart(canvas, data.getValues(i), data.getColorsInts()[i], i);
 				}
 			}
 		}
@@ -291,8 +304,8 @@ public class ChartScrollView extends View {
 
 	}
 
-	private void drawChart(Canvas canvas, int[] values, int color) {
-		linePaint.setColor(color);
+	private void drawChart(Canvas canvas, int[] values, int color, int index) {
+//		linePaints[index].setColor(color);
 		path.reset();
 		float x = 0;
 		for (int i = 0; i < values.length; i+=2) {
@@ -307,43 +320,43 @@ public class ChartScrollView extends View {
 			}
 			x += 2*STEP;
 		}
-		canvas.drawPath(path, linePaint);
+		canvas.drawPath(path, linePaints[index]);
 	}
 
 	public void hideLine(String name) {
-		int pos = findLinePosition(name);
+		final int pos = findLinePosition(name);
 		if (pos >= 0) {
-			linesVisibility[pos] = false;
+			linesCalculated[pos] = false;
+			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
 		}
-		calculateMaxValue();
+		calculateMaxValue(false);
 		invalidate();
 	}
 
 	public void showLine(String name) {
-		int pos = findLinePosition(name);
+		final int pos = findLinePosition(name);
 		if (pos >= 0) {
 			linesVisibility[pos] = true;
+			linesCalculated[pos] = true;
+			alphaAnimator(linePaints[pos].getAlpha(), 255f, pos, true);
 		}
-		calculateMaxValue();
+		calculateMaxValue(false);
 		invalidate();
 	}
 
 	public void setData(ChartData d) {
 		this.data = d;
 		if (data != null) {
-//			maxValueY = 0;
-//			for (int i = 0; i < data.getLength(); i++) {
-//				if (data.getValues(0)[i] > maxValueY) {
-//					maxValueY = data.getValues(0)[i];
-//				}
-//			}
 			//Init lines visibility state, all visible by default.
 			linesVisibility = new boolean[data.getLinesCount()];
+			linesCalculated = new boolean[data.getLinesCount()];
+			linePaints = new Paint[data.getLinesCount()];
 			for (int i = 0; i < linesVisibility.length; i++) {
 				linesVisibility[i] = true;
+				linesCalculated[i] = true;
+				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 			}
-			calculateMaxValue();
-//			valueScaleY = HEIGHT/(maxValueY + SELECTION);
+			calculateMaxValue(true);
 			if (WIDTH > 0 && data.getLength() > 0) {
 				STEP = (WIDTH / data.getLength());
 			}
@@ -354,11 +367,13 @@ public class ChartScrollView extends View {
 		invalidate();
 	}
 
-	private void calculateMaxValue() {
+	private void calculateMaxValue(final boolean invalidate) {
+		int prev = maxValueY;
 		maxValueY = 0;
 //		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
 		for (int j = 0; j < data.getLinesCount(); j++) {
-			if (linesVisibility[j]) {
+//			if (linesVisibility[j]) {
+			if (linesCalculated[j]) {
 				for (int i = 0; i < data.getLength(); i++) {
 					if (data.getValues(j)[i] > maxValueY) {
 						maxValueY = data.getValues(j)[i];
@@ -367,6 +382,54 @@ public class ChartScrollView extends View {
 			}
 		}
 		valueScaleY = (HEIGHT-SELECTION)/maxValueY;
+		if (prev != maxValueY) {
+			animation(prev, maxValueY, invalidate);
+		}
+	}
+
+	private void animation(final float start, final float end, final boolean invalidate) {
+		if (animator != null && animator.isStarted()) {
+			animator.cancel();
+		}
+		animator = ValueAnimator.ofFloat(0.0f, 1.0f);
+		animator.setInterpolator(new AccelerateDecelerateInterpolator());
+		animator.setDuration(ANIMATION_DURATION);
+		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
+				valueScaleY = (HEIGHT-SELECTION)/ maxValueY;
+				if (invalidate) {
+					invalidate();
+				}
+			}
+		});
+		animator.start();
+	}
+
+	private void alphaAnimator(float start, final float end, final int index, final boolean show) {
+		if (alphaAnimator != null && alphaAnimator.isRunning()) {
+			alphaAnimator.cancel();
+		}
+		alphaAnimator = ValueAnimator.ofFloat(start, end);
+		if (show) {
+			alphaAnimator.setInterpolator(new DecelerateInterpolator());
+		} else {
+			alphaAnimator.setInterpolator(new AccelerateInterpolator());
+		}
+		alphaAnimator.setDuration(ANIMATION_DURATION);
+		alphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				float val = (float) animation.getAnimatedValue();
+				linePaints[index].setAlpha((int)val);
+				if (val == end) {
+					linesVisibility[index] = show;
+				}
+				invalidate();
+			}
+		});
+		alphaAnimator.start();
 	}
 
 	private int findLinePosition(String name) {
@@ -393,6 +456,7 @@ public class ChartScrollView extends View {
 
 		ss.maxValueY = maxValueY;
 		ss.linesVisibility = linesVisibility;
+		ss.linesCalculated = linesCalculated;
 		ss.selectionWidth = selectionWidth;
 		ss.scrollX = scrollX;
 		ss.data = data;
@@ -405,9 +469,14 @@ public class ChartScrollView extends View {
 		super.onRestoreInstanceState(ss.getSuperState());
 		maxValueY = ss.maxValueY;
 		linesVisibility = ss.linesVisibility;
+		linesCalculated = ss.linesCalculated;
 		selectionWidth = ss.selectionWidth;
 		scrollX = ss.scrollX;
 		data = ss.data;
+		linePaints = new Paint[data.getLinesCount()];
+		for (int i = 0; i < data.getLinesCount(); i++) {
+			linePaints[i] = createLinePaint(data.getColorsInts()[i]);
+		}
 	}
 
 	static class SavedState extends View.BaseSavedState {
@@ -419,6 +488,7 @@ public class ChartScrollView extends View {
 			super(in);
 			maxValueY = in.readInt();
 			in.readBooleanArray(linesVisibility);
+			in.readBooleanArray(linesCalculated);
 			float[] floats = new float[2];
 			in.readFloatArray(floats);
 			selectionWidth = floats[0];
@@ -431,6 +501,7 @@ public class ChartScrollView extends View {
 			super.writeToParcel(out, flags);
 			out.writeInt(maxValueY);
 			out.writeBooleanArray(linesVisibility);
+			out.writeBooleanArray(linesCalculated);
 			out.writeFloatArray(new float[] {selectionWidth, scrollX});
 			out.writeParcelable(data, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
 		}
@@ -438,6 +509,7 @@ public class ChartScrollView extends View {
 		private ChartData data;
 		private int maxValueY;
 		private boolean[] linesVisibility;
+		private boolean[] linesCalculated;
 		private float selectionWidth;
 		private float scrollX;
 

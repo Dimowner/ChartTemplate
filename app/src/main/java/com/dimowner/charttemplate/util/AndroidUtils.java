@@ -17,7 +17,6 @@
 package com.dimowner.charttemplate.util;
 
 import android.content.Context;
-import android.content.res.Resources;
 
 import org.json.JSONArray;
 import org.json.JSONException;

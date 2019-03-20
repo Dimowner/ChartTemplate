@@ -54,7 +54,7 @@ public class ChartView extends View {
 	private final int CIRCLE_SIZE;
 	private final int SHADOW_SIZE;
 	private static final int GRID_LINES_COUNT = 6;
-	private static final int ANIMATION_DURATION = 200; //mills
+	private static final int ANIMATION_DURATION = 150; //mills
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
@@ -277,6 +277,18 @@ public class ChartView extends View {
 		});
 	}
 
+	private Paint createLinePaint(int color) {
+		Paint lp = new Paint();
+		lp.setAntiAlias(true);
+		lp.setDither(false);
+		lp.setStyle(Paint.Style.STROKE);
+		lp.setStrokeWidth(2.2f*DENSITY);
+		lp.setStrokeJoin(Paint.Join.ROUND);
+		lp.setStrokeCap(Paint.Cap.ROUND);
+		lp.setColor(color);
+		return lp;
+	}
+
 	private void calculatePanelSize() {
 		calculateSelectedItemIndex();
 
@@ -364,18 +376,18 @@ public class ChartView extends View {
 		return  (x - x2)*(y2 - y1)/(x2 - x1) + y2;
 	}
 
-	private void animation(float prev, final float newVal, final boolean invalidate) {
+	private void animation(final float start, final float end, final boolean invalidate) {
 		if (animator != null && animator.isStarted()) {
 			animator.cancel();
 		}
-		animator = ValueAnimator.ofFloat(prev, newVal);
+		animator = ValueAnimator.ofFloat(0.0f, 1.0f);
 		animator.setInterpolator(new AccelerateDecelerateInterpolator());
 		animator.setDuration(ANIMATION_DURATION);
 		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 			@Override
 			public void onAnimationUpdate(ValueAnimator animation) {
-				maxValueY = (int) adjustToGrid((float) animation.getAnimatedValue(), GRID_LINES_COUNT);
-				valueScaleY = (HEIGHT-BASE_LINE_Y- PADD_SMALL)/ maxValueY;
+				maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
+				valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/ maxValueY;
 				if (invalidate) {
 					invalidate();
 				}
@@ -422,7 +434,7 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScaleY = (HEIGHT-BASE_LINE_Y- PADD_SMALL)/ maxValueY;
+		valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/ maxValueY;
 	}
 
 	@Override
@@ -478,7 +490,7 @@ public class ChartView extends View {
 								rect.left+ PADD_NORMAL + selectedItemWidth*i + PADD_NORMAL *i,
 								rect.top+selectedDateHeight+selectedNameHeight+3* PADD_SMALL, selectedNamePaint);
 						selectedValuePaint.setColor(data.getColorsInts()[i]);
-						canvas.drawText(String.valueOf((data.getValues(i)[selectionIndex])),
+						canvas.drawText(String.valueOf(((int)selectedValues[i])),
 								rect.left+ PADD_NORMAL + selectedItemWidth*i+ PADD_NORMAL *i,
 								rect.top+selectedDateHeight+selectedNameHeight+selectedValueHeight+4* PADD_SMALL,
 								selectedValuePaint);
@@ -579,15 +591,7 @@ public class ChartView extends View {
 				linesVisibility[i] = true;
 				linesCalculated[i] = true;
 				selectedValues[i] = 0;
-				Paint lp = new Paint();
-				lp.setAntiAlias(true);
-				lp.setDither(false);
-				lp.setStyle(Paint.Style.STROKE);
-				lp.setStrokeWidth(2.2f*DENSITY);
-				lp.setStrokeJoin(Paint.Join.ROUND);
-				lp.setStrokeCap(Paint.Cap.ROUND);
-				lp.setColor(data.getColorsInts()[i]);
-				linePaints[i] = lp;
+				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 			}
 			calculateMaxValue(true);
 		}
@@ -608,7 +612,7 @@ public class ChartView extends View {
 			}
 		}
 		maxValueY = (int) adjustToGrid((float) maxValueY, GRID_LINES_COUNT);
-		valueScaleY = (HEIGHT-BASE_LINE_Y- PADD_SMALL)/ maxValueY;
+		valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/ maxValueY;
 		if (prev != maxValueY) {
 			animation(prev, maxValueY, invalidate);
 		}
@@ -675,15 +679,7 @@ public class ChartView extends View {
 		linePaints = new Paint[data.getLinesCount()];
 		for (int i = 0; i < data.getLinesCount(); i++) {
 			selectedValues[i] = 0;
-			Paint lp = new Paint();
-			lp.setAntiAlias(true);
-			lp.setDither(false);
-			lp.setStyle(Paint.Style.STROKE);
-			lp.setStrokeWidth(2.2f*DENSITY);
-			lp.setStrokeJoin(Paint.Join.ROUND);
-			lp.setStrokeCap(Paint.Cap.ROUND);
-			lp.setColor(data.getColorsInts()[i]);
-			linePaints[i] = lp;
+			linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 		}
 	}
 
