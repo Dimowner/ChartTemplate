@@ -38,6 +38,7 @@
 		<item name="panelColor">@color/panel_background</item>
 		<item name="panelTextColor">@color/panel_text</item>
 		<item name="scrubblerColor">@color/scrubbler_color</item>
+		<item name="shadowColor">@color/shadow_color</item>
 
 	</style>
 
@@ -63,6 +64,7 @@
 		<item name="panelColor">@color/panel_background_night</item>
 		<item name="panelTextColor">@color/panel_text_night</item>
 		<item name="scrubblerColor">@color/scrubbler_color_night</item>
+		<item name="shadowColor">@color/shadow_color_night</item>
 
 	</style>
 

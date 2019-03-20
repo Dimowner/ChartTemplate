@@ -135,6 +135,7 @@ public class CheckersView extends LinearLayout {
 		checkBox.setId(id);
 		checkBox.setChecked(checkerState[index]);
 		checkBox.setSaveEnabled(false);
+		checkBox.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
 		checkBox.setPadding(checkBox.getPaddingLeft()+PADD_NORMAL, checkBox.getPaddingTop(),
 				checkBox.getPaddingRight(), checkBox.getPaddingBottom());
 

@@ -152,7 +152,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		FrameLayout.LayoutParams titleLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		titleLp.setMargins((int)(68*DENSITY), 0, 0, 0);
+		titleLp.setMargins((int)(62*DENSITY), 0, 0, 0);
 		titleLp.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
 		title.setLayoutParams(titleLp);
 		title.setTypeface(typeface);
@@ -196,11 +196,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		LinearLayout.LayoutParams followersLp = new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		followersLp.setMargins(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
+		followersLp.setMargins(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_TINY);
 
 		txtFollowers.setLayoutParams(followersLp);
 		txtFollowers.setTextColor(res.getColor(R.color.text_blue));
-		txtFollowers.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+		txtFollowers.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
 		txtFollowers.setText(R.string.followers);
 		txtFollowers.setTypeface(typeface);
 		txtFollowers.setGravity(Gravity.CENTER);
@@ -208,7 +208,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		//CharView
 		chartView = new ChartView(this);
 		LinearLayout.LayoutParams chartLp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(300*DENSITY));
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(310*DENSITY));
 		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chartView.setLayoutParams(chartLp);
 

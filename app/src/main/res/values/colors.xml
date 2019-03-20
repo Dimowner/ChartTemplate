@@ -61,4 +61,7 @@
 
 	<color name="scrubbler_color">#27517DA2</color>
 	<color name="scrubbler_color_night">#990D141C</color>
+
+	<color name="shadow_color">#E2E4E6</color>
+	<color name="shadow_color_night">#161F29</color>
 </resources>
