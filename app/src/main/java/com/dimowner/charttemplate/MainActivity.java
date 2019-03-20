@@ -17,6 +17,7 @@
 package com.dimowner.charttemplate;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
@@ -53,12 +54,6 @@ import timber.log.Timber;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
-	private static final float DENSITY = AndroidUtils.dpToPx(1);
-	private static final int PADD_NORMAL = (int) (16*DENSITY);
-	private static final int PADD_SMALL = (int) (8*DENSITY);
-	private static final int PADD_TINY = (int) (4*DENSITY);
-	private static final int TOOLBAR_HEIGHT = (int) (56*DENSITY);
-
 	private int activeItem = 4;
 
 	private ChartView chartView;
@@ -68,6 +63,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		AndroidUtils.update(getApplicationContext());
 		if (CTApplication.isNightMode()) {
 			setTheme(R.style.AppTheme_Night);
 		} else {
@@ -124,6 +120,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	}
 
 	private View generateLayout() {
+		float DENSITY = AndroidUtils.dpToPx(1);
+		int PADD_NORMAL = (int) (16*DENSITY);
+		int PADD_SMALL = (int) (8*DENSITY);
+		int PADD_TINY = (int) (4*DENSITY);
+		int TOOLBAR_HEIGHT = (int) (56*DENSITY);
+
 		scrollView = new ScrollView(getApplicationContext());
 		Resources res = getResources();
 
@@ -253,6 +255,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		a.recycle();
 
 		return scrollView;
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		AndroidUtils.update(getApplicationContext());
+		super.onConfigurationChanged(newConfig);
 	}
 
 	@Override

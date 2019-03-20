@@ -35,13 +35,19 @@ public class AndroidUtils {
 
 	private AndroidUtils() {}
 
+	private static float DENSITY = 1;
+
+	public static void update(Context context) {
+		DENSITY = context.getResources().getDisplayMetrics().density;
+	}
+
 	/**
 	 * Convert density independent pixels value (dip) into pixels value (px).
 	 * @param dp Value needed to convert
 	 * @return Converted value in pixels.
 	 */
 	public static float dpToPx(int dp) {
-		return (dp * Resources.getSystem().getDisplayMetrics().density);
+		return dp*DENSITY;
 	}
 
 	public static String readAsset(Context context, String name) throws IOException {

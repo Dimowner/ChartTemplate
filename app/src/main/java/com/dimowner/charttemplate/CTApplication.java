@@ -17,8 +17,10 @@
 package com.dimowner.charttemplate;
 
 import android.app.Application;
+import android.content.res.Configuration;
 
 import com.dimowner.charttemplate.model.Data;
+import com.dimowner.charttemplate.util.AndroidUtils;
 
 import timber.log.Timber;
 
@@ -40,6 +42,13 @@ public class CTApplication extends Application {
 			});
 		}
 		super.onCreate();
+		AndroidUtils.update(getApplicationContext());
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		AndroidUtils.update(getApplicationContext());
 	}
 
 	public static boolean isNightMode() {

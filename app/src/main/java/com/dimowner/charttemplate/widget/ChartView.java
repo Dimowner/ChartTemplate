@@ -45,16 +45,27 @@ import java.util.Date;
 
 public class ChartView extends View {
 
-	private static final float DENSITY = AndroidUtils.dpToPx(1);
-	private static final int PADDING_NORMAL = (int) (16*DENSITY);
-	private static final int PADDING_SMALL = (int) (8*DENSITY);
-	private static final int PADDING_TINY = (int) (4*DENSITY);
+	private final float DENSITY;
+	private final int PADD_NORMAL;
+	private final int PADD_SMALL;
+	private final int PADD_TINY;
+	private final int TEXT_SPACE;
+	private final int BASE_LINE_Y;
+	private final int CIRCLE_SIZE;
+	private final int SHADOW_SIZE;
 	private static final int GRID_LINES_COUNT = 6;
-	private static final int TEXT_SPACE = (int) (65*DENSITY);
-	private static final int BASE_LINE_Y = (int) (32*DENSITY);
-	private static final int CIRCLE_SIZE = (int) (5*DENSITY);
-	private static final int SHADOW_SIZE = (int) (1.5f*DENSITY);
 	private static final int ANIMATION_DURATION = 200; //mills
+
+	{
+		DENSITY = AndroidUtils.dpToPx(1);
+		PADD_NORMAL = (int) (16*DENSITY);
+		PADD_SMALL = (int) (8*DENSITY);
+		PADD_TINY = (int) (4*DENSITY);
+		TEXT_SPACE = (int) (65*DENSITY);
+		BASE_LINE_Y = (int) (32*DENSITY);
+		CIRCLE_SIZE = (int) (5*DENSITY);
+		SHADOW_SIZE = (int) (1.5f*DENSITY);
+	}
 
 	private float STEP = 25*DENSITY;
 
@@ -319,21 +330,21 @@ public class ChartView extends View {
 		}
 
 		//Set panel size.
-		rect.left = selectionX - PADDING_NORMAL;
-		rect.right = selectionX + width+data.getLinesCount()*PADDING_NORMAL;
-		rect.top = PADDING_NORMAL;
-		rect.bottom = 3.5f*PADDING_NORMAL + selectedDateHeight + selectedNameHeight + selectedValueHeight;
+		rect.left = selectionX - PADD_NORMAL;
+		rect.right = selectionX + width+data.getLinesCount()* PADD_NORMAL;
+		rect.top = PADD_NORMAL;
+		rect.bottom = 3.5f* PADD_NORMAL + selectedDateHeight + selectedNameHeight + selectedValueHeight;
 
 		//Set Panel edges
-		if (rect.right > WIDTH-PADDING_SMALL) {
+		if (rect.right > WIDTH- PADD_SMALL) {
 			float w = rect.width();
-			rect.right = WIDTH-PADDING_SMALL;
-			rect.left = WIDTH-PADDING_SMALL-w;
+			rect.right = WIDTH- PADD_SMALL;
+			rect.left = WIDTH- PADD_SMALL -w;
 		}
-		if (rect.left < PADDING_SMALL) {
+		if (rect.left < PADD_SMALL) {
 			float w = rect.width();
-			rect.left = PADDING_SMALL;
-			rect.right = PADDING_SMALL+w;
+			rect.left = PADD_SMALL;
+			rect.right = PADD_SMALL +w;
 		}
 	}
 
@@ -364,7 +375,7 @@ public class ChartView extends View {
 			@Override
 			public void onAnimationUpdate(ValueAnimator animation) {
 				maxValueY = (int) adjustToGrid((float) animation.getAnimatedValue(), GRID_LINES_COUNT);
-				valueScaleY = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/ maxValueY;
+				valueScaleY = (HEIGHT-BASE_LINE_Y- PADD_SMALL)/ maxValueY;
 				if (invalidate) {
 					invalidate();
 				}
@@ -411,7 +422,7 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScaleY = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/ maxValueY;
+		valueScaleY = (HEIGHT-BASE_LINE_Y- PADD_SMALL)/ maxValueY;
 	}
 
 	@Override
@@ -453,23 +464,23 @@ public class ChartView extends View {
 					}
 				}
 				//Draw selection panel
-				canvas.drawRoundRect(rect, PADDING_TINY, PADDING_TINY, panelPaint);
+				canvas.drawRoundRect(rect, PADD_TINY, PADD_TINY, panelPaint);
 				baselinePaint.setAntiAlias(true);
-				canvas.drawRoundRect(rect, PADDING_TINY, PADDING_TINY, baselinePaint);
+				canvas.drawRoundRect(rect, PADD_TINY, PADD_TINY, baselinePaint);
 				//Draw date on panel
-				canvas.drawText(selectionDate, rect.left+PADDING_NORMAL,
-						rect.top+selectedDateHeight+PADDING_SMALL, selectedDatePaint);
+				canvas.drawText(selectionDate, rect.left+ PADD_NORMAL,
+						rect.top+selectedDateHeight+ PADD_SMALL, selectedDatePaint);
 				//Draw names and values on panel
 				for (int i = 0; i < data.getNames().length; i++) {
 					if (linesVisibility[i]) {
 						selectedNamePaint.setColor(data.getColorsInts()[i]);
 						canvas.drawText(data.getNames()[i],
-								rect.left+PADDING_NORMAL + selectedItemWidth*i + PADDING_NORMAL*i,
-								rect.top+selectedDateHeight+selectedNameHeight+3*PADDING_SMALL, selectedNamePaint);
+								rect.left+ PADD_NORMAL + selectedItemWidth*i + PADD_NORMAL *i,
+								rect.top+selectedDateHeight+selectedNameHeight+3* PADD_SMALL, selectedNamePaint);
 						selectedValuePaint.setColor(data.getColorsInts()[i]);
 						canvas.drawText(String.valueOf((data.getValues(i)[selectionIndex])),
-								rect.left+PADDING_NORMAL + selectedItemWidth*i+ PADDING_NORMAL*i,
-								rect.top+selectedDateHeight+selectedNameHeight+selectedValueHeight+4*PADDING_SMALL,
+								rect.left+ PADD_NORMAL + selectedItemWidth*i+ PADD_NORMAL *i,
+								rect.top+selectedDateHeight+selectedNameHeight+selectedValueHeight+4* PADD_SMALL,
 								selectedValuePaint);
 					}
 				}
@@ -489,7 +500,7 @@ public class ChartView extends View {
 						WIDTH, HEIGHT - BASE_LINE_Y - gridStep * i, gridPaint);
 			}
 			canvas.drawText(Integer.toString((gridValueText * i)),
-					0, HEIGHT - BASE_LINE_Y - gridStep * i - PADDING_TINY, textPaint);
+					0, HEIGHT - BASE_LINE_Y - gridStep * i - PADD_TINY, textPaint);
 		}
 	}
 
@@ -525,9 +536,9 @@ public class ChartView extends View {
 			date.setTime(data.getTime()[i]);
 			dateText = TimeUtils.formatDate(date);
 			if (TEXT_SPACE < STEP) {
-				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_NORMAL, textPaint);
+				canvas.drawText(dateText, pos + offset, HEIGHT - PADD_NORMAL, textPaint);
 			} else if (i % (Math.ceil(TEXT_SPACE / STEP)) == 0) {
-				canvas.drawText(dateText, pos + offset, HEIGHT - PADDING_NORMAL, textPaint);
+				canvas.drawText(dateText, pos + offset, HEIGHT - PADD_NORMAL, textPaint);
 			}
 
 			if (pos - STEP > WIDTH) {
@@ -597,7 +608,7 @@ public class ChartView extends View {
 			}
 		}
 		maxValueY = (int) adjustToGrid((float) maxValueY, GRID_LINES_COUNT);
-		valueScaleY = (HEIGHT-BASE_LINE_Y-PADDING_SMALL)/ maxValueY;
+		valueScaleY = (HEIGHT-BASE_LINE_Y- PADD_SMALL)/ maxValueY;
 		if (prev != maxValueY) {
 			animation(prev, maxValueY, invalidate);
 		}
@@ -715,10 +726,10 @@ public class ChartView extends View {
 		boolean[] linesVisibility;
 		boolean[] linesCalculated;
 		float scrollPos;
-		float selectionX = -1;
-		float screenShift = 0;
-		float valueScaleY = 0;
-		int maxValueY = 0;
+		float selectionX;
+		float screenShift;
+		float valueScaleY;
+		int maxValueY;
 
 		public static final Parcelable.Creator<SavedState> CREATOR =
 				new Parcelable.Creator<SavedState>() {

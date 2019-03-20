@@ -33,11 +33,18 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class CheckersView extends LinearLayout {
 
-	private static final float DENSITY = AndroidUtils.dpToPx(1);
-	private static final int PADD_NORMAL = (int) (16*DENSITY);
-	private static final int PADD_XSMALL = (int) (10*DENSITY);
-	private static final int START_INSET = (int) (56*DENSITY);
-	private static final int DIVIDER_HEIGHT = (int) DENSITY;
+	private final int PADD_NORMAL;
+	private final int PADD_XSMALL;
+	private final int START_INSET;
+	private final int DIVIDER_HEIGHT;
+
+	{
+		float DENSITY = AndroidUtils.dpToPx(1);
+		PADD_NORMAL = (int) (16* DENSITY);
+		PADD_XSMALL = (int) (10* DENSITY);
+		START_INSET = (int) (56* DENSITY);
+		DIVIDER_HEIGHT = (int) DENSITY;
+	}
 
 	private LinearLayout container;
 	private boolean[] checkerState;
@@ -151,7 +158,7 @@ public class CheckersView extends LinearLayout {
 
 	private View createDivider() {
 		View divider = new View(getContext());
-		ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(
+		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		params.height = DIVIDER_HEIGHT;
 		params.setMargins(START_INSET, 0, 0, 0);

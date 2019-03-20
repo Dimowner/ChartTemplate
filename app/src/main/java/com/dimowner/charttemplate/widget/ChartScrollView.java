@@ -34,17 +34,24 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChartScrollView extends View {
 
-	private final static float DENSITY = AndroidUtils.dpToPx(1);
-	private final static int CURSOR_UNSELECTED = 2000;
-	private final static int CURSOR_LEFT = 2001;
-	private final static int CURSOR_CENTER = 2002;
-	private final static int CURSOR_RIGHT = 2003;
+	private static final int CURSOR_UNSELECTED = 2000;
+	private static final int CURSOR_LEFT = 2001;
+	private static final int CURSOR_CENTER = 2002;
+	private static final int CURSOR_RIGHT = 2003;
 
-	private final static float SMALLEST_SELECTION_WIDTH = 80*DENSITY;
-	private final static int PADDING_SMALL = (int) (8*DENSITY);
-	private final static int PADDING_DOUBLE = (int) (32*DENSITY);
-	private final static float SELECTION = 5*DENSITY;
-	private final static float SELECTION_HALF = SELECTION/2;
+	private final float DENSITY;
+	private final float SMALLEST_SELECTION_WIDTH;
+	private final int PADD_DOUBLE;
+	private final float SELECTION;
+	private final float SELECTION_HALF;
+
+	{
+		DENSITY = AndroidUtils.dpToPx(1);
+		SMALLEST_SELECTION_WIDTH = 80*DENSITY;
+		PADD_DOUBLE = (int) (32*DENSITY);
+		SELECTION = 5*DENSITY;
+		SELECTION_HALF = SELECTION/2;
+	}
 
 	private float selectionWidth = SMALLEST_SELECTION_WIDTH;
 
@@ -168,8 +175,8 @@ public class ChartScrollView extends View {
 								if (scrollX + selectionWidth > WIDTH) {
 									scrollX = WIDTH - selectionWidth;
 								}
-								if (scrollX < PADDING_DOUBLE) {
-									scrollX = PADDING_DOUBLE;
+								if (scrollX < PADD_DOUBLE) {
+									scrollX = PADD_DOUBLE;
 								}
 								if (selectionWidth + scrollX > WIDTH) {
 									selectionWidth = WIDTH - scrollX;
@@ -187,8 +194,8 @@ public class ChartScrollView extends View {
 								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
 									selectionWidth = SMALLEST_SELECTION_WIDTH;
 								}
-								if (selectionWidth + scrollX + PADDING_DOUBLE > WIDTH) {
-									selectionWidth = WIDTH - PADDING_DOUBLE - scrollX;
+								if (selectionWidth + scrollX + PADD_DOUBLE > WIDTH) {
+									selectionWidth = WIDTH - PADD_DOUBLE - scrollX;
 								}
 								if (onScrollListener != null) {
 									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
@@ -429,9 +436,9 @@ public class ChartScrollView extends View {
 		}
 
 		private ChartData data;
-		private int maxValueY = 0;
+		private int maxValueY;
 		private boolean[] linesVisibility;
-		private float selectionWidth = SMALLEST_SELECTION_WIDTH;
+		private float selectionWidth;
 		private float scrollX;
 
 		public static final Parcelable.Creator<SavedState> CREATOR =
