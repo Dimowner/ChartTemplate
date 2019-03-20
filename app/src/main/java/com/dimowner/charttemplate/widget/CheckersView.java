@@ -230,9 +230,9 @@ public class CheckersView extends LinearLayout {
 			out.writeIntArray(colors);
 		}
 
-		private boolean[] checkerState;
-		private String[] names;
-		private int[] colors;
+		boolean[] checkerState;
+		String[] names;
+		int[] colors;
 
 
 		public static final Parcelable.Creator<SavedState> CREATOR =

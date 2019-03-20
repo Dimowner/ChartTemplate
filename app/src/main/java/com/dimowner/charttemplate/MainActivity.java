@@ -17,13 +17,22 @@
 package com.dimowner.charttemplate;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Typeface;
+
 import android.os.Build;
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
@@ -45,12 +54,18 @@ import timber.log.Timber;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
+	private static final float DENSITY = AndroidUtils.dpToPx(1);
+	private static final int PADD_NORMAL = (int) (16*DENSITY);
+	private static final int PADD_SMALL = (int) (8*DENSITY);
+	private static final int PADD_TINY = (int) (4*DENSITY);
+	private static final int TOOLBAR_HEIGHT = (int) (56*DENSITY);
+
 	private int activeItem = 4;
 
 	private ChartView chartView;
 	private ChartScrollView chartScrollView;
 	private CheckersView checkersView;
-	private TextView btnNext;
+	private ScrollView scrollView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -60,21 +75,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			setTheme(R.style.AppTheme);
 		}
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-
-		ImageButton btnNightMode = findViewById(R.id.btnNightMode);
-		btnNightMode.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				CTApplication.setNightMode(!CTApplication.isNightMode());
-				recreate();
-			}
-		});
-
-		final ScrollView scrollView = findViewById(R.id.scrollView);
-		chartView = findViewById(R.id.chartView);
-		chartScrollView = findViewById(R.id.chartScrollView);
-		checkersView = findViewById(R.id.checkersView);
+		ScrollView.LayoutParams params = new ScrollView.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.MATCH_PARENT);
+		setContentView(generateLayout(), params);
 
 		if (savedInstanceState == null) {
 			Thread thread = new Thread(new Runnable() {
@@ -118,31 +122,159 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				}
 			}
 		});
+	}
 
-		btnNext = findViewById(R.id.btnNext);
+	private View generateLayout() {
+		scrollView = new ScrollView(getApplicationContext());
+		Resources res = getResources();
+
+		//Container
+		LinearLayout container = new LinearLayout(getApplicationContext());
+		LinearLayout.LayoutParams containerLp = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+		container.setLayoutParams(containerLp);
+		container.setOrientation(LinearLayout.VERTICAL);
+		container.setBackgroundColor(res.getColor(R.color.view_background));
+
+		//Toolbar
+		FrameLayout toolbar = new FrameLayout(getApplicationContext());
+		FrameLayout.LayoutParams toolbarLp = new FrameLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT, TOOLBAR_HEIGHT);
+		toolbar.setLayoutParams(toolbarLp);
+		toolbar.setBackgroundResource(R.color.primary);
+
+		Typeface typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL);
+
+		//Title
+		final TextView title = new TextView(getApplicationContext());
+		FrameLayout.LayoutParams titleLp = new FrameLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		titleLp.setMargins((int)(68*DENSITY), 0, 0, 0);
+		titleLp.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
+		title.setLayoutParams(titleLp);
+		title.setTypeface(typeface);
+		title.setTextColor(res.getColor(R.color.white));
+		title.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+		title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+		title.setText(R.string.statistics);
+
+		//Button Next
+		TextView btnNext = new TextView(getApplicationContext());
+		FrameLayout.LayoutParams nextLp = new FrameLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		nextLp.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
+		btnNext.setLayoutParams(nextLp);
+		btnNext.setTextColor(res.getColor(R.color.white));
+		btnNext.setPadding(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
+		btnNext.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+		btnNext.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+		btnNext.setText(R.string.next);
+		btnNext.setId(R.id.btn_next);
+		btnNext.setOnClickListener(this);
+
+		//Button Theme
+		ImageButton btnTheme = new ImageButton(getApplicationContext());
+		FrameLayout.LayoutParams themeLp = new FrameLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		themeLp.gravity = Gravity.END | Gravity.CENTER_VERTICAL;
+		btnTheme.setLayoutParams(themeLp);
+		btnTheme.setPadding(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
+		btnTheme.setImageResource(R.drawable.moon);
+		btnTheme.setId(R.id.btn_theme);
+		btnTheme.setOnClickListener(this);
+
+		toolbar.addView(title);
+		toolbar.addView(btnNext);
+		toolbar.addView(btnTheme);
+
+		//Followers
+		final TextView txtFollowers = new TextView(getApplicationContext());
+		LinearLayout.LayoutParams followersLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		followersLp.setMargins(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
+
+		txtFollowers.setLayoutParams(followersLp);
+		txtFollowers.setTextColor(res.getColor(R.color.text_blue));
+		txtFollowers.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+		txtFollowers.setText(R.string.followers);
+		txtFollowers.setTypeface(typeface);
+		txtFollowers.setGravity(Gravity.CENTER);
+
+		//CharView
+		chartView = new ChartView(this);
+		LinearLayout.LayoutParams chartLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(300*DENSITY));
+		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
+		chartView.setLayoutParams(chartLp);
+
+		//CharScrollView
+		chartScrollView = new ChartScrollView(this);
+		LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
+		scrollLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
+		chartScrollView.setLayoutParams(scrollLp);
+
+		//CheckersView
+		checkersView = new CheckersView(this);
+		LinearLayout.LayoutParams checkersLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		checkersView.setLayoutParams(checkersLp);
+
+		container.addView(toolbar);
+		container.addView(txtFollowers);
+		container.addView(chartView);
+		container.addView(chartScrollView);
+		container.addView(checkersView);
+		scrollView.addView(container);
+
+		//Set theme colors.
+		int[] attrs = new int[]{
+				android.R.attr.selectableItemBackground,
+				R.attr.primaryColor,
+				R.attr.viewBackground
+		};
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			//Apply better looking ripple for buttons on Android higher than API 21.
-			int[] attrs = new int[]{android.R.attr.selectableItemBackgroundBorderless};
-			TypedArray typedArray = getApplicationContext().obtainStyledAttributes(attrs);
-			int bg = typedArray.getResourceId(0, 0);
-			btnNext.setBackgroundResource(bg);
-			btnNightMode.setBackgroundResource(bg);
-			typedArray.recycle();
+			attrs[0] = android.R.attr.selectableItemBackgroundBorderless;
+			toolbar.setElevation(PADD_TINY);
+			container.setElevation(DENSITY);
 		}
-		btnNext.setOnClickListener(this);
+
+		TypedArray a = this.getTheme().obtainStyledAttributes(attrs);
+		int bg = a.getResourceId(0, 0);
+		btnNext.setBackgroundResource(bg);
+		btnTheme.setBackgroundResource(bg);
+		toolbar.setBackgroundColor(a.getColor(1, 0));
+		container.setBackgroundColor(a.getColor(2, 0));
+		a.recycle();
+
+		return scrollView;
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt("active_item", activeItem);
+
+		outState.putParcelable("chart_view", chartView.onSaveInstanceState());
+		outState.putParcelable("chart_scroll_view", chartScrollView.onSaveInstanceState());
+		outState.putParcelable("checkers_view", checkersView.onSaveInstanceState());
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Bundle state) {
 		super.onRestoreInstanceState(state);
 		activeItem = state.getInt("active_item", 4);
+
+		chartView.onRestoreInstanceState(state.getParcelable("chart_view"));
+		chartScrollView.onRestoreInstanceState(state.getParcelable("chart_scroll_view"));
+		checkersView.onRestoreInstanceState(state.getParcelable("checkers_view"));
 	}
 
 	public void setData(ChartData d) {
@@ -223,7 +355,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	@Override
 	public void onClick(View v) {
-		if (v.getId() == R.id.btnNext) {
+		if (v.getId() == R.id.btn_next) {
 			int prev = activeItem;
 			activeItem--;
 			if (activeItem < 0) {
@@ -232,6 +364,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			if (activeItem != prev) {
 				setData(toChartData(CTApplication.getData()[activeItem]));
 			}
+		} else if (v.getId() == R.id.btn_theme) {
+			CTApplication.setNightMode(!CTApplication.isNightMode());
+			recreate();
 		}
 	}
 }
