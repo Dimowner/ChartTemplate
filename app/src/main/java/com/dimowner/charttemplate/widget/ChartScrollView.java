@@ -42,7 +42,7 @@ public class ChartScrollView extends View {
 
 	private final static float SMALLEST_SELECTION_WIDTH = 80*DENSITY;
 	private final static int PADDING_SMALL = (int) (8*DENSITY);
-	private final static int PADDING_NORMAL = (int) (16*DENSITY);
+	private final static int PADDING_DOUBLE = (int) (32*DENSITY);
 	private final static float SELECTION = 5*DENSITY;
 	private final static float SELECTION_HALF = SELECTION/2;
 
@@ -168,8 +168,8 @@ public class ChartScrollView extends View {
 								if (scrollX + selectionWidth > WIDTH) {
 									scrollX = WIDTH - selectionWidth;
 								}
-								if (scrollX < PADDING_NORMAL) {
-									scrollX = PADDING_NORMAL;
+								if (scrollX < PADDING_DOUBLE) {
+									scrollX = PADDING_DOUBLE;
 								}
 								if (selectionWidth + scrollX > WIDTH) {
 									selectionWidth = WIDTH - scrollX;
@@ -187,8 +187,8 @@ public class ChartScrollView extends View {
 								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
 									selectionWidth = SMALLEST_SELECTION_WIDTH;
 								}
-								if (selectionWidth + scrollX + PADDING_NORMAL > WIDTH) {
-									selectionWidth = WIDTH - PADDING_NORMAL - scrollX;
+								if (selectionWidth + scrollX + PADDING_DOUBLE > WIDTH) {
+									selectionWidth = WIDTH - PADDING_DOUBLE - scrollX;
 								}
 								if (onScrollListener != null) {
 									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);

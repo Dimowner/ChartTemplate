@@ -32,7 +32,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toolbar;
 
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
@@ -163,28 +162,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		//Button Next
 		TextView btnNext = new TextView(getApplicationContext());
 		FrameLayout.LayoutParams nextLp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
+				TOOLBAR_HEIGHT, TOOLBAR_HEIGHT);
 		nextLp.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
 		btnNext.setLayoutParams(nextLp);
 		btnNext.setTextColor(res.getColor(R.color.white));
-		btnNext.setPadding(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
 		btnNext.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
 		btnNext.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
 		btnNext.setText(R.string.next);
 		btnNext.setId(R.id.btn_next);
+		btnNext.setGravity(Gravity.CENTER);
 		btnNext.setOnClickListener(this);
 
 		//Button Theme
 		ImageButton btnTheme = new ImageButton(getApplicationContext());
 		FrameLayout.LayoutParams themeLp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
+				TOOLBAR_HEIGHT, TOOLBAR_HEIGHT);
+
 		themeLp.gravity = Gravity.END | Gravity.CENTER_VERTICAL;
 		btnTheme.setLayoutParams(themeLp);
-		btnTheme.setPadding(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_NORMAL);
 		btnTheme.setImageResource(R.drawable.moon);
 		btnTheme.setId(R.id.btn_theme);
+		btnNext.setGravity(Gravity.CENTER);
 		btnTheme.setOnClickListener(this);
 
 		toolbar.addView(title);
