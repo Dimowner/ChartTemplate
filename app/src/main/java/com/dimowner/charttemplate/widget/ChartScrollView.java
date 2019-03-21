@@ -34,7 +34,7 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChartScrollView extends View {
 
-	private static final int ANIMATION_DURATION = 150; //mills
+	private static final int ANIMATION_DURATION = 60; //mills
 
 	private final float DENSITY;
 	private final float SELECTION;

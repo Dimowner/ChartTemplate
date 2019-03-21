@@ -41,6 +41,8 @@ import com.dimowner.charttemplate.util.TimeUtils;
 
 import java.util.Date;
 
+import timber.log.Timber;
+
 public class ChartView extends View {
 
 	private final float DENSITY;
@@ -427,7 +429,7 @@ public class ChartView extends View {
 			}
 		}
 		maxValueY = (int) adjustToGrid((float) maxValueY, GRID_LINES_COUNT);
-		valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/ maxValueY;
+		valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/maxValueY;
 		if (prev != maxValueY) {
 			animation(prev, maxValueY, invalidate);
 		}
@@ -436,14 +438,14 @@ public class ChartView extends View {
 	private float adjustToGrid(float val, int scale) {
 		int amp = 1;
 		while (val > scale*100) {
-			val = (int)Math.floor(val/(scale*10));
+			val = val/(scale*10);
 			amp *=(scale*10);
 		}
 		if (val > (scale*10)) {
 			val = (float) Math.ceil(val/scale);
 			amp *=scale;
 		}
-		return val*amp;
+		return (float) Math.ceil(val)*amp;
 	}
 
 	private int findLinePosition(String name) {

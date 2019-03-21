@@ -214,7 +214,7 @@ public class ChartSelectionDrawer {
 		}
 
 		//Calculate result width
-		float width = selectedItemWidth*visibleLinesCount + PADD_NORMAL*visibleLinesCount;
+		float width = selectedItemWidth*visibleLinesCount + PADD_NORMAL*visibleLinesCount-PADD_SMALL;
 		if (selectedDateWidth+PADD_NORMAL > width) {
 			width = selectedDateWidth+PADD_NORMAL;
 		}
