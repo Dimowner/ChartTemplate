@@ -37,6 +37,7 @@ import android.widget.TextView;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.util.AndroidUtils;
+import com.dimowner.charttemplate.widget.ChartScrollOverlayView;
 import com.dimowner.charttemplate.widget.ChartScrollView;
 import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.CheckersView;
@@ -58,6 +59,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	private ChartView chartView;
 	private ChartScrollView chartScrollView;
+	private ChartScrollOverlayView chartScrollOverlayView;
 	private CheckersView checkersView;
 	private ScrollView scrollView;
 
@@ -97,7 +99,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				scrollView.requestDisallowInterceptTouchEvent(true);
 			}
 		});
-		chartScrollView.setOnScrollListener(new ChartScrollView.OnScrollListener() {
+		chartScrollOverlayView.setOnScrollListener(new ChartScrollOverlayView.OnScrollListener() {
 			@Override
 			public void onScroll(float x, float size) {
 				chartView.scrollPos(x, size);
@@ -212,12 +214,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chartView.setLayoutParams(chartLp);
 
+		FrameLayout scroll = new FrameLayout(getApplicationContext());
+		FrameLayout.LayoutParams scrollLp2 = new FrameLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
+		scroll.setLayoutParams(scrollLp2);
+
 		//CharScrollView
 		chartScrollView = new ChartScrollView(this);
 		LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
 		scrollLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
+		scrollLp.gravity = Gravity.CENTER;
 		chartScrollView.setLayoutParams(scrollLp);
+
+		chartScrollOverlayView = new ChartScrollOverlayView(this);
+		LinearLayout.LayoutParams scrollOverlayLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
+		scrollOverlayLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
+		scrollOverlayLp.gravity = Gravity.CENTER;
+		chartScrollOverlayView.setLayoutParams(scrollOverlayLp);
+		scroll.addView(chartScrollView);
+		scroll.addView(chartScrollOverlayView);
 
 		//CheckersView
 		checkersView = new CheckersView(this);
@@ -228,7 +245,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		container.addView(toolbar);
 		container.addView(txtFollowers);
 		container.addView(chartView);
-		container.addView(chartScrollView);
+//		container.addView(chartScrollView);
+		container.addView(scroll);
 		container.addView(checkersView);
 		scrollView.addView(container);
 
@@ -270,6 +288,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		outState.putParcelable("chart_view", chartView.onSaveInstanceState());
 		outState.putParcelable("chart_scroll_view", chartScrollView.onSaveInstanceState());
+		outState.putParcelable("chart_scroll_overlay_view", chartScrollOverlayView.onSaveInstanceState());
 		outState.putParcelable("checkers_view", checkersView.onSaveInstanceState());
 	}
 
@@ -280,18 +299,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		chartView.onRestoreInstanceState(state.getParcelable("chart_view"));
 		chartScrollView.onRestoreInstanceState(state.getParcelable("chart_scroll_view"));
+		chartScrollOverlayView.onRestoreInstanceState(state.getParcelable("chart_scroll_overlay_view"));
 		checkersView.onRestoreInstanceState(state.getParcelable("checkers_view"));
 	}
 
 	public void setData(ChartData d) {
-		if (chartView != null) {
-			chartView.setData(d);
-		}
-		if (chartScrollView != null) {
-			chartScrollView.setData(d);
-		}
-		if (checkersView != null) {
-			checkersView.setData(d.getNames(), d.getColorsInts());
+		if (d != null) {
+			if (chartView != null) {
+				chartView.setData(d);
+			}
+			if (chartScrollView != null) {
+				chartScrollView.setData(d);
+			}
+			if (chartScrollOverlayView != null) {
+				chartScrollOverlayView.setData(d.getLength());
+			}
+			if (checkersView != null) {
+				checkersView.setData(d.getNames(), d.getColorsInts());
+			}
 		}
 	}
 

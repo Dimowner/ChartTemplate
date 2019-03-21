@@ -333,7 +333,7 @@ public class ChartView extends View {
 	}
 
 	private void drawChart(Canvas canvas, int[] values, int index) {
-		chartPath.reset();
+		chartPath.rewind();
 		float start = screenShift <= 0 ? -screenShift / STEP : 0;
 		float offset = screenShift % STEP;
 

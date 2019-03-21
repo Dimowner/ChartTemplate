@@ -18,47 +18,31 @@ package com.dimowner.charttemplate.widget;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
-import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChartScrollView extends View {
 
-	private static final int CURSOR_UNSELECTED = 2000;
-	private static final int CURSOR_LEFT = 2001;
-	private static final int CURSOR_CENTER = 2002;
-	private static final int CURSOR_RIGHT = 2003;
 	private static final int ANIMATION_DURATION = 150; //mills
 
 	private final float DENSITY;
-	private final float SMALLEST_SELECTION_WIDTH;
-	private final int PADD_DOUBLE;
 	private final float SELECTION;
-	private final float SELECTION_HALF;
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
-		SMALLEST_SELECTION_WIDTH = 80*DENSITY;
-		PADD_DOUBLE = (int) (32*DENSITY);
 		SELECTION = 5*DENSITY;
-		SELECTION_HALF = SELECTION/2;
 	}
-
-	private float selectionWidth = SMALLEST_SELECTION_WIDTH;
 
 	private ChartData data;
 	private boolean[] linesVisibility;
@@ -67,10 +51,6 @@ public class ChartScrollView extends View {
 	private float STEP = 1;
 
 	private Paint[] linePaints;
-	private Paint overlayPaint;
-	private Paint selectionPaint;
-
-	private float scrollX = -1;
 
 	private float WIDTH = 0;
 	private float HEIGHT = 0;
@@ -79,8 +59,6 @@ public class ChartScrollView extends View {
 
 	private ValueAnimator animator;
 	private ValueAnimator alphaAnimator;
-
-	private OnScrollListener onScrollListener;
 
 	public ChartScrollView(Context context) {
 		super(context);
@@ -100,122 +78,6 @@ public class ChartScrollView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 		path = new Path();
-
-		int selectionColor;
-		int overlayColor;
-		Resources res = context.getResources();
-		TypedValue typedValue = new TypedValue();
-		Resources.Theme theme = context.getTheme();
-		if (theme.resolveAttribute(R.attr.selectionColor, typedValue, true)) {
-			selectionColor = typedValue.data;
-		} else {
-			selectionColor = res.getColor(R.color.selection_color);
-		}
-		if (theme.resolveAttribute(R.attr.overlayColor, typedValue, true)) {
-			overlayColor = typedValue.data;
-		} else {
-			overlayColor = res.getColor(R.color.overlay_color);
-		}
-
-		selectionPaint = new Paint();
-		selectionPaint.setAntiAlias(false);
-		selectionPaint.setDither(false);
-		selectionPaint.setStyle(Paint.Style.STROKE);
-		selectionPaint.setStrokeWidth(SELECTION);
-		selectionPaint.setColor(selectionColor);
-
-		overlayPaint = new Paint();
-		overlayPaint.setAntiAlias(false);
-		overlayPaint.setDither(false);
-		overlayPaint.setStyle(Paint.Style.FILL);
-		overlayPaint.setColor(overlayColor);
-
-		setOnTouchListener(new OnTouchListener() {
-//			TODO: When selection resized to smallest size on right side move selection to the left.
-
-			float moveStartX = 0;
-			float prevSelectionWidth = 0;
-			float offset = 0;
-			int selectionState = 0;
-
-			@Override
-			public boolean onTouch(View v, MotionEvent motionEvent) {
-				switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-					case MotionEvent.ACTION_DOWN:
-						moveStartX = motionEvent.getX();
-						offset = moveStartX - scrollX;
-						selectionState = checkSelectionState(moveStartX);
-						prevSelectionWidth = selectionWidth;
-						break;
-					case MotionEvent.ACTION_MOVE:
-						switch (selectionState) {
-							case CURSOR_CENTER:
-								float shift = (motionEvent.getX()) - moveStartX;
-								scrollX = moveStartX + shift - offset;
-								//Set scroll edges.
-								if (scrollX + selectionWidth > WIDTH) {
-									scrollX = WIDTH - selectionWidth;
-								} else if (scrollX < 0) {
-									scrollX = 0;
-								}
-
-								if (onScrollListener != null) {
-									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
-								}
-								invalidate();
-								break;
-							case CURSOR_LEFT:
-								float shift2 = (motionEvent.getX()) - moveStartX;
-								float prevScroll = scrollX;
-								scrollX = moveStartX + shift2 - offset;
-								selectionWidth += prevScroll-scrollX;
-								//Set scroll edges.
-								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
-									selectionWidth = SMALLEST_SELECTION_WIDTH;
-								}
-								if (scrollX + selectionWidth > WIDTH) {
-									scrollX = WIDTH - selectionWidth;
-								}
-								if (scrollX < PADD_DOUBLE) {
-									scrollX = PADD_DOUBLE;
-								}
-								if (selectionWidth + scrollX > WIDTH) {
-									selectionWidth = WIDTH - scrollX;
-								}
-
-								if (onScrollListener != null) {
-									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
-								}
-								invalidate();
-								break;
-							case CURSOR_RIGHT:
-								float shift3 = (motionEvent.getX()) - moveStartX;
-								selectionWidth = (prevSelectionWidth + shift3);
-								//Set scroll edges.
-								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
-									selectionWidth = SMALLEST_SELECTION_WIDTH;
-								}
-								if (selectionWidth + scrollX + PADD_DOUBLE > WIDTH) {
-									selectionWidth = WIDTH - PADD_DOUBLE - scrollX;
-								}
-								if (onScrollListener != null) {
-									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
-								}
-								invalidate();
-								break;
-							case CURSOR_UNSELECTED:
-							default:
-								//Do nothing
-								break;
-						}
-						break;
-					case MotionEvent.ACTION_UP:
-						performClick();
-						break;
-				}
-				return true;
-			}
-		});
 	}
 
 	private Paint createLinePaint(int color) {
@@ -230,17 +92,6 @@ public class ChartScrollView extends View {
 		return lp;
 	}
 
-	private int checkSelectionState(float x) {
-		if (x > scrollX && x < scrollX + selectionWidth) {
-			return CURSOR_CENTER;
-		} else if (x < scrollX + selectionWidth) {
-			return CURSOR_LEFT;
-		} else if (x > scrollX) {
-			return CURSOR_RIGHT;
-		}
-		return CURSOR_UNSELECTED;
-	}
-
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
@@ -251,10 +102,6 @@ public class ChartScrollView extends View {
 		if (data != null) {
 			STEP = (WIDTH/data.getLength());
 		}
-
-		if (scrollX < 0) {
-			scrollX = WIDTH - selectionWidth;
-		}
 	}
 
 	@Override
@@ -263,50 +110,14 @@ public class ChartScrollView extends View {
 		if (data != null) {
 			for (int i = 0; i < data.getNames().length; i++) {
 				if (linesVisibility[i]) {
-					drawChart(canvas, data.getValues(i), data.getColorsInts()[i], i);
+					drawChart(canvas, data.getValues(i), i);
 				}
 			}
 		}
-
-		//Draw overlay
-		path.reset();
-		path.moveTo(0, 0);
-		path.lineTo(0, HEIGHT);
-		path.lineTo(scrollX - SELECTION_HALF, HEIGHT);
-		path.lineTo(scrollX - SELECTION_HALF, 0);
-		path.close();
-		canvas.drawPath(path, overlayPaint);
-
-		path.reset();
-		path.moveTo(scrollX + selectionWidth + SELECTION_HALF, 0);
-		path.lineTo(scrollX + selectionWidth + SELECTION_HALF, HEIGHT);
-		path.lineTo(WIDTH, HEIGHT);
-		path.lineTo(WIDTH, 0);
-		path.close();
-		canvas.drawPath(path, overlayPaint);
-
-		//Draw selection borders
-		path.reset();
-		path.moveTo(scrollX, 0);
-		path.lineTo(scrollX, HEIGHT);
-		path.moveTo(scrollX + selectionWidth, HEIGHT);
-		path.lineTo(scrollX + selectionWidth, 0);
-		selectionPaint.setStrokeWidth(SELECTION);
-		canvas.drawPath(path, selectionPaint);
-
-		path.reset();
-		path.moveTo(scrollX + SELECTION_HALF, 0);
-		path.lineTo(scrollX + selectionWidth - SELECTION_HALF, 0);
-		path.moveTo(scrollX + SELECTION_HALF, HEIGHT);
-		path.lineTo(scrollX + selectionWidth - SELECTION_HALF, HEIGHT);
-		selectionPaint.setStrokeWidth(SELECTION_HALF);
-		canvas.drawPath(path, selectionPaint);
-
 	}
 
-	private void drawChart(Canvas canvas, int[] values, int color, int index) {
-//		linePaints[index].setColor(color);
-		path.reset();
+	private void drawChart(Canvas canvas, int[] values, int index) {
+		path.rewind();
 		float x = 0;
 		for (int i = 0; i < values.length; i+=2) {
 			if (x == 0) {
@@ -359,9 +170,6 @@ public class ChartScrollView extends View {
 			calculateMaxValue(true);
 			if (WIDTH > 0 && data.getLength() > 0) {
 				STEP = (WIDTH / data.getLength());
-			}
-			if (onScrollListener != null) {
-				onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
 			}
 		}
 		invalidate();
@@ -441,14 +249,6 @@ public class ChartScrollView extends View {
 		return -1;
 	}
 
-	public void setOnScrollListener(OnScrollListener onScrollListener) {
-		this.onScrollListener = onScrollListener;
-	}
-
-	public interface OnScrollListener {
-		void onScroll(float x, float size);
-	}
-
 	@Override
 	public Parcelable onSaveInstanceState() {
 		Parcelable superState = super.onSaveInstanceState();
@@ -457,8 +257,6 @@ public class ChartScrollView extends View {
 		ss.maxValueY = maxValueY;
 		ss.linesVisibility = linesVisibility;
 		ss.linesCalculated = linesCalculated;
-		ss.selectionWidth = selectionWidth;
-		ss.scrollX = scrollX;
 		ss.data = data;
 		return ss;
 	}
@@ -470,8 +268,6 @@ public class ChartScrollView extends View {
 		maxValueY = ss.maxValueY;
 		linesVisibility = ss.linesVisibility;
 		linesCalculated = ss.linesCalculated;
-		selectionWidth = ss.selectionWidth;
-		scrollX = ss.scrollX;
 		data = ss.data;
 		linePaints = new Paint[data.getLinesCount()];
 		for (int i = 0; i < data.getLinesCount(); i++) {
@@ -489,10 +285,6 @@ public class ChartScrollView extends View {
 			maxValueY = in.readInt();
 			in.readBooleanArray(linesVisibility);
 			in.readBooleanArray(linesCalculated);
-			float[] floats = new float[2];
-			in.readFloatArray(floats);
-			selectionWidth = floats[0];
-			scrollX = floats[1];
 			data = in.readParcelable(ChartData.class.getClassLoader());
 		}
 
@@ -502,7 +294,6 @@ public class ChartScrollView extends View {
 			out.writeInt(maxValueY);
 			out.writeBooleanArray(linesVisibility);
 			out.writeBooleanArray(linesCalculated);
-			out.writeFloatArray(new float[] {selectionWidth, scrollX});
 			out.writeParcelable(data, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
 		}
 
@@ -510,8 +301,6 @@ public class ChartScrollView extends View {
 		private int maxValueY;
 		private boolean[] linesVisibility;
 		private boolean[] linesCalculated;
-		private float selectionWidth;
-		private float scrollX;
 
 		public static final Parcelable.Creator<SavedState> CREATOR =
 				new Parcelable.Creator<SavedState>() {
