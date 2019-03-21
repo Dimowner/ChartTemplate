@@ -59,11 +59,11 @@ public class ChartView extends View {
 		PADD_NORMAL = (int) (16*DENSITY);
 		PADD_SMALL = (int) (8*DENSITY);
 		PADD_TINY = (int) (4*DENSITY);
-		TEXT_SPACE = (int) (65*DENSITY);
+		TEXT_SPACE = (int) (42*DENSITY);
 		BASE_LINE_Y = (int) (32*DENSITY);
 	}
 
-	private float STEP = 25*DENSITY;
+	private float STEP = 10*DENSITY;
 
 	private ChartData data;
 
@@ -302,7 +302,7 @@ public class ChartView extends View {
 			drawGrid(canvas);
 
 			if (data.getLinesCount() > 0) {
-				drawTimeline(canvas, data.getValues(0).length);
+				drawTimeline(canvas);
 			}
 
 			//Draw charts
@@ -356,25 +356,20 @@ public class ChartView extends View {
 		canvas.drawPath(chartPath, linePaints[index]);
 	}
 
-	private void drawTimeline(Canvas canvas, int length) {
-
-		float start = screenShift <= 0 ? -screenShift / STEP : 0;
-		float offset = screenShift % STEP;
-
+	private void drawTimeline(Canvas canvas) {
 		float pos = 0;
-		for (int i = (int) start; i < length; i++) {
-			date.setTime(data.getTime()[i]);
-			dateText = TimeUtils.formatDate(date);
-			if (TEXT_SPACE < STEP) {
-				canvas.drawText(dateText, pos + offset, HEIGHT - PADD_NORMAL, textPaint);
-			} else if (i % (Math.ceil(TEXT_SPACE / STEP)) == 0) {
-				canvas.drawText(dateText, pos + offset, HEIGHT - PADD_NORMAL, textPaint);
-			}
+		int count = 1;
+		while (count*STEP < TEXT_SPACE) {
+			count *=2;
+		}
 
-			if (pos - STEP > WIDTH) {
-				break;
+		for (int i = 0; i < data.getLength()/count+1; i++) {
+			if (pos+screenShift+TEXT_SPACE >= 0 && pos+screenShift < WIDTH && i*count < data.getLength()) {
+				date.setTime(data.getTime()[i * count]);
+				dateText = TimeUtils.formatDate(date);
+				canvas.drawText(dateText, pos + screenShift, HEIGHT - PADD_NORMAL, textPaint);
 			}
-			pos += STEP;
+			pos += count*STEP;
 		}
 	}
 

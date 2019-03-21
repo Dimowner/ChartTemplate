@@ -215,20 +215,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		chartView.setLayoutParams(chartLp);
 
 		FrameLayout scroll = new FrameLayout(getApplicationContext());
-		FrameLayout.LayoutParams scrollLp2 = new FrameLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
+		LinearLayout.LayoutParams scrollLp2 = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		scroll.setLayoutParams(scrollLp2);
 
 		//CharScrollView
 		chartScrollView = new ChartScrollView(this);
-		LinearLayout.LayoutParams scrollLp = new LinearLayout.LayoutParams(
+		FrameLayout.LayoutParams scrollLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
 		scrollLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
 		scrollLp.gravity = Gravity.CENTER;
 		chartScrollView.setLayoutParams(scrollLp);
 
 		chartScrollOverlayView = new ChartScrollOverlayView(this);
-		LinearLayout.LayoutParams scrollOverlayLp = new LinearLayout.LayoutParams(
+		FrameLayout.LayoutParams scrollOverlayLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
 		scrollOverlayLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
 		scrollOverlayLp.gravity = Gravity.CENTER;
@@ -238,7 +238,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		//CheckersView
 		checkersView = new CheckersView(this);
-		LinearLayout.LayoutParams checkersLp = new LinearLayout.LayoutParams(
+		FrameLayout.LayoutParams checkersLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		checkersView.setLayoutParams(checkersLp);
 
