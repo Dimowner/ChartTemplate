@@ -56,15 +56,15 @@ public class ChartScrollOverlayView extends View {
 	private int dataLength = 0;
 
 	private Path path;
-	private float STEP = 1;
+	private float STEP = 10;
 
 	private Paint overlayPaint;
 	private Paint selectionPaint;
 
-	private float scrollX = -1;
+	private float scrollX = 0;
 
-	private float WIDTH = 0;
-	private float HEIGHT = 0;
+	private float WIDTH = 1;
+	private float HEIGHT = 1;
 
 	private OnScrollListener onScrollListener;
 
@@ -215,6 +215,7 @@ public class ChartScrollOverlayView extends View {
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
+		boolean b = WIDTH != getWidth();
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
 
@@ -222,8 +223,12 @@ public class ChartScrollOverlayView extends View {
 			STEP = (WIDTH/dataLength);
 		}
 
-		if (scrollX < 0) {
+		if (scrollX <= 0) {
 			scrollX = WIDTH - selectionWidth;
+		}
+
+		if (b && dataLength > 0 && onScrollListener != null) {
+			onScrollListener.onScroll(scrollX / STEP, selectionWidth / STEP);
 		}
 	}
 
@@ -271,11 +276,11 @@ public class ChartScrollOverlayView extends View {
 		if (length > 0) {
 			dataLength = length;
 
-			if (WIDTH > 0 && dataLength > 0) {
+			if (WIDTH > 1) {
 				STEP = (WIDTH / dataLength);
-			}
-			if (onScrollListener != null) {
-				onScrollListener.onScroll(scrollX / STEP, selectionWidth / STEP);
+				if (onScrollListener != null) {
+					onScrollListener.onScroll(scrollX / STEP, selectionWidth / STEP);
+				}
 			}
 			invalidate();
 		}

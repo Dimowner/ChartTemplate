@@ -48,12 +48,12 @@ public class ChartScrollView extends View {
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
 	private Path path;
-	private float STEP = 1;
+	private float STEP = 10;
 
 	private Paint[] linePaints;
 
-	private float WIDTH = 0;
-	private float HEIGHT = 0;
+	private float WIDTH = 1;
+	private float HEIGHT = 1;
 	private int maxValueY = 0;
 	private float valueScaleY = 0;
 
@@ -168,7 +168,7 @@ public class ChartScrollView extends View {
 				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 			}
 			calculateMaxValue(true);
-			if (WIDTH > 0 && data.getLength() > 0) {
+			if (WIDTH > 1 && data.getLength() > 0) {
 				STEP = (WIDTH / data.getLength());
 			}
 		}

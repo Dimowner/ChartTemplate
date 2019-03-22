@@ -87,12 +87,12 @@ public class ChartView extends View {
 
 	private ChartSelectionDrawer selectionDrawer;
 
-	private float WIDTH = 0;
-	private float HEIGHT = 0;
+	private float WIDTH = 1;
+	private float HEIGHT = 1;
 	private int maxValueVisible = 0;
 	private int maxValueCalculated = 0;
 	private int[] maxValuesLine;
-	private float valueScaleY = 0;
+	private float valueScaleY = 1;
 	private boolean skipNextInvalidation = false;
 
 	private OnMoveEventsListener onMoveEventsListener;
@@ -292,12 +292,14 @@ public class ChartView extends View {
 	}
 
 	public void scrollPos(float x, float size) {
-		STEP = WIDTH/size;
-		scrollPos = (x*STEP);
-		screenShift = -scrollPos;
-		calculateMaxValue2(false);
-		skipNextInvalidation = true;
-		invalidate();
+		if (x >= 0) {
+			STEP = WIDTH / size;
+			scrollPos = (x * STEP);
+			screenShift = -scrollPos;
+			calculateMaxValue2(false);
+			skipNextInvalidation = true;
+			invalidate();
+		}
 	}
 
 	@Override
@@ -305,7 +307,9 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL) / maxValueVisible;
+		if (maxValueVisible > 0) {
+			valueScaleY = (HEIGHT - BASE_LINE_Y - PADD_SMALL) / maxValueVisible;
+		}
 	}
 
 	@Override
@@ -431,6 +435,7 @@ public class ChartView extends View {
 			calculateMaxValue2(true);
 		}
 		selectionDrawer.setSelectionX(-1);
+		invalidate();
 	}
 
 	private void calculateMaxValue2(boolean adjust) {
