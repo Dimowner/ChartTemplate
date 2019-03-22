@@ -53,7 +53,8 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity implements View.OnClickListener,
+			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener, OnCheckListener {
 
 	private int activeItem = 4;
 
@@ -77,7 +78,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				LinearLayout.LayoutParams.MATCH_PARENT);
 		setContentView(generateLayout(), params);
 
-		if (savedInstanceState == null) {
+		if (savedInstanceState == null || CTApplication.getData() == null) {
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -92,33 +93,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			});
 			thread.start();
 		}
-
-		chartView.setOnMoveEventsListener(new ChartView.OnMoveEventsListener() {
-			@Override
-			public void onMoveEvent() {
-				scrollView.requestDisallowInterceptTouchEvent(true);
-			}
-		});
-		chartScrollOverlayView.setOnScrollListener(new ChartScrollOverlayView.OnScrollListener() {
-			@Override
-			public void onScroll(float x, float size) {
-				chartView.scrollPos(x, size);
-				scrollView.requestDisallowInterceptTouchEvent(true);
-			}
-		});
-
-		checkersView.setOnCheckListener(new OnCheckListener() {
-			@Override
-			public void onCheck(int id, String name, boolean checked) {
-				if (checked) {
-					chartView.showLine(name);
-					chartScrollView.showLine(name);
-				} else {
-					chartView.hideLine(name);
-					chartScrollView.hideLine(name);
-				}
-			}
-		});
 	}
 
 	private View generateLayout() {
@@ -126,7 +100,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		int PADD_NORMAL = (int) (16*DENSITY);
 		int PADD_SMALL = (int) (8*DENSITY);
 		int PADD_TINY = (int) (4*DENSITY);
-		int TOOLBAR_HEIGHT = (int) (56*DENSITY);
+		int TOOLBAR_SIZE = (int) (56*DENSITY);
 
 		scrollView = new ScrollView(getApplicationContext());
 		Resources res = getResources();
@@ -142,8 +116,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		//Toolbar
 		FrameLayout toolbar = new FrameLayout(getApplicationContext());
-		FrameLayout.LayoutParams toolbarLp = new FrameLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, TOOLBAR_HEIGHT);
+		LinearLayout.LayoutParams toolbarLp = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT, TOOLBAR_SIZE);
 		toolbar.setLayoutParams(toolbarLp);
 		toolbar.setBackgroundResource(R.color.primary);
 
@@ -166,7 +140,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		//Button Next
 		TextView btnNext = new TextView(getApplicationContext());
 		FrameLayout.LayoutParams nextLp = new FrameLayout.LayoutParams(
-				TOOLBAR_HEIGHT, TOOLBAR_HEIGHT);
+				TOOLBAR_SIZE, TOOLBAR_SIZE);
 		nextLp.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
 		btnNext.setLayoutParams(nextLp);
 		btnNext.setTextColor(res.getColor(R.color.white));
@@ -180,7 +154,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		//Button Theme
 		ImageButton btnTheme = new ImageButton(getApplicationContext());
 		FrameLayout.LayoutParams themeLp = new FrameLayout.LayoutParams(
-				TOOLBAR_HEIGHT, TOOLBAR_HEIGHT);
+				TOOLBAR_SIZE, TOOLBAR_SIZE);
 
 		themeLp.gravity = Gravity.END | Gravity.CENTER_VERTICAL;
 		btnTheme.setLayoutParams(themeLp);
@@ -213,6 +187,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(310*DENSITY));
 		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chartView.setLayoutParams(chartLp);
+		chartView.setOnMoveEventsListener(this);
 
 		FrameLayout scroll = new FrameLayout(getApplicationContext());
 		LinearLayout.LayoutParams scrollLp2 = new LinearLayout.LayoutParams(
@@ -233,14 +208,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		scrollOverlayLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
 		scrollOverlayLp.gravity = Gravity.CENTER;
 		chartScrollOverlayView.setLayoutParams(scrollOverlayLp);
+		chartScrollOverlayView.setOnScrollListener(this);
 		scroll.addView(chartScrollView);
 		scroll.addView(chartScrollOverlayView);
 
 		//CheckersView
 		checkersView = new CheckersView(this);
-		FrameLayout.LayoutParams checkersLp = new FrameLayout.LayoutParams(
+		LinearLayout.LayoutParams checkersLp = new LinearLayout.LayoutParams (
 				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		checkersView.setLayoutParams(checkersLp);
+		checkersView.setOnCheckListener(this);
 
 		container.addView(toolbar);
 		container.addView(txtFollowers);
@@ -392,12 +369,34 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			if (activeItem < 0) {
 				activeItem = 4;
 			}
-			if (activeItem != prev) {
+			if (activeItem != prev && CTApplication.getData() != null) {
 				setData(toChartData(CTApplication.getData()[activeItem]));
 			}
 		} else if (v.getId() == R.id.btn_theme) {
 			CTApplication.setNightMode(!CTApplication.isNightMode());
 			recreate();
+		}
+	}
+
+	@Override
+	public void onMoveEvent() {
+		scrollView.requestDisallowInterceptTouchEvent(true);
+	}
+
+	@Override
+	public void onScroll(float x, float size) {
+		chartView.scrollPos(x, size);
+		scrollView.requestDisallowInterceptTouchEvent(true);
+	}
+
+	@Override
+	public void onCheck(int id, String name, boolean checked) {
+		if (checked) {
+			chartView.showLine(name);
+			chartScrollView.showLine(name);
+		} else {
+			chartView.hideLine(name);
+			chartScrollView.hideLine(name);
 		}
 	}
 }

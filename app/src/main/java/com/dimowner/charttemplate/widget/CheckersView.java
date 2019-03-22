@@ -192,10 +192,12 @@ public class CheckersView extends LinearLayout {
 		names = ss.names;
 		colors = ss.colors;
 		container.removeAllViews();
-		for (int i = 0; i < names.length; i++) {
-			container.addView(createCheckerView(i, names[i], colors[i], i));
-			if (i < names.length-1) {
-				container.addView(createDivider());
+		if (names != null && colors != null) {
+			for (int i = 0; i < names.length; i++) {
+				container.addView(createCheckerView(i, names[i], colors[i], i));
+				if (i < names.length - 1) {
+					container.addView(createDivider());
+				}
 			}
 		}
 	}

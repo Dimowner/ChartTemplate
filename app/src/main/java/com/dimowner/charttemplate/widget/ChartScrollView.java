@@ -269,9 +269,11 @@ public class ChartScrollView extends View {
 		linesVisibility = ss.linesVisibility;
 		linesCalculated = ss.linesCalculated;
 		data = ss.data;
-		linePaints = new Paint[data.getLinesCount()];
-		for (int i = 0; i < data.getLinesCount(); i++) {
-			linePaints[i] = createLinePaint(data.getColorsInts()[i]);
+		if (data != null) {
+			linePaints = new Paint[data.getLinesCount()];
+			for (int i = 0; i < data.getLinesCount(); i++) {
+				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
+			}
 		}
 	}
 

@@ -59,7 +59,7 @@ public class ChartView extends View {
 		PADD_NORMAL = (int) (16*DENSITY);
 		PADD_SMALL = (int) (8*DENSITY);
 		PADD_TINY = (int) (4*DENSITY);
-		TEXT_SPACE = (int) (42*DENSITY);
+		TEXT_SPACE = (int) (56*DENSITY);
 		BASE_LINE_Y = (int) (32*DENSITY);
 	}
 
@@ -76,6 +76,7 @@ public class ChartView extends View {
 	private String dateText;
 
 	private TextPaint textPaint;
+	private TextPaint timelineTextPaint;
 	private Paint gridPaint;
 	private Paint baselinePaint;
 	private Paint[] linePaints;
@@ -187,6 +188,12 @@ public class ChartView extends View {
 		textPaint.setTextAlign(Paint.Align.CENTER);
 		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
 		textPaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
+
+		timelineTextPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
+		timelineTextPaint.setColor(gridTextColor);
+		timelineTextPaint.setTextAlign(Paint.Align.LEFT);
+		timelineTextPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
+		timelineTextPaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
 
 		setOnTouchListener(new OnTouchListener() {
 			@Override
@@ -367,7 +374,13 @@ public class ChartView extends View {
 			if (pos+screenShift+TEXT_SPACE >= 0 && pos+screenShift < WIDTH && i*count < data.getLength()) {
 				date.setTime(data.getTime()[i * count]);
 				dateText = TimeUtils.formatDate(date);
-				canvas.drawText(dateText, pos + screenShift, HEIGHT - PADD_NORMAL, textPaint);
+
+				if (count*STEP > TEXT_SPACE && count*STEP < TEXT_SPACE*1.18f && (i)%2!=0) {
+					timelineTextPaint.setAlpha((int)(255/(TEXT_SPACE*0.18f)*(count*STEP-TEXT_SPACE)));
+				} else {
+					timelineTextPaint.setAlpha(255);
+				}
+				canvas.drawText(dateText, pos + screenShift, HEIGHT - PADD_NORMAL, timelineTextPaint);
 			}
 			pos += count*STEP;
 		}
@@ -488,10 +501,12 @@ public class ChartView extends View {
 		maxValueY = ss.maxValueY;
 		data = ss.data;
 
-		selectionDrawer.setLinesCount(data.getLinesCount());
-		linePaints = new Paint[data.getLinesCount()];
-		for (int i = 0; i < data.getLinesCount(); i++) {
-			linePaints[i] = createLinePaint(data.getColorsInts()[i]);
+		if (data != null) {
+			selectionDrawer.setLinesCount(data.getLinesCount());
+			linePaints = new Paint[data.getLinesCount()];
+			for (int i = 0; i < data.getLinesCount(); i++) {
+				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
+			}
 		}
 	}
 
