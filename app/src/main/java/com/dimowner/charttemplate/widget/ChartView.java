@@ -41,8 +41,6 @@ import com.dimowner.charttemplate.util.TimeUtils;
 
 import java.util.Date;
 
-import timber.log.Timber;
-
 public class ChartView extends View {
 
 	private final float DENSITY;
@@ -81,8 +79,8 @@ public class ChartView extends View {
 	private Paint baselinePaint;
 	private Paint[] linePaints;
 
-	private ValueAnimator animator;
 	private ValueAnimator alphaAnimator;
+	private ValueAnimator heightAnimator;
 
 	private float scrollPos;
 	private float screenShift = 0;
@@ -91,8 +89,11 @@ public class ChartView extends View {
 
 	private float WIDTH = 0;
 	private float HEIGHT = 0;
-	private int maxValueY = 0;
+	private int maxValueVisible = 0;
+	private int maxValueCalculated = 0;
+	private int[] maxValuesLine;
 	private float valueScaleY = 0;
+	private boolean skipNextInvalidation = false;
 
 	private OnMoveEventsListener onMoveEventsListener;
 
@@ -240,26 +241,6 @@ public class ChartView extends View {
 		return lp;
 	}
 
-	private void animation(final float start, final float end, final boolean invalidate) {
-		if (animator != null && animator.isStarted()) {
-			animator.cancel();
-		}
-		animator = ValueAnimator.ofFloat(0.0f, 1.0f);
-		animator.setInterpolator(new AccelerateDecelerateInterpolator());
-		animator.setDuration(ANIMATION_DURATION);
-		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-			@Override
-			public void onAnimationUpdate(ValueAnimator animation) {
-				maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
-				valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/ maxValueY;
-				if (invalidate) {
-					invalidate();
-				}
-			}
-		});
-		animator.start();
-	}
-
 	private void alphaAnimator(float start, final float end, final int index, final boolean show) {
 		if (alphaAnimator != null && alphaAnimator.isRunning()) {
 			alphaAnimator.cancel();
@@ -279,17 +260,43 @@ public class ChartView extends View {
 				if (val == end) {
 					linesVisibility[index] = show;
 				}
+				skipNextInvalidation = true;
 				invalidate();
 			}
 		});
 		alphaAnimator.start();
 	}
 
+	private void heightAnimator(final float diff) {
+		if (heightAnimator != null && heightAnimator.isRunning()) {
+			heightAnimator.cancel();
+		}
+		heightAnimator = ValueAnimator.ofFloat(diff, 0);
+		heightAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+
+		heightAnimator.setDuration(2*ANIMATION_DURATION);
+		heightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				float val = (float) animation.getAnimatedValue();
+				maxValueVisible = maxValueCalculated -(int)val;
+				valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/ maxValueVisible;
+				if (skipNextInvalidation) {
+					skipNextInvalidation = false;
+				} else {
+					invalidate();
+				}
+			}
+		});
+		heightAnimator.start();
+	}
+
 	public void scrollPos(float x, float size) {
 		STEP = WIDTH/size;
 		scrollPos = (x*STEP);
 		screenShift = -scrollPos;
-//		calculateMaxValue();
+		calculateMaxValue2(false);
+		skipNextInvalidation = true;
 		invalidate();
 	}
 
@@ -298,7 +305,7 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/ maxValueY;
+		valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL) / maxValueVisible;
 	}
 
 	@Override
@@ -326,7 +333,7 @@ public class ChartView extends View {
 	}
 
 	private void drawGrid(Canvas canvas) {
-		int gridValueText = (maxValueY / GRID_LINES_COUNT);
+		int gridValueText = (maxValueVisible / GRID_LINES_COUNT);
 		int gridStep = (int) (gridValueText * valueScaleY);
 		for (int i = 0; i < GRID_LINES_COUNT; i++) {
 			if (i == 0) {
@@ -343,11 +350,11 @@ public class ChartView extends View {
 
 	private void drawChart(Canvas canvas, int[] values, int index) {
 		chartPath.rewind();
-		float start = screenShift <= 0 ? -screenShift / STEP : 0;
+//		float start = screenShift <= 0 ? -screenShift / STEP : 0;
 		float offset = screenShift % STEP;
 
 		float pos = 0;
-		for (int i = (int) start; i < values.length; i++) {
+		for (int i = (int)(screenShift <= 0 ? -screenShift/STEP : 0); i < values.length; i++) {
 			//Draw chart
 			if (pos == 0) {
 				chartPath.moveTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScaleY);
@@ -392,7 +399,8 @@ public class ChartView extends View {
 			linesCalculated[pos] = false;
 			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
 		}
-		calculateMaxValue(false);
+		calculateMaxValuesLine();
+		calculateMaxValue2(true);
 	}
 
 	public void showLine(String name) {
@@ -402,7 +410,8 @@ public class ChartView extends View {
 			linesCalculated[pos] = true;
 			alphaAnimator(linePaints[pos].getAlpha(), 255, pos, true);
 		}
-		calculateMaxValue(false);
+		calculateMaxValuesLine();
+		calculateMaxValue2(true);
 	}
 
 	public void setData(ChartData d) {
@@ -418,28 +427,42 @@ public class ChartView extends View {
 				linesCalculated[i] = true;
 				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 			}
-			calculateMaxValue(true);
+			calculateMaxValuesLine();
+			calculateMaxValue2(true);
 		}
 		selectionDrawer.setSelectionX(-1);
 	}
 
-	private void calculateMaxValue(boolean invalidate) {
-		int prev = maxValueY;
-		maxValueY = 0;
-//		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
-		for (int j = 0; j < data.getLinesCount(); j++) {
-			for (int i = 0; i < data.getLength(); i++) {
+	private void calculateMaxValue2(boolean adjust) {
+		int prev = maxValueCalculated;
+		maxValueCalculated = 0;
+		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
+			if (i < maxValuesLine.length && maxValuesLine[i] > maxValueCalculated) {
+				maxValueCalculated = maxValuesLine[i];
+			}
+		}
+
+		if (adjust) {
+			maxValueCalculated = (int) adjustToGrid((float) maxValueCalculated, GRID_LINES_COUNT);
+		}
+		if (prev != maxValueCalculated) {
+			heightAnimator(maxValueCalculated - maxValueVisible);
+		}
+	}
+
+	private void calculateMaxValuesLine() {
+		maxValuesLine = new int[data.getLength()];
+		int max;
+		for (int i = 0; i < data.getLength(); i++) {
+			max = 0;
+			for (int j = 0; j < data.getLinesCount(); j++) {
 				if (linesCalculated[j]) {
-					if (data.getValues(j)[i] > maxValueY) {
-						maxValueY = data.getValues(j)[i];
+					if (i < data.getLength() && data.getValues(j)[i] > max) {
+						max = data.getValues(j)[i];
 					}
 				}
 			}
-		}
-		maxValueY = (int) adjustToGrid((float) maxValueY, GRID_LINES_COUNT);
-		valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/maxValueY;
-		if (prev != maxValueY) {
-			animation(prev, maxValueY, invalidate);
+			maxValuesLine[i] = max;
 		}
 	}
 
@@ -481,7 +504,9 @@ public class ChartView extends View {
 		ss.screenShift = screenShift;
 		ss.valueScaleY = valueScaleY;
 		ss.STEP = STEP;
-		ss.maxValueY = maxValueY;
+		ss.maxValueVisible = maxValueVisible;
+		ss.maxValueCalculated = maxValueCalculated;
+		ss.maxValuesLine = maxValuesLine;
 		ss.data = data;
 		return ss;
 	}
@@ -498,7 +523,9 @@ public class ChartView extends View {
 		screenShift = ss.screenShift;
 		valueScaleY = ss.valueScaleY;
 		STEP = ss.STEP;
-		maxValueY = ss.maxValueY;
+		maxValueVisible = ss.maxValueVisible;
+		maxValueCalculated = ss.maxValueCalculated;
+		maxValuesLine = ss.maxValuesLine;
 		data = ss.data;
 
 		if (data != null) {
@@ -530,7 +557,9 @@ public class ChartView extends View {
 			screenShift = floats[2];
 			valueScaleY = floats[3];
 			STEP = floats[4];
-			maxValueY = in.readInt();
+			maxValueVisible = in.readInt();
+			maxValueCalculated = in.readInt();
+			in.readIntArray(maxValuesLine);
 			data = in.readParcelable(ChartData.class.getClassLoader());
 		}
 
@@ -540,7 +569,9 @@ public class ChartView extends View {
 			out.writeBooleanArray(linesVisibility);
 			out.writeBooleanArray(linesCalculated);
 			out.writeFloatArray(new float[] {scrollPos, selectionX, screenShift, valueScaleY, STEP});
-			out.writeInt(maxValueY);
+			out.writeInt(maxValueVisible);
+			out.writeInt(maxValueCalculated);
+			out.writeIntArray(maxValuesLine);
 			out.writeParcelable(data, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
 		}
 
@@ -552,7 +583,9 @@ public class ChartView extends View {
 		float selectionX;
 		float screenShift;
 		float valueScaleY;
-		int maxValueY;
+		int maxValueVisible;
+		int maxValueCalculated = 0;
+		int[] maxValuesLine;
 
 		public static final Parcelable.Creator<SavedState> CREATOR =
 				new Parcelable.Creator<SavedState>() {

@@ -29,7 +29,6 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.dimowner.charttemplate.R;
-import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChartScrollOverlayView extends View {
@@ -46,13 +45,13 @@ public class ChartScrollOverlayView extends View {
 
 	{
 		float DENSITY = AndroidUtils.dpToPx(1);
-		SMALLEST_SELECTION_WIDTH = 80* DENSITY;
+		SMALLEST_SELECTION_WIDTH = 60* DENSITY;
 		PADD_DOUBLE = (int) (32* DENSITY);
 		SELECTION = 5* DENSITY;
 		SELECTION_HALF = SELECTION/2;
 	}
 
-	private float selectionWidth = SMALLEST_SELECTION_WIDTH;
+	private float selectionWidth = (int)(1.3*SMALLEST_SELECTION_WIDTH);
 
 	private int dataLength = 0;
 
@@ -137,8 +136,7 @@ public class ChartScrollOverlayView extends View {
 					case MotionEvent.ACTION_MOVE:
 						switch (selectionState) {
 							case CURSOR_CENTER:
-								float shift = (motionEvent.getX()) - moveStartX;
-								scrollX = moveStartX + shift - offset;
+								scrollX = moveStartX + motionEvent.getX() - moveStartX - offset;
 								//Set scroll edges.
 								if (scrollX + selectionWidth > WIDTH) {
 									scrollX = WIDTH - selectionWidth;
@@ -152,9 +150,8 @@ public class ChartScrollOverlayView extends View {
 								invalidate();
 								break;
 							case CURSOR_LEFT:
-								float shift2 = (motionEvent.getX()) - moveStartX;
 								float prevScroll = scrollX;
-								scrollX = moveStartX + shift2 - offset;
+								scrollX = moveStartX + motionEvent.getX() - moveStartX - offset;
 								selectionWidth += prevScroll-scrollX;
 								//Set scroll edges.
 								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
@@ -176,8 +173,7 @@ public class ChartScrollOverlayView extends View {
 								invalidate();
 								break;
 							case CURSOR_RIGHT:
-								float shift3 = (motionEvent.getX()) - moveStartX;
-								selectionWidth = (prevSelectionWidth + shift3);
+								selectionWidth = (prevSelectionWidth + motionEvent.getX() - moveStartX);
 								//Set scroll edges.
 								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
 									selectionWidth = SMALLEST_SELECTION_WIDTH;

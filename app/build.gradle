@@ -12,8 +12,8 @@ ext.versions = [
 ]
 
 def versionMajor = 0
-def versionMinor = 2
-def versionPatch = 20
+def versionMinor = 3
+def versionPatch = 0
 
 android {
 	compileSdkVersion versions.targetSdkVersion
@@ -24,7 +24,6 @@ android {
 		targetSdkVersion versions.targetSdkVersion
 		versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch
 		versionName "${versionMajor}.${versionMinor}.${versionPatch}"
-//		vectorDrawables.useSupportLibrary = true
 	}
 
 	def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -107,6 +106,4 @@ dependencies {
 	implementation "com.jakewharton.timber:timber:$versions.timber"
 
 //	implementation "com.google.code.gson:gson:$versions.gson"
-//
-//	implementation "com.android.support:recyclerview-v7:$versions.support"
 }

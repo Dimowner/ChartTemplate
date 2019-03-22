@@ -34,7 +34,7 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChartScrollView extends View {
 
-	private static final int ANIMATION_DURATION = 60; //mills
+	private static final int ANIMATION_DURATION = 80; //mills
 
 	private final float DENSITY;
 	private final float SELECTION;
@@ -178,9 +178,7 @@ public class ChartScrollView extends View {
 	private void calculateMaxValue(final boolean invalidate) {
 		int prev = maxValueY;
 		maxValueY = 0;
-//		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
 		for (int j = 0; j < data.getLinesCount(); j++) {
-//			if (linesVisibility[j]) {
 			if (linesCalculated[j]) {
 				for (int i = 0; i < data.getLength(); i++) {
 					if (data.getValues(j)[i] > maxValueY) {
