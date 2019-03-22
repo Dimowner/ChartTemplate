@@ -24,6 +24,7 @@ import android.graphics.Typeface;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -51,7 +52,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import timber.log.Timber;
+//import timber.log.Timber;
 
 public class MainActivity extends Activity implements View.OnClickListener,
 			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener, OnCheckListener {
@@ -340,7 +341,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //			dataArray = array.getDataArray();
 			CTApplication.setData(dataValues);
 		} catch (IOException | ClassCastException | JSONException ex) {
-			Timber.e(ex);
+//			Timber.e(ex);
+			Log.e("ERROR", "", ex);
 			return null;
 		}
 		return toChartData(CTApplication.getData()[pos]);

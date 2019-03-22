@@ -437,7 +437,7 @@ public class ChartView extends View {
 		int prev = maxValueCalculated;
 		maxValueCalculated = 0;
 		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
-			if (i < maxValuesLine.length && maxValuesLine[i] > maxValueCalculated) {
+			if (i >= 0 && i < maxValuesLine.length && maxValuesLine[i] > maxValueCalculated) {
 				maxValueCalculated = maxValuesLine[i];
 			}
 		}

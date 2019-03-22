@@ -26,22 +26,12 @@ android {
 		versionName "${versionMajor}.${versionMinor}.${versionPatch}"
 	}
 
-	def keystorePropertiesFile = rootProject.file("keystore.properties")
-	def keystoreProperties = new Properties()
-	keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
 	signingConfigs {
 		dev {
-			storeFile file(keystoreProperties['storeFile'])
-			storePassword keystoreProperties['storePassword']
-			keyAlias keystoreProperties['keyAlias']
-			keyPassword keystoreProperties['keyPassword']
-		}
-		release {
-			storeFile file(keystoreProperties['prodStoreFile'])
-			storePassword keystoreProperties['prodStorePassword']
-			keyAlias keystoreProperties['prodKeyAlias']
-			keyPassword keystoreProperties['prodKeyPassword']
+			storeFile file("key/debug/debug.keystore")
+			storePassword "android"
+			keyAlias "androiddebugkey"
+			keyPassword "android"
 		}
 	}
 
@@ -103,7 +93,7 @@ android.variantFilter { variant ->
 
 dependencies {
 	//Timber
-	implementation "com.jakewharton.timber:timber:$versions.timber"
+//	implementation "com.jakewharton.timber:timber:$versions.timber"
 
 //	implementation "com.google.code.gson:gson:$versions.gson"
 }
