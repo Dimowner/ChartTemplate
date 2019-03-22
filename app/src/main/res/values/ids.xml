@@ -1,4 +1,3 @@
 <resources>
-	<item name="btn_next" type="id"/>
 	<item name="btn_theme" type="id"/>
 </resources>

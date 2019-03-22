@@ -24,7 +24,6 @@ import android.graphics.Typeface;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -39,10 +38,8 @@ import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.widget.ChartScrollOverlayView;
-import com.dimowner.charttemplate.widget.ChartScrollView;
 import com.dimowner.charttemplate.widget.ChartView;
-import com.dimowner.charttemplate.widget.CheckersView;
-import com.dimowner.charttemplate.widget.OnCheckListener;
+import com.dimowner.charttemplate.widget.ItemView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,17 +49,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-//import timber.log.Timber;
-
 public class MainActivity extends Activity implements View.OnClickListener,
-			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener, OnCheckListener {
+			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener {
 
-	private int activeItem = 4;
-
-	private ChartView chartView;
-	private ChartScrollView chartScrollView;
-	private ChartScrollOverlayView chartScrollOverlayView;
-	private CheckersView checkersView;
+	private ItemView itemView;
+	private ItemView itemView2;
+	private ItemView itemView3;
+	private ItemView itemView4;
+	private ItemView itemView5;
 	private ScrollView scrollView;
 
 	@Override
@@ -83,11 +77,15 @@ public class MainActivity extends Activity implements View.OnClickListener,
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
-					final ChartData d = readDemoData(activeItem);
+					final ChartData d = readDemoData(4);
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							setData(d);
+							itemView.setData(d);
+							itemView2.setData(toChartData(CTApplication.getData()[0]));
+							itemView3.setData(toChartData(CTApplication.getData()[1]));
+							itemView4.setData(toChartData(CTApplication.getData()[2]));
+							itemView5.setData(toChartData(CTApplication.getData()[3]));
 						}
 					});
 				}
@@ -99,7 +97,6 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	private View generateLayout() {
 		float DENSITY = AndroidUtils.dpToPx(1);
 		int PADD_NORMAL = (int) (16*DENSITY);
-		int PADD_SMALL = (int) (8*DENSITY);
 		int PADD_TINY = (int) (4*DENSITY);
 		int TOOLBAR_SIZE = (int) (56*DENSITY);
 
@@ -129,7 +126,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		FrameLayout.LayoutParams titleLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		titleLp.setMargins((int)(62*DENSITY), 0, 0, 0);
+		titleLp.setMargins(PADD_NORMAL, 0, 0, 0);
 		titleLp.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
 		title.setLayoutParams(titleLp);
 		title.setTypeface(typeface);
@@ -137,20 +134,6 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		title.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
 		title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 		title.setText(R.string.statistics);
-
-		//Button Next
-		TextView btnNext = new TextView(getApplicationContext());
-		FrameLayout.LayoutParams nextLp = new FrameLayout.LayoutParams(
-				TOOLBAR_SIZE, TOOLBAR_SIZE);
-		nextLp.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
-		btnNext.setLayoutParams(nextLp);
-		btnNext.setTextColor(res.getColor(R.color.white));
-		btnNext.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-		btnNext.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-		btnNext.setText(R.string.next);
-		btnNext.setId(R.id.btn_next);
-		btnNext.setGravity(Gravity.CENTER);
-		btnNext.setOnClickListener(this);
 
 		//Button Theme
 		ImageButton btnTheme = new ImageButton(getApplicationContext());
@@ -161,11 +144,10 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		btnTheme.setLayoutParams(themeLp);
 		btnTheme.setImageResource(R.drawable.moon);
 		btnTheme.setId(R.id.btn_theme);
-		btnNext.setGravity(Gravity.CENTER);
 		btnTheme.setOnClickListener(this);
 
 		toolbar.addView(title);
-		toolbar.addView(btnNext);
+//		toolbar.addView(btnNext);
 		toolbar.addView(btnTheme);
 
 		//Followers
@@ -182,50 +164,59 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		txtFollowers.setTypeface(typeface);
 		txtFollowers.setGravity(Gravity.CENTER);
 
-		//CharView
-		chartView = new ChartView(this);
-		LinearLayout.LayoutParams chartLp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(310*DENSITY));
-		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
-		chartView.setLayoutParams(chartLp);
-		chartView.setOnMoveEventsListener(this);
+		//ItemView
+		itemView = new ItemView(this);
+		LinearLayout.LayoutParams itemLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		itemLp.bottomMargin = PADD_NORMAL;
+		itemView.setLayoutParams(itemLp);
+		itemView.setOnMoveEventsListener(this);
+		itemView.setOnScrollListener(this);
 
-		FrameLayout scroll = new FrameLayout(getApplicationContext());
-		LinearLayout.LayoutParams scrollLp2 = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-		scroll.setLayoutParams(scrollLp2);
+		itemView2 = new ItemView(this);
+		LinearLayout.LayoutParams itemLp2 = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		itemLp2.bottomMargin = PADD_NORMAL;
+		itemView2.setLayoutParams(itemLp2);
+		itemView2.setOnMoveEventsListener(this);
+		itemView2.setOnScrollListener(this);
 
-		//CharScrollView
-		chartScrollView = new ChartScrollView(this);
-		FrameLayout.LayoutParams scrollLp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
-		scrollLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
-		scrollLp.gravity = Gravity.CENTER;
-		chartScrollView.setLayoutParams(scrollLp);
+		itemView3 = new ItemView(this);
+		LinearLayout.LayoutParams itemLp3 = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		itemLp3.bottomMargin = PADD_NORMAL;
+		itemView3.setLayoutParams(itemLp3);
+		itemView3.setOnMoveEventsListener(this);
+		itemView3.setOnScrollListener(this);
 
-		chartScrollOverlayView = new ChartScrollOverlayView(this);
-		FrameLayout.LayoutParams scrollOverlayLp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
-		scrollOverlayLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
-		scrollOverlayLp.gravity = Gravity.CENTER;
-		chartScrollOverlayView.setLayoutParams(scrollOverlayLp);
-		chartScrollOverlayView.setOnScrollListener(this);
-		scroll.addView(chartScrollView);
-		scroll.addView(chartScrollOverlayView);
+		itemView4 = new ItemView(this);
+		LinearLayout.LayoutParams itemLp4 = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		itemLp4.bottomMargin = PADD_NORMAL;
+		itemView4.setLayoutParams(itemLp4);
+		itemView4.setOnMoveEventsListener(this);
+		itemView4.setOnScrollListener(this);
 
-		//CheckersView
-		checkersView = new CheckersView(this);
-		LinearLayout.LayoutParams checkersLp = new LinearLayout.LayoutParams (
-				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		checkersView.setLayoutParams(checkersLp);
-		checkersView.setOnCheckListener(this);
+		itemView5 = new ItemView(this);
+		LinearLayout.LayoutParams itemLp5 = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		itemLp5.bottomMargin = PADD_NORMAL;
+		itemView5.setLayoutParams(itemLp5);
+		itemView5.setOnMoveEventsListener(this);
+		itemView5.setOnScrollListener(this);
 
 		container.addView(toolbar);
 		container.addView(txtFollowers);
-		container.addView(chartView);
-//		container.addView(chartScrollView);
-		container.addView(scroll);
-		container.addView(checkersView);
+		container.addView(itemView);
+		container.addView(itemView2);
+		container.addView(itemView3);
+		container.addView(itemView4);
+		container.addView(itemView5);
 		scrollView.addView(container);
 
 		//Set theme colors.
@@ -244,7 +235,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 
 		TypedArray a = this.getTheme().obtainStyledAttributes(attrs);
 		int bg = a.getResourceId(0, 0);
-		btnNext.setBackgroundResource(bg);
+//		btnNext.setBackgroundResource(bg);
 		btnTheme.setBackgroundResource(bg);
 		toolbar.setBackgroundColor(a.getColor(1, 0));
 		container.setBackgroundColor(a.getColor(2, 0));
@@ -262,40 +253,21 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putInt("active_item", activeItem);
-
-		outState.putParcelable("chart_view", chartView.onSaveInstanceState());
-		outState.putParcelable("chart_scroll_view", chartScrollView.onSaveInstanceState());
-		outState.putParcelable("chart_scroll_overlay_view", chartScrollOverlayView.onSaveInstanceState());
-		outState.putParcelable("checkers_view", checkersView.onSaveInstanceState());
+		outState.putParcelable("item_view1", itemView.onSaveInstanceState());
+		outState.putParcelable("item_view2", itemView2.onSaveInstanceState());
+		outState.putParcelable("item_view3", itemView3.onSaveInstanceState());
+		outState.putParcelable("item_view4", itemView4.onSaveInstanceState());
+		outState.putParcelable("item_view5", itemView5.onSaveInstanceState());
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Bundle state) {
 		super.onRestoreInstanceState(state);
-		activeItem = state.getInt("active_item", 4);
-
-		chartView.onRestoreInstanceState(state.getParcelable("chart_view"));
-		chartScrollView.onRestoreInstanceState(state.getParcelable("chart_scroll_view"));
-		chartScrollOverlayView.onRestoreInstanceState(state.getParcelable("chart_scroll_overlay_view"));
-		checkersView.onRestoreInstanceState(state.getParcelable("checkers_view"));
-	}
-
-	public void setData(ChartData d) {
-		if (d != null) {
-			if (chartView != null) {
-				chartView.setData(d);
-			}
-			if (chartScrollView != null) {
-				chartScrollView.setData(d);
-			}
-			if (chartScrollOverlayView != null) {
-				chartScrollOverlayView.setData(d.getLength());
-			}
-			if (checkersView != null) {
-				checkersView.setData(d.getNames(), d.getColorsInts());
-			}
-		}
+		itemView.onRestoreInstanceState(state.getParcelable("item_view1"));
+		itemView2.onRestoreInstanceState(state.getParcelable("item_view2"));
+		itemView3.onRestoreInstanceState(state.getParcelable("item_view3"));
+		itemView4.onRestoreInstanceState(state.getParcelable("item_view4"));
+		itemView5.onRestoreInstanceState(state.getParcelable("item_view5"));
 	}
 
 	public ChartData readDemoData(int pos) {
@@ -342,7 +314,6 @@ public class MainActivity extends Activity implements View.OnClickListener,
 			CTApplication.setData(dataValues);
 		} catch (IOException | ClassCastException | JSONException ex) {
 //			Timber.e(ex);
-			Log.e("ERROR", "", ex);
 			return null;
 		}
 		return toChartData(CTApplication.getData()[pos]);
@@ -365,16 +336,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 
 	@Override
 	public void onClick(View v) {
-		if (v.getId() == R.id.btn_next) {
-			int prev = activeItem;
-			activeItem--;
-			if (activeItem < 0) {
-				activeItem = 4;
-			}
-			if (activeItem != prev && CTApplication.getData() != null) {
-				setData(toChartData(CTApplication.getData()[activeItem]));
-			}
-		} else if (v.getId() == R.id.btn_theme) {
+		if (v.getId() == R.id.btn_theme) {
 			CTApplication.setNightMode(!CTApplication.isNightMode());
 			recreate();
 		}
@@ -387,18 +349,6 @@ public class MainActivity extends Activity implements View.OnClickListener,
 
 	@Override
 	public void onScroll(float x, float size) {
-		chartView.scrollPos(x, size);
 		scrollView.requestDisallowInterceptTouchEvent(true);
-	}
-
-	@Override
-	public void onCheck(int id, String name, boolean checked) {
-		if (checked) {
-			chartView.showLine(name);
-			chartScrollView.showLine(name);
-		} else {
-			chartView.hideLine(name);
-			chartScrollView.hideLine(name);
-		}
 	}
 }
