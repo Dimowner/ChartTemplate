@@ -52,6 +52,18 @@ import java.util.Map;
 public class MainActivity extends Activity implements View.OnClickListener,
 			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener {
 
+	private final float DENSITY;
+	private final int PADD_NORMAL;
+	private final int PADD_TINY;
+	private final int TOOLBAR_SIZE ;
+
+	{
+		DENSITY = AndroidUtils.dpToPx(1);
+		PADD_NORMAL = (int) (16* DENSITY);
+		PADD_TINY = (int) (16* DENSITY);
+		TOOLBAR_SIZE = (int) (56* DENSITY);
+	}
+
 	private ItemView itemView;
 	private ItemView itemView2;
 	private ItemView itemView3;
@@ -95,10 +107,6 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	}
 
 	private View generateLayout() {
-		float DENSITY = AndroidUtils.dpToPx(1);
-		int PADD_NORMAL = (int) (16*DENSITY);
-		int PADD_TINY = (int) (4*DENSITY);
-		int TOOLBAR_SIZE = (int) (56*DENSITY);
 
 		scrollView = new ScrollView(getApplicationContext());
 		Resources res = getResources();
@@ -164,51 +172,11 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		txtFollowers.setTypeface(typeface);
 		txtFollowers.setGravity(Gravity.CENTER);
 
-		//ItemView
-		itemView = new ItemView(this);
-		LinearLayout.LayoutParams itemLp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		itemLp.bottomMargin = PADD_NORMAL;
-		itemView.setLayoutParams(itemLp);
-		itemView.setOnMoveEventsListener(this);
-		itemView.setOnScrollListener(this);
-
-		itemView2 = new ItemView(this);
-		LinearLayout.LayoutParams itemLp2 = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		itemLp2.bottomMargin = PADD_NORMAL;
-		itemView2.setLayoutParams(itemLp2);
-		itemView2.setOnMoveEventsListener(this);
-		itemView2.setOnScrollListener(this);
-
-		itemView3 = new ItemView(this);
-		LinearLayout.LayoutParams itemLp3 = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		itemLp3.bottomMargin = PADD_NORMAL;
-		itemView3.setLayoutParams(itemLp3);
-		itemView3.setOnMoveEventsListener(this);
-		itemView3.setOnScrollListener(this);
-
-		itemView4 = new ItemView(this);
-		LinearLayout.LayoutParams itemLp4 = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		itemLp4.bottomMargin = PADD_NORMAL;
-		itemView4.setLayoutParams(itemLp4);
-		itemView4.setOnMoveEventsListener(this);
-		itemView4.setOnScrollListener(this);
-
-		itemView5 = new ItemView(this);
-		LinearLayout.LayoutParams itemLp5 = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		itemLp5.bottomMargin = PADD_NORMAL;
-		itemView5.setLayoutParams(itemLp5);
-		itemView5.setOnMoveEventsListener(this);
-		itemView5.setOnScrollListener(this);
+		itemView = createItemView();
+		itemView2 = createItemView();
+		itemView3 = createItemView();
+		itemView4 = createItemView();
+		itemView5 = createItemView();
 
 		container.addView(toolbar);
 		container.addView(txtFollowers);
@@ -235,13 +203,24 @@ public class MainActivity extends Activity implements View.OnClickListener,
 
 		TypedArray a = this.getTheme().obtainStyledAttributes(attrs);
 		int bg = a.getResourceId(0, 0);
-//		btnNext.setBackgroundResource(bg);
 		btnTheme.setBackgroundResource(bg);
 		toolbar.setBackgroundColor(a.getColor(1, 0));
 		container.setBackgroundColor(a.getColor(2, 0));
 		a.recycle();
 
 		return scrollView;
+	}
+
+	private ItemView createItemView() {
+		ItemView v = new ItemView(this);
+		LinearLayout.LayoutParams itemLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		itemLp.bottomMargin = PADD_NORMAL;
+		v.setLayoutParams(itemLp);
+		v.setOnMoveEventsListener(this);
+		v.setOnScrollListener(this);
+		return v;
 	}
 
 	@Override

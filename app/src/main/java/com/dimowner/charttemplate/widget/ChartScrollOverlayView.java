@@ -61,7 +61,7 @@ public class ChartScrollOverlayView extends View {
 	private Paint overlayPaint;
 	private Paint selectionPaint;
 
-	private float scrollX = 0;
+	private float scrollX = -1;
 
 	private float WIDTH = 1;
 	private float HEIGHT = 1;
@@ -120,7 +120,7 @@ public class ChartScrollOverlayView extends View {
 //			TODO: When selection resized to smallest size on right side move selection to the left.
 
 			float moveStartX = 0;
-			float prevSelectionWidth = 0;
+			float startSelectionWidth = 0;
 			float offset = 0;
 			int selectionState = 0;
 
@@ -131,7 +131,7 @@ public class ChartScrollOverlayView extends View {
 						moveStartX = motionEvent.getX();
 						offset = moveStartX - scrollX;
 						selectionState = checkSelectionState(moveStartX);
-						prevSelectionWidth = selectionWidth;
+						startSelectionWidth = selectionWidth;
 						break;
 					case MotionEvent.ACTION_MOVE:
 						switch (selectionState) {
@@ -157,11 +157,15 @@ public class ChartScrollOverlayView extends View {
 								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
 									selectionWidth = SMALLEST_SELECTION_WIDTH;
 								}
+								if (selectionWidth + PADD_DOUBLE > WIDTH) {
+									selectionWidth = WIDTH - PADD_DOUBLE;
+									scrollX = prevScroll;
+								}
 								if (scrollX + selectionWidth > WIDTH) {
 									scrollX = WIDTH - selectionWidth;
 								}
-								if (scrollX < PADD_DOUBLE) {
-									scrollX = PADD_DOUBLE;
+								if (scrollX < 0) {
+									scrollX = 0;
 								}
 								if (selectionWidth + scrollX > WIDTH) {
 									selectionWidth = WIDTH - scrollX;
@@ -173,13 +177,16 @@ public class ChartScrollOverlayView extends View {
 								invalidate();
 								break;
 							case CURSOR_RIGHT:
-								selectionWidth = (prevSelectionWidth + motionEvent.getX() - moveStartX);
+								selectionWidth = (startSelectionWidth + motionEvent.getX() - moveStartX);
 								//Set scroll edges.
 								if (selectionWidth < SMALLEST_SELECTION_WIDTH) {
 									selectionWidth = SMALLEST_SELECTION_WIDTH;
 								}
-								if (selectionWidth + scrollX + PADD_DOUBLE > WIDTH) {
-									selectionWidth = WIDTH - PADD_DOUBLE - scrollX;
+								if (selectionWidth + PADD_DOUBLE > WIDTH) {
+									selectionWidth = WIDTH - PADD_DOUBLE;
+								}
+								if (selectionWidth + scrollX > WIDTH) {
+									selectionWidth = WIDTH - scrollX;
 								}
 								if (onScrollListener != null) {
 									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
@@ -223,7 +230,7 @@ public class ChartScrollOverlayView extends View {
 			STEP = (WIDTH/dataLength);
 		}
 
-		if (scrollX <= 0) {
+		if (scrollX < 0) {
 			scrollX = WIDTH - selectionWidth;
 		}
 
@@ -339,6 +346,11 @@ public class ChartScrollOverlayView extends View {
 		private int dataLength;
 		private float selectionWidth;
 		private float scrollX;
+
+//		private float selectionWidth = (int)(1.3*SMALLEST_SELECTION_WIDTH);
+//		private int dataLength = 0;
+//		private float STEP = 10;
+//		private float scrollX = 0;
 
 		public static final Parcelable.Creator<SavedState> CREATOR =
 				new Parcelable.Creator<SavedState>() {

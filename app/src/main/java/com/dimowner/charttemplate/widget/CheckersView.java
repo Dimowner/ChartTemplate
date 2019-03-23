@@ -165,7 +165,6 @@ public class CheckersView extends LinearLayout {
 		params.setMargins(START_INSET, 0, 0, 0);
 		divider.setLayoutParams(params);
 		divider.setBackgroundColor(dividerColor);
-		divider.requestLayout();
 		return divider;
 	}
 
