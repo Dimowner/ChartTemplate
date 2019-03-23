@@ -80,22 +80,6 @@ public class ItemView extends LinearLayout implements
 		container.setLayoutParams(containerLp);
 		container.setOrientation(LinearLayout.VERTICAL);
 
-		Typeface typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL);
-
-//		//Followers
-//		final TextView txtFollowers = new TextView(context);
-//		LinearLayout.LayoutParams followersLp = new LinearLayout.LayoutParams(
-//				ViewGroup.LayoutParams.WRAP_CONTENT,
-//				ViewGroup.LayoutParams.WRAP_CONTENT);
-//		followersLp.setMargins(PADD_NORMAL, PADD_NORMAL, PADD_NORMAL, PADD_TINY);
-//
-//		txtFollowers.setLayoutParams(followersLp);
-//		txtFollowers.setTextColor(getResources().getColor(R.color.text_blue));
-//		txtFollowers.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-//		txtFollowers.setText(R.string.followers);
-//		txtFollowers.setTypeface(typeface);
-//		txtFollowers.setGravity(Gravity.CENTER);
-
 		//CharView
 		chartView = new ChartView(context);
 		LinearLayout.LayoutParams chartLp = new LinearLayout.LayoutParams(

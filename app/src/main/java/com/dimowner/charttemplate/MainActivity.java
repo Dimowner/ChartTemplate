@@ -322,8 +322,13 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	}
 
 	@Override
-	public void onMoveEvent() {
+	public void disallowTouchEvent() {
 		scrollView.requestDisallowInterceptTouchEvent(true);
+	}
+
+	@Override
+	public void allowTouchEvent() {
+		scrollView.requestDisallowInterceptTouchEvent(false);
 	}
 
 	@Override

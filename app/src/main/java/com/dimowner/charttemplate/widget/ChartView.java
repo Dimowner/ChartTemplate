@@ -197,11 +197,15 @@ public class ChartView extends View {
 		timelineTextPaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
 
 		setOnTouchListener(new OnTouchListener() {
+
+			float startY = 0;
+
 			@Override
 			public boolean onTouch(View v, MotionEvent motionEvent) {
 				switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
 					case MotionEvent.ACTION_DOWN:
 						selectionDrawer.reset();
+						startY = motionEvent.getY();
 						break;
 					case MotionEvent.ACTION_MOVE:
 						float selectionX = motionEvent.getX();
@@ -211,10 +215,18 @@ public class ChartView extends View {
 						if (selectionX < 0) {
 							selectionX = -1;
 						}
-						selectionDrawer.setSelectionX(selectionX);
-						selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH);
-						if (onMoveEventsListener != null) {
-							onMoveEventsListener.onMoveEvent();
+						if (Math.abs(motionEvent.getY() - startY) < 60*DENSITY) {
+							selectionDrawer.setSelectionX(selectionX);
+							selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH);
+							if (onMoveEventsListener != null) {
+								onMoveEventsListener.disallowTouchEvent();
+							}
+						} else {
+							selectionX = -1;
+							selectionDrawer.setSelectionX(selectionX);
+							if (onMoveEventsListener != null) {
+								onMoveEventsListener.allowTouchEvent();
+							}
 						}
 						invalidate();
 						break;
@@ -543,7 +555,8 @@ public class ChartView extends View {
 	}
 
 	public interface OnMoveEventsListener {
-		void onMoveEvent();
+		void disallowTouchEvent();
+		void allowTouchEvent();
 	}
 
 	static class SavedState extends View.BaseSavedState {
