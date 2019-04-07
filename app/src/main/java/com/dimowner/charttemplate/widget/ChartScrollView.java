@@ -20,7 +20,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
+//import android.graphics.Path;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -47,7 +47,8 @@ public class ChartScrollView extends View {
 	private ChartData data;
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
-	private Path path;
+//	private Path path;
+	private float chartArray[];
 	private float STEP = 10;
 
 	private Paint[] linePaints;
@@ -77,17 +78,17 @@ public class ChartScrollView extends View {
 
 	private void init(Context context) {
 		setFocusable(false);
-		path = new Path();
+//		path = new Path();
 	}
 
 	private Paint createLinePaint(int color) {
-		Paint lp = new Paint();
-		lp.setAntiAlias(true);
-		lp.setDither(false);
+		Paint lp = new Paint(1);
+//		lp.setAntiAlias(true);
+//		lp.setDither(false);
 		lp.setStyle(Paint.Style.STROKE);
-		lp.setStrokeWidth(1.2f*DENSITY);
-		lp.setStrokeJoin(Paint.Join.ROUND);
-		lp.setStrokeCap(Paint.Cap.ROUND);
+		lp.setStrokeWidth(1.0f*DENSITY);
+//		lp.setStrokeJoin(Paint.Join.ROUND);
+//		lp.setStrokeCap(Paint.Cap.ROUND);
 		lp.setColor(color);
 		return lp;
 	}
@@ -117,21 +118,33 @@ public class ChartScrollView extends View {
 	}
 
 	private void drawChart(Canvas canvas, int[] values, int index) {
-		path.rewind();
+//		path.rewind();
 		float x = 0;
+		int k = 0;
+//		chartArray = new float[4* (int)Math.ceil((WIDTH/STEP))];
+//		Log.v("LOG", "drawChart size = " + chartArray.length + " WIDTH = " + WIDTH + " STEP = " + STEP);
 		for (int i = 0; i < values.length; i+=2) {
-			if (x == 0) {
-				path.moveTo(x, HEIGHT - values[i] * valueScaleY);
+//			if (x == 0) {
+//				path.moveTo(x, HEIGHT - values[i] * valueScaleY);
+//			} else {
+//				path.lineTo(x, HEIGHT - values[i] * valueScaleY);
+//			}
+			chartArray[k] = x; //x
+			chartArray[k+1] = HEIGHT - values[i] * valueScaleY; //y
+			chartArray[k + 2] = x + 2*STEP; //x
+			if (i+2 < values.length) {
+				chartArray[k + 3] = HEIGHT - values[i + 2] * valueScaleY; //y
 			} else {
-				path.lineTo(x, HEIGHT - values[i] * valueScaleY);
+				chartArray[k + 3] = HEIGHT - values[i] * valueScaleY; //y
 			}
-
-			if (x - STEP > WIDTH) {
-				break;
-			}
+//			if (x - STEP > WIDTH) {
+//				break;
+//			}
 			x += 2*STEP;
+			k +=4;
 		}
-		canvas.drawPath(path, linePaints[index]);
+//		canvas.drawPath(path, linePaints[index]);
+		canvas.drawLines(chartArray, linePaints[index]);
 	}
 
 	public void hideLine(String name) {
@@ -171,6 +184,7 @@ public class ChartScrollView extends View {
 			if (WIDTH > 1 && data.getLength() > 0) {
 				STEP = (WIDTH / data.getLength());
 			}
+			chartArray = new float[data.getLength() * 4];
 		}
 		invalidate();
 	}
@@ -198,7 +212,7 @@ public class ChartScrollView extends View {
 			animator.cancel();
 		}
 		animator = ValueAnimator.ofFloat(0.0f, 1.0f);
-		animator.setInterpolator(new AccelerateDecelerateInterpolator());
+		animator.setInterpolator(new DecelerateInterpolator());
 		animator.setDuration(ANIMATION_DURATION);
 		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 			@Override

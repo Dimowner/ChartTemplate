@@ -203,7 +203,7 @@ public class ChartSelectionDrawer {
 
 		//Calculate date sizes
 		date.setTime(data.getTime()[selectionIndex]);
-		selectionDate = TimeUtils.formatDateWeek(date);
+		selectionDate = String.valueOf(date.getTime()/1000000);//TimeUtils.formatDateWeek(date);
 		selectedDatePaint.getTextBounds(selectionDate, 0, selectionDate.length(), tempRect);
 
 		if (selectedDateHeight < tempRect.height()) {

@@ -38,8 +38,11 @@ import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.widget.ChartScrollOverlayView;
+import com.dimowner.charttemplate.widget.ChartScrollView;
 import com.dimowner.charttemplate.widget.ChartView;
+import com.dimowner.charttemplate.widget.CheckersView;
 import com.dimowner.charttemplate.widget.ItemView;
+import com.dimowner.charttemplate.widget.OnCheckListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,7 +53,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends Activity implements View.OnClickListener,
-			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener {
+			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener, OnCheckListener {
 
 	private final float DENSITY;
 	private final int PADD_NORMAL;
@@ -60,30 +63,48 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
 		PADD_NORMAL = (int) (16* DENSITY);
-		PADD_TINY = (int) (16* DENSITY);
+		PADD_TINY = (int) (4* DENSITY);
 		TOOLBAR_SIZE = (int) (56* DENSITY);
 	}
 
-	private ItemView itemView;
-	private ItemView itemView2;
-	private ItemView itemView3;
-	private ItemView itemView4;
-	private ItemView itemView5;
+//	private ItemView itemView;
+//	private ItemView itemView2;
+//	private ItemView itemView3;
+//	private ItemView itemView4;
+//	private ItemView itemView5;
 	private ScrollView scrollView;
+	private ChartView chartView;
+	private ChartScrollView chartScrollView;
+	private ChartScrollOverlayView chartScrollOverlayView;
+	private CheckersView checkersView;
+	private TextView btnNext;
+	private int activeItem = 4;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		AndroidUtils.update(getApplicationContext());
-		if (CTApplication.isNightMode()) {
-			setTheme(R.style.AppTheme_Night);
-		} else {
-			setTheme(R.style.AppTheme);
-		}
+//		if (CTApplication.isNightMode()) {
+//			setTheme(R.style.AppTheme_Night);
+//		} else {
+//			setTheme(R.style.AppTheme);
+//		}
 		super.onCreate(savedInstanceState);
-		ScrollView.LayoutParams params = new ScrollView.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				LinearLayout.LayoutParams.MATCH_PARENT);
-		setContentView(generateLayout(), params);
+		setContentView(R.layout.main_activity);
+
+//		ScrollView.LayoutParams params = new ScrollView.LayoutParams(
+//				LinearLayout.LayoutParams.MATCH_PARENT,
+//				LinearLayout.LayoutParams.MATCH_PARENT);
+//		setContentView(generateLayout(), params);
+		chartView = findViewById(R.id.chartView);
+		chartScrollView = findViewById(R.id.chartScrollView);
+		chartScrollOverlayView = findViewById(R.id.chartScrollOverlayView);
+		chartView.setOnMoveEventsListener(this);
+		chartScrollOverlayView.setOnScrollListener(this);
+		checkersView = findViewById(R.id.checkersView);
+		checkersView.setOnCheckListener(this);
+		btnNext = findViewById(R.id.btnNext);
+		btnNext.setOnClickListener(this);
+		scrollView = findViewById(R.id.scrollView);
 
 		if (savedInstanceState == null || CTApplication.getData() == null) {
 			Thread thread = new Thread(new Runnable() {
@@ -93,17 +114,35 @@ public class MainActivity extends Activity implements View.OnClickListener,
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							itemView.setData(d);
-							itemView2.setData(toChartData(CTApplication.getData()[0]));
-							itemView3.setData(toChartData(CTApplication.getData()[1]));
-							itemView4.setData(toChartData(CTApplication.getData()[2]));
-							itemView5.setData(toChartData(CTApplication.getData()[3]));
+							setData(d);
+//							itemView.setData(d);
+//							chartView.setData(d);
+//							chartScrollView.setData(d);
+//							chartScrollOverlayView.setData(d.getLength());
+//							checkersView.setData(d.getNames(), d.getColorsInts());
+//							itemView2.setData(toChartData(CTApplication.getData()[0]));
+//							itemView3.setData(toChartData(CTApplication.getData()[1]));
+//							itemView4.setData(toChartData(CTApplication.getData()[2]));
+//							itemView5.setData(toChartData(CTApplication.getData()[3]));
 						}
 					});
 				}
 			});
 			thread.start();
 		}
+	}
+
+	public void setData(ChartData d) {
+		if (chartView != null) {
+			chartView.setData(d);
+		}
+		if (chartScrollView != null) {
+			chartScrollView.setData(d);
+		}
+		if (checkersView != null) {
+			checkersView.setData(d.getNames(), d.getColorsInts());
+		}
+		chartScrollOverlayView.setData(d.getLength());
 	}
 
 	private View generateLayout() {
@@ -172,19 +211,19 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		txtFollowers.setTypeface(typeface);
 		txtFollowers.setGravity(Gravity.CENTER);
 
-		itemView = createItemView();
-		itemView2 = createItemView();
-		itemView3 = createItemView();
-		itemView4 = createItemView();
-		itemView5 = createItemView();
+//		itemView = createItemView();
+//		itemView2 = createItemView();
+//		itemView3 = createItemView();
+//		itemView4 = createItemView();
+//		itemView5 = createItemView();
 
 		container.addView(toolbar);
 		container.addView(txtFollowers);
-		container.addView(itemView);
-		container.addView(itemView2);
-		container.addView(itemView3);
-		container.addView(itemView4);
-		container.addView(itemView5);
+//		container.addView(itemView);
+//		container.addView(itemView2);
+//		container.addView(itemView3);
+//		container.addView(itemView4);
+//		container.addView(itemView5);
 		scrollView.addView(container);
 
 		//Set theme colors.
@@ -232,21 +271,21 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putParcelable("item_view1", itemView.onSaveInstanceState());
-		outState.putParcelable("item_view2", itemView2.onSaveInstanceState());
-		outState.putParcelable("item_view3", itemView3.onSaveInstanceState());
-		outState.putParcelable("item_view4", itemView4.onSaveInstanceState());
-		outState.putParcelable("item_view5", itemView5.onSaveInstanceState());
+//		outState.putParcelable("item_view1", itemView.onSaveInstanceState());
+//		outState.putParcelable("item_view2", itemView2.onSaveInstanceState());
+//		outState.putParcelable("item_view3", itemView3.onSaveInstanceState());
+//		outState.putParcelable("item_view4", itemView4.onSaveInstanceState());
+//		outState.putParcelable("item_view5", itemView5.onSaveInstanceState());
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Bundle state) {
 		super.onRestoreInstanceState(state);
-		itemView.onRestoreInstanceState(state.getParcelable("item_view1"));
-		itemView2.onRestoreInstanceState(state.getParcelable("item_view2"));
-		itemView3.onRestoreInstanceState(state.getParcelable("item_view3"));
-		itemView4.onRestoreInstanceState(state.getParcelable("item_view4"));
-		itemView5.onRestoreInstanceState(state.getParcelable("item_view5"));
+//		itemView.onRestoreInstanceState(state.getParcelable("item_view1"));
+//		itemView2.onRestoreInstanceState(state.getParcelable("item_view2"));
+//		itemView3.onRestoreInstanceState(state.getParcelable("item_view3"));
+//		itemView4.onRestoreInstanceState(state.getParcelable("item_view4"));
+//		itemView5.onRestoreInstanceState(state.getParcelable("item_view5"));
 	}
 
 	public ChartData readDemoData(int pos) {
@@ -318,6 +357,15 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		if (v.getId() == R.id.btn_theme) {
 			CTApplication.setNightMode(!CTApplication.isNightMode());
 			recreate();
+		} else if (v.getId() == R.id.btnNext) {
+			int prev = activeItem;
+			activeItem--;
+			if (activeItem < 0) {
+				activeItem = 4;
+			}
+			if (activeItem != prev) {
+				setData(toChartData(CTApplication.getData()[activeItem]));
+			}
 		}
 	}
 
@@ -333,6 +381,18 @@ public class MainActivity extends Activity implements View.OnClickListener,
 
 	@Override
 	public void onScroll(float x, float size) {
+		chartView.scrollPos(x, size);
 		scrollView.requestDisallowInterceptTouchEvent(true);
+	}
+
+	@Override
+	public void onCheck(int id, String name, boolean checked) {
+		if (checked) {
+			chartView.showLine(name);
+			chartScrollView.showLine(name);
+		} else {
+			chartView.hideLine(name);
+			chartScrollView.hideLine(name);
+		}
 	}
 }

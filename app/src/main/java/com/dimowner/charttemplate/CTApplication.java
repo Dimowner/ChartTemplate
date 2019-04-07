@@ -22,7 +22,7 @@ import android.content.res.Configuration;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
-//import timber.log.Timber;
+import timber.log.Timber;
 
 public class CTApplication extends Application {
 
@@ -32,15 +32,15 @@ public class CTApplication extends Application {
 
 	@Override
 	public void onCreate() {
-//		if (BuildConfig.DEBUG) {
-//			//Timber initialization
-//			Timber.plant(new Timber.DebugTree() {
-//				@Override
-//				protected String createStackElementTag(StackTraceElement element) {
-//					return super.createStackElementTag(element) + ":" + element.getLineNumber();
-//				}
-//			});
-//		}
+		if (BuildConfig.DEBUG) {
+			//Timber initialization
+			Timber.plant(new Timber.DebugTree() {
+				@Override
+				protected String createStackElementTag(StackTraceElement element) {
+					return super.createStackElementTag(element) + ":" + element.getLineNumber();
+				}
+			});
+		}
 		super.onCreate();
 		AndroidUtils.update(getApplicationContext());
 	}

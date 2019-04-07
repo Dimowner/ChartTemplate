@@ -21,6 +21,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -46,7 +47,7 @@ public class ChartScrollOverlayView extends View {
 	{
 		float DENSITY = AndroidUtils.dpToPx(1);
 		SMALLEST_SELECTION_WIDTH = 60* DENSITY;
-		PADD_DOUBLE = (int) (64* DENSITY);
+		PADD_DOUBLE = (int) (16* DENSITY);
 		SELECTION = 5* DENSITY;
 		SELECTION_HALF = SELECTION/2;
 	}
@@ -56,6 +57,7 @@ public class ChartScrollOverlayView extends View {
 	private int dataLength = 0;
 
 	private Path path;
+	private RectF rect;
 	private float STEP = 10;
 
 	private Paint overlayPaint;
@@ -65,6 +67,9 @@ public class ChartScrollOverlayView extends View {
 
 	private float WIDTH = 1;
 	private float HEIGHT = 1;
+
+	private float prevScroll = 0;
+	private float prevWidth = 0;
 
 	private OnScrollListener onScrollListener;
 
@@ -86,22 +91,23 @@ public class ChartScrollOverlayView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 		path = new Path();
+		rect = new RectF();
 
 		int selectionColor;
 		int overlayColor;
 		Resources res = context.getResources();
-		TypedValue typedValue = new TypedValue();
-		Resources.Theme theme = context.getTheme();
-		if (theme.resolveAttribute(R.attr.selectionColor, typedValue, true)) {
-			selectionColor = typedValue.data;
-		} else {
+//		TypedValue typedValue = new TypedValue();
+//		Resources.Theme theme = context.getTheme();
+//		if (theme.resolveAttribute(R.attr.selectionColor, typedValue, true)) {
+//			selectionColor = typedValue.data;
+//		} else {
 			selectionColor = res.getColor(R.color.selection_color);
-		}
-		if (theme.resolveAttribute(R.attr.overlayColor, typedValue, true)) {
-			overlayColor = typedValue.data;
-		} else {
+//		}
+//		if (theme.resolveAttribute(R.attr.overlayColor, typedValue, true)) {
+//			overlayColor = typedValue.data;
+//		} else {
 			overlayColor = res.getColor(R.color.overlay_color);
-		}
+//		}
 
 		selectionPaint = new Paint();
 		selectionPaint.setAntiAlias(false);
@@ -144,10 +150,11 @@ public class ChartScrollOverlayView extends View {
 									scrollX = 0;
 								}
 
-								if (onScrollListener != null) {
-									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
-								}
-								invalidate();
+//								if (onScrollListener != null && scrollX != prevScroll && selectionWidth != prevWidth) {
+//									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
+//								}
+								onScroll(scrollX, selectionWidth);
+//								invalidate();
 								break;
 							case CURSOR_LEFT:
 								float prevScroll = scrollX;
@@ -170,11 +177,11 @@ public class ChartScrollOverlayView extends View {
 								if (selectionWidth + scrollX > WIDTH) {
 									selectionWidth = WIDTH - scrollX;
 								}
-
-								if (onScrollListener != null) {
-									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
-								}
-								invalidate();
+//								if (onScrollListener != null) {
+//									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
+//								}
+								onScroll(scrollX, selectionWidth);
+//								invalidate();
 								break;
 							case CURSOR_RIGHT:
 								selectionWidth = (startSelectionWidth + motionEvent.getX() - moveStartX);
@@ -188,10 +195,11 @@ public class ChartScrollOverlayView extends View {
 								if (selectionWidth + scrollX > WIDTH) {
 									selectionWidth = WIDTH - scrollX;
 								}
-								if (onScrollListener != null) {
-									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
-								}
-								invalidate();
+//								if (onScrollListener != null) {
+//									onScrollListener.onScroll(scrollX/STEP, selectionWidth/STEP);
+//								}
+								onScroll(scrollX, selectionWidth);
+//								invalidate();
 								break;
 							case CURSOR_UNSELECTED:
 							default:
@@ -206,6 +214,15 @@ public class ChartScrollOverlayView extends View {
 				return true;
 			}
 		});
+	}
+
+	private void onScroll(float scroll, float width) {
+		if (onScrollListener != null && (scroll != prevScroll || width != prevWidth)) {
+			onScrollListener.onScroll(scroll/STEP, width/STEP);
+			prevScroll = scroll;
+			prevWidth = width;
+			invalidate();
+		}
 	}
 
 	private int checkSelectionState(float x) {
@@ -234,8 +251,11 @@ public class ChartScrollOverlayView extends View {
 			scrollX = WIDTH - selectionWidth;
 		}
 
-		if (b && dataLength > 0 && onScrollListener != null) {
-			onScrollListener.onScroll(scrollX / STEP, selectionWidth / STEP);
+		if (b && dataLength > 0) {
+//			onScrollListener.onScroll(scrollX / STEP, selectionWidth / STEP);
+//			prevScroll = scrollX;
+//			prevWidth = selectionWidth;
+			onScroll(scrollX, selectionWidth);
 		}
 	}
 
@@ -243,39 +263,50 @@ public class ChartScrollOverlayView extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 
-		//Draw overlay
-		path.rewind();
-		path.moveTo(0, 0);
-		path.lineTo(0, HEIGHT);
-		path.lineTo(scrollX - SELECTION_HALF, HEIGHT);
-		path.lineTo(scrollX - SELECTION_HALF, 0);
-		path.close();
-		canvas.drawPath(path, overlayPaint);
+		rect.left = 0;
+		rect.top = 0;
+		rect.bottom = HEIGHT;
+		rect.right = scrollX - SELECTION_HALF;
+		canvas.drawRect(rect, overlayPaint);
+		rect.left = scrollX + selectionWidth + SELECTION_HALF;
+		rect.top = 0;
+		rect.bottom = HEIGHT;
+		rect.right = WIDTH;
+		canvas.drawRect(rect, overlayPaint);
 
-		path.rewind();
-		path.moveTo(scrollX + selectionWidth + SELECTION_HALF, 0);
-		path.lineTo(scrollX + selectionWidth + SELECTION_HALF, HEIGHT);
-		path.lineTo(WIDTH, HEIGHT);
-		path.lineTo(WIDTH, 0);
-		path.close();
-		canvas.drawPath(path, overlayPaint);
-
-		//Draw selection borders
-		path.rewind();
-		path.moveTo(scrollX, 0);
-		path.lineTo(scrollX, HEIGHT);
-		path.moveTo(scrollX + selectionWidth, HEIGHT);
-		path.lineTo(scrollX + selectionWidth, 0);
-		selectionPaint.setStrokeWidth(SELECTION);
-		canvas.drawPath(path, selectionPaint);
-
-		path.rewind();
-		path.moveTo(scrollX + SELECTION_HALF, 0);
-		path.lineTo(scrollX + selectionWidth - SELECTION_HALF, 0);
-		path.moveTo(scrollX + SELECTION_HALF, HEIGHT);
-		path.lineTo(scrollX + selectionWidth - SELECTION_HALF, HEIGHT);
-		selectionPaint.setStrokeWidth(SELECTION_HALF);
-		canvas.drawPath(path, selectionPaint);
+//		//Draw overlay
+//		path.rewind();
+//		path.moveTo(0, 0);
+//		path.lineTo(0, HEIGHT);
+//		path.lineTo(scrollX - SELECTION_HALF, HEIGHT);
+//		path.lineTo(scrollX - SELECTION_HALF, 0);
+//		path.close();
+//		canvas.drawPath(path, overlayPaint);
+//
+//		path.rewind();
+//		path.moveTo(scrollX + selectionWidth + SELECTION_HALF, 0);
+//		path.lineTo(scrollX + selectionWidth + SELECTION_HALF, HEIGHT);
+//		path.lineTo(WIDTH, HEIGHT);
+//		path.lineTo(WIDTH, 0);
+//		path.close();
+//		canvas.drawPath(path, overlayPaint);
+//
+//		//Draw selection borders
+//		path.rewind();
+//		path.moveTo(scrollX, 0);
+//		path.lineTo(scrollX, HEIGHT);
+//		path.moveTo(scrollX + selectionWidth, HEIGHT);
+//		path.lineTo(scrollX + selectionWidth, 0);
+//		selectionPaint.setStrokeWidth(SELECTION);
+//		canvas.drawPath(path, selectionPaint);
+//
+//		path.rewind();
+//		path.moveTo(scrollX + SELECTION_HALF, 0);
+//		path.lineTo(scrollX + selectionWidth - SELECTION_HALF, 0);
+//		path.moveTo(scrollX + SELECTION_HALF, HEIGHT);
+//		path.lineTo(scrollX + selectionWidth - SELECTION_HALF, HEIGHT);
+//		selectionPaint.setStrokeWidth(SELECTION_HALF);
+//		canvas.drawPath(path, selectionPaint);
 
 	}
 
