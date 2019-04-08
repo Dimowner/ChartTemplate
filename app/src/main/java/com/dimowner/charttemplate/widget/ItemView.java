@@ -84,7 +84,7 @@ public class ItemView extends LinearLayout implements
 		//CharView
 		chartView = new ChartView(context);
 		LinearLayout.LayoutParams chartLp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(310*DENSITY));
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(350*DENSITY));
 		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chartView.setLayoutParams(chartLp);
 
@@ -96,14 +96,14 @@ public class ItemView extends LinearLayout implements
 		//CharScrollView
 		chartScrollView = new ChartScrollView(context);
 		FrameLayout.LayoutParams scrollLp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(45*DENSITY));
 		scrollLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
 		scrollLp.gravity = Gravity.CENTER;
 		chartScrollView.setLayoutParams(scrollLp);
 
 		chartScrollOverlayView = new ChartScrollOverlayView(context);
 		FrameLayout.LayoutParams scrollOverlayLp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(50*DENSITY));
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(45*DENSITY));
 		scrollOverlayLp.setMargins(PADD_NORMAL, PADD_TINY, PADD_NORMAL, PADD_SMALL);
 		scrollOverlayLp.gravity = Gravity.CENTER;
 		chartScrollOverlayView.setLayoutParams(scrollOverlayLp);

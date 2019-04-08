@@ -49,6 +49,7 @@ import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.List;
@@ -117,6 +118,23 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		scrollView = findViewById(R.id.scrollView);
 		ImageButton btnNightMode = findViewById(R.id.btnNightMode);
 		btnNightMode.setOnClickListener(this);
+
+		TextView txtTitle = findViewById(R.id.txtTitle);
+		TextView txtChartTitle = findViewById(R.id.txtChartTitle);
+		if (CTApplication.isNightMode()) {
+			int color = getResources().getColor(R.color.white);
+			txtTitle.setTextColor(color);
+			txtChartTitle.setTextColor(color);
+			btnNext.setTextColor(color);
+			btnNightMode.setImageResource(R.drawable.moon_light7);
+		} else {
+			int color = getResources().getColor(R.color.black);
+			txtTitle.setTextColor(color);
+			txtChartTitle.setTextColor(color);
+			btnNext.setTextColor(color);
+			btnNightMode.setImageResource(R.drawable.moon7);
+			AndroidUtils.statusBarLightMode(this);
+		}
 
 		if (savedInstanceState == null || CTApplication.getData() == null) {
 			Thread thread = new Thread(new Runnable() {

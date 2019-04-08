@@ -98,8 +98,8 @@ public class ChipsView extends LinearLayout {
 
 	public TextView createChipView(int id, final Context context, final String name, final int color, boolean checked) {
 		final TextView textView = new TextView(context);
-		ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT, CHIP_HEIGHT);
+		LinearLayout.LayoutParams  lp = new LinearLayout.LayoutParams (
+				LinearLayout.LayoutParams .WRAP_CONTENT, CHIP_HEIGHT);
 		textView.setLayoutParams(lp);
 		textView.setGravity(Gravity.CENTER);
 		if (checked) {
@@ -119,8 +119,12 @@ public class ChipsView extends LinearLayout {
 
 		textView.setText(name);
 		textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-		ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(textView.getLayoutParams());
-		params.setMargins(PADD_NORMAL, PADD_NORMAL, 0, PADD_NORMAL);
+		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams (textView.getLayoutParams());
+		if (container.getChildCount() == 0) {
+			params.setMargins(PADD_NORMAL, PADD_NORMAL, 0, PADD_NORMAL);
+		} else {
+			params.setMargins(PADD_SMALL, PADD_NORMAL, 0, PADD_NORMAL);
+		}
 		textView.setLayoutParams(params);
 
 		textView.setId(id);

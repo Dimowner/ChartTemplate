@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 ext.versions = [
 		// Android
-		targetSdkVersion: 28,
+		targetSdkVersion: 27, //not 28 because of crash: java.lang.IllegalArgumentException: Invalid Region.Op - only INTERSECT and DIFFERENCE are allowed
 		minSdkVersion   : 21,
 		buildtools      : "28.0.3",
 		support         : "27.1.1",

@@ -36,6 +36,7 @@
 	<!--<color name="md_yellow_A700">#FFD600</color>-->
 
 	<color name="white">#ffffff</color>
+	<color name="black">#000000</color>
 
 	<color name="shadow">#4D000000</color>
 

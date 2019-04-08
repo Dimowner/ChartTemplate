@@ -18,7 +18,7 @@
 
 	<style name="AppTheme" parent="android:Theme.Holo.Light">
 
-		<item name="primaryColor">@color/primary</item>
+		<item name="primaryColor">@color/white</item>
 
 		<item name="android:windowActionBar">false</item>
 		<item name="android:windowNoTitle">true</item>

@@ -18,13 +18,14 @@
 
 	<style name="AppTheme" parent="@android:style/Theme.Material.Light">
 
-		<item name="primaryColor">@color/primary</item>
-		<item name="android:colorPrimary">@color/primary</item>
-		<item name="android:colorPrimaryDark">@color/primary_dark</item>
+		<item name="primaryColor">@color/white</item>
+		<item name="android:colorPrimary">@color/white</item>
+		<item name="android:colorPrimaryDark">@color/white</item>
 
 		<item name="android:windowActionBar">false</item>
 		<item name="android:windowNoTitle">true</item>
 		<item name="android:windowActionBarOverlay">true</item>
+		<item name="android:windowLightStatusBar">true</item>
 
 		<item name="android:windowBackground">@color/window_background</item>
 
@@ -42,15 +43,16 @@
 
 	</style>
 
-	<style name="AppTheme.Night" parent="AppTheme">
+	<style name="AppTheme.Night" parent="@android:style/Theme.Material">
 
 		<item name="primaryColor">@color/primary_night</item>
 		<item name="android:colorPrimary">@color/primary_night</item>
-		<item name="android:colorPrimaryDark">@color/primary_night_dark</item>
+		<item name="android:colorPrimaryDark">@color/primary_night</item>
 
 		<item name="android:windowActionBar">false</item>
 		<item name="android:windowNoTitle">true</item>
 		<item name="android:windowActionBarOverlay">true</item>
+		<item name="android:windowLightStatusBar">false</item>
 
 		<item name="android:windowBackground">@color/window_background_night</item>
 

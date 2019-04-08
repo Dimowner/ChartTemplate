@@ -197,13 +197,13 @@ public class ChartView extends View {
 		textPaint.setColor(gridTextColor);
 		textPaint.setTextAlign(Paint.Align.CENTER);
 		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-		textPaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
+		textPaint.setTextSize(context.getResources().getDimension(R.dimen.text_xsmall));
 
 		timelineTextPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		timelineTextPaint.setColor(gridTextColor);
 		timelineTextPaint.setTextAlign(Paint.Align.LEFT);
 		timelineTextPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-		timelineTextPaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
+		timelineTextPaint.setTextSize(context.getResources().getDimension(R.dimen.text_xsmall));
 
 		setOnTouchListener(new OnTouchListener() {
 
