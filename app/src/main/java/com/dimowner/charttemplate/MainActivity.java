@@ -36,6 +36,7 @@ import android.widget.TextView;
 
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
+import com.dimowner.charttemplate.model.DataArray;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.widget.ChartScrollOverlayView;
 import com.dimowner.charttemplate.widget.ChartScrollView;
@@ -43,6 +44,7 @@ import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.CheckersView;
 import com.dimowner.charttemplate.widget.ItemView;
 import com.dimowner.charttemplate.widget.OnCheckListener;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,8 +54,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import timber.log.Timber;
+
 public class MainActivity extends Activity implements View.OnClickListener,
-			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener, OnCheckListener {
+			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener {
+//		, OnCheckListener {
 
 	private final float DENSITY;
 	private final int PADD_NORMAL;
@@ -73,21 +78,22 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //	private ItemView itemView4;
 //	private ItemView itemView5;
 	private ScrollView scrollView;
-	private ChartView chartView;
-	private ChartScrollView chartScrollView;
-	private ChartScrollOverlayView chartScrollOverlayView;
-	private CheckersView checkersView;
+//	private ChartView chartView;
+//	private ChartScrollView chartScrollView;
+//	private ChartScrollOverlayView chartScrollOverlayView;
+//	private CheckersView checkersView;
+	private ItemView itemView;
 	private TextView btnNext;
 	private int activeItem = 4;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		AndroidUtils.update(getApplicationContext());
-//		if (CTApplication.isNightMode()) {
-//			setTheme(R.style.AppTheme_Night);
-//		} else {
-//			setTheme(R.style.AppTheme);
-//		}
+		if (CTApplication.isNightMode()) {
+			setTheme(R.style.AppTheme_Night);
+		} else {
+			setTheme(R.style.AppTheme);
+		}
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
 
@@ -95,16 +101,22 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //				LinearLayout.LayoutParams.MATCH_PARENT,
 //				LinearLayout.LayoutParams.MATCH_PARENT);
 //		setContentView(generateLayout(), params);
-		chartView = findViewById(R.id.chartView);
-		chartScrollView = findViewById(R.id.chartScrollView);
-		chartScrollOverlayView = findViewById(R.id.chartScrollOverlayView);
-		chartView.setOnMoveEventsListener(this);
-		chartScrollOverlayView.setOnScrollListener(this);
-		checkersView = findViewById(R.id.checkersView);
-		checkersView.setOnCheckListener(this);
+//		chartView = findViewById(R.id.chartView);
+//		chartScrollView = findViewById(R.id.chartScrollView);
+//		chartScrollOverlayView = findViewById(R.id.chartScrollOverlayView);
+//		chartView.setOnMoveEventsListener(this);
+//		chartScrollOverlayView.setOnScrollListener(this);
+//		checkersView = findViewById(R.id.checkersView);
+//		checkersView.setOnCheckListener(this);
+		itemView = findViewById(R.id.itemView);
+		itemView.setOnMoveEventsListener(this);
+		itemView.setOnScrollListener(this);
+
 		btnNext = findViewById(R.id.btnNext);
 		btnNext.setOnClickListener(this);
 		scrollView = findViewById(R.id.scrollView);
+		ImageButton btnNightMode = findViewById(R.id.btnNightMode);
+		btnNightMode.setOnClickListener(this);
 
 		if (savedInstanceState == null || CTApplication.getData() == null) {
 			Thread thread = new Thread(new Runnable() {
@@ -133,16 +145,17 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	}
 
 	public void setData(ChartData d) {
-		if (chartView != null) {
-			chartView.setData(d);
-		}
-		if (chartScrollView != null) {
-			chartScrollView.setData(d);
-		}
-		if (checkersView != null) {
-			checkersView.setData(d.getNames(), d.getColorsInts());
-		}
-		chartScrollOverlayView.setData(d.getLength());
+		itemView.setData(d);
+//		if (chartView != null) {
+//			chartView.setData(d);
+//		}
+//		if (chartScrollView != null) {
+//			chartScrollView.setData(d);
+//		}
+//		if (checkersView != null) {
+//			checkersView.setData(d.getNames(), d.getColorsInts());
+//		}
+//		chartScrollOverlayView.setData(d.getLength());
 	}
 
 	private View generateLayout() {
@@ -296,44 +309,48 @@ public class MainActivity extends Activity implements View.OnClickListener,
 			String COLORS = "colors";
 			String NAMES = "names";
 
-			JSONObject jo = new JSONObject(
-					AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json"));
-			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
-			Data[] dataValues = new Data[joArray.length()];
-			for (int i = 0; i < joArray.length(); i++) {
-				Object[][] columns;
-				Map<String, String> types;
-				Map<String, String> names;
-				Map<String, String> colors;
-				JSONObject joItem = (JSONObject) joArray.get(i);
+			String json = AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json");
+			Timber.v("json = %s", json);
+//			JSONObject jo = new JSONObject(json);
+//			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
+//			Data[] dataValues = new Data[joArray.length()];
+//			for (int i = 0; i < joArray.length(); i++) {
+//				Object[][] columns;
+//				Map<String, String> types;
+//				Map<String, String> names;
+//				Map<String, String> colors;
+//				JSONObject joItem = (JSONObject) joArray.get(i);
+//
+//				names = AndroidUtils.jsonToMap(joItem.getJSONObject(NAMES));
+//				types = AndroidUtils.jsonToMap(joItem.getJSONObject(TYPES));
+//				colors = AndroidUtils.jsonToMap(joItem.getJSONObject(COLORS));
+//
+//				JSONArray colArray = joItem.getJSONArray(COLUMNS);
+//				List<Object> list = AndroidUtils.toList(colArray);
+//				columns = new Object[list.size()][];
+//
+//				for (int j = 0; j < list.size(); j++) {
+//					List<Object> l2 = (List<Object>) list.get(j);
+//					Object[] a = new Object[l2.size()];
+//					for (int k = 0; k < l2.size(); k++) {
+//						a[k] = l2.get(k);
+//					}
+//					columns[j] = a;
+//				}
+//				dataValues[i] = new Data(columns, types, names, colors);
+//			}
 
-				names = AndroidUtils.jsonToMap(joItem.getJSONObject(NAMES));
-				types = AndroidUtils.jsonToMap(joItem.getJSONObject(TYPES));
-				colors = AndroidUtils.jsonToMap(joItem.getJSONObject(COLORS));
-
-				JSONArray colArray = joItem.getJSONArray(COLUMNS);
-				List<Object> list = AndroidUtils.toList(colArray);
-				columns = new Object[list.size()][];
-
-				for (int j = 0; j < list.size(); j++) {
-					List<Object> l2 = (List<Object>) list.get(j);
-					Object[] a = new Object[l2.size()];
-					for (int k = 0; k < l2.size(); k++) {
-						a[k] = l2.get(k);
-					}
-					columns[j] = a;
-				}
-				dataValues[i] = new Data(columns, types, names, colors);
-			}
-
-//			Gson gson = new Gson();
-//			DataArray array = gson.fromJson(json, DataArray.class);
+			Gson gson = new Gson();
+			DataArray array = gson.fromJson(json, DataArray.class);
 //			dataArray = array.getDataArray();
-			CTApplication.setData(dataValues);
-		} catch (IOException | ClassCastException | JSONException ex) {
-//			Timber.e(ex);
+			CTApplication.setData(array.getDataArray());
+//			CTApplication.setData(dataValues);
+//		} catch (IOException | ClassCastException | JSONException ex) {
+		} catch (IOException | ClassCastException ex) {
+			Timber.e(ex);
 			return null;
 		}
+		Timber.v("DATA = %s", CTApplication.getData()[0].getColumnCount() + " length = " + CTApplication.getData()[0].getDataLength());
 		return toChartData(CTApplication.getData()[pos]);
 	}
 
@@ -354,10 +371,11 @@ public class MainActivity extends Activity implements View.OnClickListener,
 
 	@Override
 	public void onClick(View v) {
-		if (v.getId() == R.id.btn_theme) {
+		if (v.getId() == R.id.btnNightMode) {
 			CTApplication.setNightMode(!CTApplication.isNightMode());
 			recreate();
-		} else if (v.getId() == R.id.btnNext) {
+		}
+		else if (v.getId() == R.id.btnNext) {
 			int prev = activeItem;
 			activeItem--;
 			if (activeItem < 0) {
@@ -381,18 +399,18 @@ public class MainActivity extends Activity implements View.OnClickListener,
 
 	@Override
 	public void onScroll(float x, float size) {
-		chartView.scrollPos(x, size);
+//		chartView.scrollPos(x, size);
 		scrollView.requestDisallowInterceptTouchEvent(true);
 	}
 
-	@Override
-	public void onCheck(int id, String name, boolean checked) {
-		if (checked) {
-			chartView.showLine(name);
-			chartScrollView.showLine(name);
-		} else {
-			chartView.hideLine(name);
-			chartScrollView.hideLine(name);
-		}
-	}
+//	@Override
+//	public void onCheck(int id, String name, boolean checked) {
+//		if (checked) {
+//			chartView.showLine(name);
+//			chartScrollView.showLine(name);
+//		} else {
+//			chartView.hideLine(name);
+//			chartScrollView.hideLine(name);
+//		}
+//	}
 }

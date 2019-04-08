@@ -14,126 +14,149 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<ScrollView
+<LinearLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:tools="http://schemas.android.com/tools"
-		android:id="@+id/scrollView"
+		android:id="@+id/root"
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content">
-
-	<LinearLayout
-			xmlns:android="http://schemas.android.com/apk/res/android"
-			xmlns:tools="http://schemas.android.com/tools"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:orientation="vertical"
-			android:elevation="@dimen/elevation"
-			android:background="@color/view_background"
-			tools:context=".MainActivity">
-
-		<FrameLayout
-				android:id="@+id/toolbar"
-				android:layout_width="match_parent"
-				android:layout_height="@dimen/toolbar_height"
-				android:elevation="4dp"
-				android:background="?attr/primaryColor"
-				>
-
-			<TextView
-					android:id="@+id/btnNext"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="start|left|center_vertical"
-					android:padding="@dimen/spacing_normal"
-					android:textColor="@color/white"
-					android:background="?android:selectableItemBackground"
-					android:text="@string/next"/>
-
-			<TextView
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="start"
-					android:padding="@dimen/spacing_normal"
-					android:layout_marginStart="62dp"
-					android:layout_marginLeft="62dp"
-					android:text="@string/statistics"
-					android:fontFamily="sans-serif-medium"
-					android:textColor="@color/white"
-					android:textSize="@dimen/text_large"
-					/>
-
-			<ImageButton
-					android:id="@+id/btnNightMode"
-					android:layout_width="56dp"
-					android:layout_height="56dp"
-					android:layout_gravity="end|center_vertical"
-					android:background="?android:selectableItemBackground"
-					android:contentDescription="@null"
-					android:padding="@dimen/spacing_normal"
-					android:src="@drawable/moon_light7"
-					/>
-
-		</FrameLayout>
-
-		<TextView
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:gravity="start|center_vertical"
-				android:layout_marginStart="@dimen/spacing_normal"
-				android:layout_marginLeft="@dimen/spacing_normal"
-				android:layout_marginEnd="@dimen/spacing_normal"
-				android:layout_marginRight="@dimen/spacing_normal"
-				android:layout_marginBottom="@dimen/spacing_tiny"
-				android:layout_marginTop="@dimen/spacing_normal"
-				android:text="@string/followers"
-				android:fontFamily="sans-serif-medium"
-				android:textColor="@color/text_blue"
-				android:textSize="@dimen/text_xmedium"
-				/>
-
-		<com.dimowner.charttemplate.widget.ChartView
-				android:id="@+id/chartView"
-				android:layout_width="match_parent"
-				android:layout_height="300dp"
-				android:layout_marginStart="@dimen/spacing_normal"
-				android:layout_marginLeft="@dimen/spacing_normal"
-				android:layout_marginEnd="@dimen/spacing_normal"
-				android:layout_marginRight="@dimen/spacing_normal"
-				/>
+		android:layout_height="match_parent"
+		android:orientation="vertical">
 
 	<FrameLayout
+			android:id="@+id/toolbar"
+			android:layout_width="match_parent"
+			android:layout_height="@dimen/toolbar_height"
+			android:elevation="4dp"
+			android:background="?attr/primaryColor"
+			>
+
+		<TextView
+				android:id="@+id/btnNext"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="start|left|center_vertical"
+				android:padding="@dimen/spacing_normal"
+				android:textColor="@color/white"
+				android:background="?android:selectableItemBackground"
+				android:text="@string/next"/>
+
+		<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="start"
+				android:padding="@dimen/spacing_normal"
+				android:layout_marginStart="62dp"
+				android:layout_marginLeft="62dp"
+				android:text="@string/statistics"
+				android:fontFamily="sans-serif-medium"
+				android:textColor="@color/white"
+				android:textSize="@dimen/text_large"
+				/>
+
+		<ImageButton
+				android:id="@+id/btnNightMode"
+				android:layout_width="56dp"
+				android:layout_height="56dp"
+				android:layout_gravity="end|center_vertical"
+				android:background="?android:selectableItemBackground"
+				android:contentDescription="@null"
+				android:padding="@dimen/spacing_normal"
+				android:src="@drawable/moon_light7"
+				/>
+
+	</FrameLayout>
+	<ScrollView
+			android:id="@+id/scrollView"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content">
 
-		<com.dimowner.charttemplate.widget.ChartScrollView
-				android:id="@+id/chartScrollView"
+		<LinearLayout
 				android:layout_width="match_parent"
-				android:layout_height="50dp"
-				android:layout_marginStart="@dimen/spacing_normal"
-				android:layout_marginLeft="@dimen/spacing_normal"
-				android:layout_marginTop="@dimen/spacing_tiny"
-				android:layout_marginEnd="@dimen/spacing_normal"
-				android:layout_marginRight="@dimen/spacing_normal"
-				android:layout_marginBottom="@dimen/spacing_small"
-				/>
+				android:layout_height="wrap_content"
+				android:orientation="vertical"
+				android:elevation="@dimen/elevation"
+				android:layout_marginTop="@dimen/spacing_double"
+				android:background="?attr/viewBackground">
 
-		<com.dimowner.charttemplate.widget.ChartScrollOverlayView
-				android:id="@+id/chartScrollOverlayView"
-				android:layout_width="match_parent"
-				android:layout_height="50dp"
-				android:layout_marginStart="@dimen/spacing_normal"
-				android:layout_marginLeft="@dimen/spacing_normal"
-				android:layout_marginTop="@dimen/spacing_tiny"
-				android:layout_marginEnd="@dimen/spacing_normal"
-				android:layout_marginRight="@dimen/spacing_normal"
-				android:layout_marginBottom="@dimen/spacing_small"
-				/>
-	</FrameLayout>
-		<com.dimowner.charttemplate.widget.CheckersView
-				android:id="@+id/checkersView"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"/>
+			<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:gravity="start|center_vertical"
+					android:layout_marginStart="@dimen/spacing_normal"
+					android:layout_marginLeft="@dimen/spacing_normal"
+					android:layout_marginEnd="@dimen/spacing_normal"
+					android:layout_marginRight="@dimen/spacing_normal"
+					android:layout_marginBottom="@dimen/spacing_tiny"
+					android:layout_marginTop="@dimen/spacing_normal"
+					android:text="@string/followers"
+					android:fontFamily="sans-serif-medium"
+					android:textColor="@color/text_blue"
+					android:textSize="@dimen/text_xmedium"
+					/>
+			<com.dimowner.charttemplate.widget.ItemView
+					android:id="@+id/itemView"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
 
-	</LinearLayout>
-</ScrollView>
+			<!--<TextView-->
+					<!--android:layout_width="match_parent"-->
+					<!--android:layout_height="wrap_content"-->
+					<!--android:gravity="start|center_vertical"-->
+					<!--android:layout_marginStart="@dimen/spacing_normal"-->
+					<!--android:layout_marginLeft="@dimen/spacing_normal"-->
+					<!--android:layout_marginEnd="@dimen/spacing_normal"-->
+					<!--android:layout_marginRight="@dimen/spacing_normal"-->
+					<!--android:layout_marginBottom="@dimen/spacing_tiny"-->
+					<!--android:layout_marginTop="@dimen/spacing_normal"-->
+					<!--android:text="@string/followers"-->
+					<!--android:fontFamily="sans-serif-medium"-->
+					<!--android:textColor="@color/text_blue"-->
+					<!--android:textSize="@dimen/text_xmedium"-->
+					<!--/>-->
+
+			<!--<com.dimowner.charttemplate.widget.ChartView-->
+					<!--android:id="@+id/chartView"-->
+					<!--android:layout_width="match_parent"-->
+					<!--android:layout_height="300dp"-->
+					<!--android:layout_marginStart="@dimen/spacing_normal"-->
+					<!--android:layout_marginLeft="@dimen/spacing_normal"-->
+					<!--android:layout_marginEnd="@dimen/spacing_normal"-->
+					<!--android:layout_marginRight="@dimen/spacing_normal"-->
+					<!--/>-->
+
+		<!--<FrameLayout-->
+				<!--android:layout_width="match_parent"-->
+				<!--android:layout_height="wrap_content">-->
+
+			<!--<com.dimowner.charttemplate.widget.ChartScrollView-->
+					<!--android:id="@+id/chartScrollView"-->
+					<!--android:layout_width="match_parent"-->
+					<!--android:layout_height="50dp"-->
+					<!--android:layout_marginStart="@dimen/spacing_normal"-->
+					<!--android:layout_marginLeft="@dimen/spacing_normal"-->
+					<!--android:layout_marginTop="@dimen/spacing_tiny"-->
+					<!--android:layout_marginEnd="@dimen/spacing_normal"-->
+					<!--android:layout_marginRight="@dimen/spacing_normal"-->
+					<!--android:layout_marginBottom="@dimen/spacing_small"-->
+					<!--/>-->
+
+			<!--<com.dimowner.charttemplate.widget.ChartScrollOverlayView-->
+					<!--android:id="@+id/chartScrollOverlayView"-->
+					<!--android:layout_width="match_parent"-->
+					<!--android:layout_height="50dp"-->
+					<!--android:layout_marginStart="@dimen/spacing_normal"-->
+					<!--android:layout_marginLeft="@dimen/spacing_normal"-->
+					<!--android:layout_marginTop="@dimen/spacing_tiny"-->
+					<!--android:layout_marginEnd="@dimen/spacing_normal"-->
+					<!--android:layout_marginRight="@dimen/spacing_normal"-->
+					<!--android:layout_marginBottom="@dimen/spacing_small"-->
+					<!--/>-->
+		<!--</FrameLayout>-->
+			<!--<com.dimowner.charttemplate.widget.CheckersView-->
+					<!--android:id="@+id/checkersView"-->
+					<!--android:layout_width="match_parent"-->
+					<!--android:layout_height="wrap_content"/>-->
+
+		</LinearLayout>
+	</ScrollView>
+</LinearLayout>

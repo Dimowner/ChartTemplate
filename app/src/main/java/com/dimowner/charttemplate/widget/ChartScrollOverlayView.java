@@ -96,18 +96,18 @@ public class ChartScrollOverlayView extends View {
 		int selectionColor;
 		int overlayColor;
 		Resources res = context.getResources();
-//		TypedValue typedValue = new TypedValue();
-//		Resources.Theme theme = context.getTheme();
-//		if (theme.resolveAttribute(R.attr.selectionColor, typedValue, true)) {
-//			selectionColor = typedValue.data;
-//		} else {
+		TypedValue typedValue = new TypedValue();
+		Resources.Theme theme = context.getTheme();
+		if (theme.resolveAttribute(R.attr.selectionColor, typedValue, true)) {
+			selectionColor = typedValue.data;
+		} else {
 			selectionColor = res.getColor(R.color.selection_color);
-//		}
-//		if (theme.resolveAttribute(R.attr.overlayColor, typedValue, true)) {
-//			overlayColor = typedValue.data;
-//		} else {
+		}
+		if (theme.resolveAttribute(R.attr.overlayColor, typedValue, true)) {
+			overlayColor = typedValue.data;
+		} else {
 			overlayColor = res.getColor(R.color.overlay_color);
-//		}
+		}
 
 		selectionPaint = new Paint();
 		selectionPaint.setAntiAlias(false);

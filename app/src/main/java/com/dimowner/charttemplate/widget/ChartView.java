@@ -51,8 +51,8 @@ public class ChartView extends View {
 	private final int PADD_TINY;
 	private final int TEXT_SPACE;
 	private final int BASE_LINE_Y;
-	private static final int GRID_LINES_COUNT = 6;
-	private static final int ANIMATION_DURATION = 150; //mills
+	private static final float GRID_LINES_COUNT = 6;
+	private static final int ANIMATION_DURATION = 220; //mills
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
@@ -93,10 +93,13 @@ public class ChartView extends View {
 
 	private float WIDTH = 1;
 	private float HEIGHT = 1;
-	private int maxValueVisible = 0;
-	private int maxValueCalculated = 0;
+	private float maxValueVisible = 0;
+	private float maxValueCalculated = 0;
 	private int[] maxValuesLine;
 	private float valueScaleY = 1;
+	private float gridScaleY = 1;
+	private float gridStep = 1;
+	private float gridValueStep = 1;
 	private boolean skipNextInvalidation = false;
 
 	private OnMoveEventsListener onMoveEventsListener;
@@ -134,43 +137,43 @@ public class ChartView extends View {
 		int shadowColor;
 
 		Resources res = context.getResources();
-//		TypedValue typedValue = new TypedValue();
-//		Resources.Theme theme = context.getTheme();
-//		if (theme.resolveAttribute(R.attr.gridColor, typedValue, true)) {
-//			gridColor = typedValue.data;
-//		} else {
+		TypedValue typedValue = new TypedValue();
+		Resources.Theme theme = context.getTheme();
+		if (theme.resolveAttribute(R.attr.gridColor, typedValue, true)) {
+			gridColor = typedValue.data;
+		} else {
 			gridColor = res.getColor(R.color.grid_color2);
-//		}
-//		if (theme.resolveAttribute(R.attr.gridBaseLineColor, typedValue, true)) {
-//			gridBaseLineColor = typedValue.data;
-//		} else {
+		}
+		if (theme.resolveAttribute(R.attr.gridBaseLineColor, typedValue, true)) {
+			gridBaseLineColor = typedValue.data;
+		} else {
 			gridBaseLineColor = res.getColor(R.color.grid_base_line);
-//		}
-//		if (theme.resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
-//			gridTextColor = typedValue.data;
-//		} else {
+		}
+		if (theme.resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
+			gridTextColor = typedValue.data;
+		} else {
 			gridTextColor = res.getColor(R.color.text_color);
-//		}
-//		if (theme.resolveAttribute(R.attr.panelColor, typedValue, true)) {
-//			panelColor = typedValue.data;
-//		} else {
+		}
+		if (theme.resolveAttribute(R.attr.panelColor, typedValue, true)) {
+			panelColor = typedValue.data;
+		} else {
 			panelColor = res.getColor(R.color.panel_background);
-//		}
-//		if (theme.resolveAttribute(R.attr.panelTextColor, typedValue, true)) {
-//			panelTextColor = typedValue.data;
-//		} else {
+		}
+		if (theme.resolveAttribute(R.attr.panelTextColor, typedValue, true)) {
+			panelTextColor = typedValue.data;
+		} else {
 			panelTextColor = res.getColor(R.color.panel_text_night);
-//		}
-//		if (theme.resolveAttribute(R.attr.scrubblerColor, typedValue, true)) {
-//			scrubblerColor = typedValue.data;
-//		} else {
+		}
+		if (theme.resolveAttribute(R.attr.scrubblerColor, typedValue, true)) {
+			scrubblerColor = typedValue.data;
+		} else {
 			scrubblerColor = res.getColor(R.color.scrubbler_color);
-//		}
-//		if (theme.resolveAttribute(R.attr.shadowColor, typedValue, true)) {
-//			shadowColor = typedValue.data;
-//		} else {
+		}
+		if (theme.resolveAttribute(R.attr.shadowColor, typedValue, true)) {
+			shadowColor = typedValue.data;
+		} else {
 			shadowColor = res.getColor(R.color.shadow_color);
-//		}
+		}
 
 		selectionDrawer = new ChartSelectionDrawer(getContext(), panelTextColor,
 					panelColor, scrubblerColor, shadowColor);
@@ -221,7 +224,7 @@ public class ChartView extends View {
 						if (selectionX < 0) {
 							selectionX = -1;
 						}
-						if (Math.abs(motionEvent.getY() - startY) < 60*DENSITY) {
+						if (Math.abs(motionEvent.getY() - startY) < 90*DENSITY) {
 							selectionDrawer.setSelectionX(selectionX);
 							selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH);
 							if (onMoveEventsListener != null) {
@@ -293,7 +296,7 @@ public class ChartView extends View {
 		heightAnimator = ValueAnimator.ofFloat(diff, 0);
 		heightAnimator.setInterpolator(new DecelerateInterpolator());
 
-		heightAnimator.setDuration(220);
+		heightAnimator.setDuration(ANIMATION_DURATION);
 		heightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 			@Override
 			public void onAnimationUpdate(ValueAnimator animation) {
@@ -305,6 +308,12 @@ public class ChartView extends View {
 				} else {
 					invalidate();
 				}
+				if (val == 0) {
+//					Timber.v("Animation END");
+//					gridScaleY = valueScaleY;
+//					gridValueStep = maxValueCalculated/GRID_LINES_COUNT;
+				}
+				gridStep = gridValueStep*valueScaleY;
 			}
 		});
 		heightAnimator.start();
@@ -327,8 +336,10 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
+		gridStep = (HEIGHT/GRID_LINES_COUNT);
 		if (maxValueVisible > 0) {
 			valueScaleY = (HEIGHT - BASE_LINE_Y - PADD_SMALL) / maxValueVisible;
+			gridScaleY = valueScaleY;
 		}
 	}
 
@@ -357,8 +368,10 @@ public class ChartView extends View {
 	}
 
 	private void drawGrid(Canvas canvas) {
-		int gridValueText = (maxValueVisible / GRID_LINES_COUNT);
-		int gridStep = (int) (gridValueText * valueScaleY);
+//		float gridValueText = (maxValueCalculated / GRID_LINES_COUNT);
+//		float gridStep = (gridValueText * valueScaleY);
+		//		float gridStep = (HEIGHT/GRID_LINES_COUNT);
+//		int gridValueText = (int)(gridStep/valueScaleY);
 		for (int i = 0; i < GRID_LINES_COUNT; i++) {
 			if (i == 0) {
 				canvas.drawLine(0, HEIGHT - BASE_LINE_Y - gridStep * i,
@@ -369,7 +382,7 @@ public class ChartView extends View {
 			}
 //			canvas.drawText(AndroidUtils.formatValue(gridValueText * i),
 //					0, HEIGHT - BASE_LINE_Y - gridStep * i - PADD_TINY, textPaint);
-			canvas.drawText(Integer.toString((gridValueText * i)),
+			canvas.drawText(Integer.toString((int)(gridValueStep * i)),
 					0, HEIGHT - BASE_LINE_Y - gridStep * i - PADD_TINY, textPaint);
 		}
 	}
@@ -403,11 +416,11 @@ public class ChartView extends View {
 				}
 				k +=4;
 				if (pos - STEP > WIDTH) {
-					if (pos/STEP < 150) {
-						Timber.v("ROUND");
+					if (pos/STEP < 130) {
+//						Timber.v("ROUND");
 						linePaints[index].setStrokeCap(Paint.Cap.ROUND);
 					} else {
-						Timber.v("BUTT");
+//						Timber.v("BUTT");
 						linePaints[index].setStrokeCap(Paint.Cap.BUTT);
 					}
 					break;
@@ -477,6 +490,7 @@ public class ChartView extends View {
 			}
 			calculateMaxValuesLine();
 			calculateMaxValue2(true);
+			gridValueStep = maxValueCalculated/GRID_LINES_COUNT;
 //			if (HEIGHT > 1) {
 				chartArray = new float[data.getLength() * 4];
 //				for (int i = 0; i < data.getLength(); i += 2) {
@@ -491,7 +505,7 @@ public class ChartView extends View {
 
 	//TODO: optimize this method. There max val should not use all values to calculate max.
 	private void calculateMaxValue2(boolean adjust) {
-		int prev = maxValueCalculated;
+		float prev = maxValueCalculated;
 		maxValueCalculated = 0;
 		for (int i = (int)(scrollPos/STEP); i < (int)((scrollPos+WIDTH)/STEP); i++) {
 			if (i >= 0 && i < maxValuesLine.length && maxValuesLine[i] > maxValueCalculated) {
@@ -499,9 +513,9 @@ public class ChartView extends View {
 			}
 		}
 
-		if (adjust) {
-			maxValueCalculated = (int) adjustToGrid((float) maxValueCalculated, GRID_LINES_COUNT);
-		}
+//		if (adjust) {
+//			maxValueCalculated = (int) adjustToGrid((float) maxValueCalculated, (int)GRID_LINES_COUNT);
+//		}
 		if (prev != maxValueCalculated) {
 			heightAnimator(maxValueCalculated - maxValueVisible);
 		}
@@ -561,8 +575,8 @@ public class ChartView extends View {
 //		ss.screenShift = screenShift;
 		ss.valueScaleY = valueScaleY;
 		ss.STEP = STEP;
-		ss.maxValueVisible = maxValueVisible;
-		ss.maxValueCalculated = maxValueCalculated;
+//		ss.maxValueVisible = maxValueVisible;
+//		ss.maxValueCalculated = maxValueCalculated;
 		ss.maxValuesLine = maxValuesLine;
 		ss.data = data;
 		return ss;
@@ -580,8 +594,8 @@ public class ChartView extends View {
 //		screenShift = ss.screenShift;
 		valueScaleY = ss.valueScaleY;
 		STEP = ss.STEP;
-		maxValueVisible = ss.maxValueVisible;
-		maxValueCalculated = ss.maxValueCalculated;
+//		maxValueVisible = ss.maxValueVisible;
+//		maxValueCalculated = ss.maxValueCalculated;
 		maxValuesLine = ss.maxValuesLine;
 		data = ss.data;
 
@@ -591,6 +605,7 @@ public class ChartView extends View {
 			for (int i = 0; i < data.getLinesCount(); i++) {
 				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 			}
+			chartArray = new float[data.getLength() * 4];
 		}
 	}
 

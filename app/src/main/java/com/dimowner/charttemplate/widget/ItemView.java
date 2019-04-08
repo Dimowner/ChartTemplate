@@ -49,7 +49,8 @@ public class ItemView extends LinearLayout implements
 	private ChartView chartView;
 	private ChartScrollView chartScrollView;
 	private ChartScrollOverlayView chartScrollOverlayView;
-	private CheckersView checkersView;
+//	private CheckersView checkersView;
+	private ChipsView chipsView;
 	private ChartScrollOverlayView.OnScrollListener onScrollListener;
 
 	public ItemView(Context context) {
@@ -110,17 +111,24 @@ public class ItemView extends LinearLayout implements
 		scroll.addView(chartScrollView);
 		scroll.addView(chartScrollOverlayView);
 
+//		//CheckersView
+//		checkersView = new CheckersView(context);
+//		LinearLayout.LayoutParams checkersLp = new LinearLayout.LayoutParams (
+//				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//		checkersView.setLayoutParams(checkersLp);
+//		checkersView.setOnCheckListener(this);
 		//CheckersView
-		checkersView = new CheckersView(context);
+		chipsView = new ChipsView(context);
 		LinearLayout.LayoutParams checkersLp = new LinearLayout.LayoutParams (
 				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		checkersView.setLayoutParams(checkersLp);
-		checkersView.setOnCheckListener(this);
+		chipsView.setLayoutParams(checkersLp);
+		chipsView.setOnChipCheckListener(this);
 
 //		container.addView(txtFollowers);
 		container.addView(chartView);
 		container.addView(scroll);
-		container.addView(checkersView);
+//		container.addView(checkersView);
+		container.addView(chipsView);
 
 		return container;
 	}
@@ -136,8 +144,11 @@ public class ItemView extends LinearLayout implements
 			if (chartScrollOverlayView != null) {
 				chartScrollOverlayView.setData(d.getLength());
 			}
-			if (checkersView != null) {
-				checkersView.setData(d.getNames(), d.getColorsInts());
+//			if (checkersView != null) {
+//				checkersView.setData(d.getNames(), d.getColorsInts());
+//			}
+			if (chipsView != null) {
+				chipsView.setData(d.getNames(), d.getColorsInts());
 			}
 		}
 	}
@@ -178,7 +189,8 @@ public class ItemView extends LinearLayout implements
 		ss.chartView = chartView.onSaveInstanceState();
 		ss.chartScrollView = chartScrollView.onSaveInstanceState();
 		ss.chartScrollOverlayView = chartScrollOverlayView.onSaveInstanceState();
-		ss.checkersView = checkersView.onSaveInstanceState();
+//		ss.checkersView = checkersView.onSaveInstanceState();
+		ss.chipsView = chipsView.onSaveInstanceState();
 
 		return ss;
 	}
@@ -191,7 +203,8 @@ public class ItemView extends LinearLayout implements
 		chartView.onRestoreInstanceState(ss.chartView);
 		chartScrollView.onRestoreInstanceState(ss.chartScrollView);
 		chartScrollOverlayView.onRestoreInstanceState(ss.chartScrollOverlayView);
-		checkersView.onRestoreInstanceState(ss.checkersView);
+//		checkersView.onRestoreInstanceState(ss.checkersView);
+		chipsView.onRestoreInstanceState(ss.chipsView);
 
 	}
 
@@ -205,7 +218,8 @@ public class ItemView extends LinearLayout implements
 			chartView = in.readParcelable(ItemView.class.getClassLoader());
 			chartScrollView = in.readParcelable(ItemView.class.getClassLoader());
 			chartScrollOverlayView = in.readParcelable(ItemView.class.getClassLoader());
-			checkersView = in.readParcelable(ItemView.class.getClassLoader());
+//			checkersView = in.readParcelable(ItemView.class.getClassLoader());
+			chipsView = in.readParcelable(ItemView.class.getClassLoader());
 		}
 
 		@Override
@@ -214,13 +228,15 @@ public class ItemView extends LinearLayout implements
 			out.writeParcelable(chartView, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
 			out.writeParcelable(chartScrollView, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
 			out.writeParcelable(chartScrollOverlayView, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
-			out.writeParcelable(checkersView, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
+//			out.writeParcelable(checkersView, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
+			out.writeParcelable(chipsView, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
 		}
 
 		Parcelable chartView;
 		Parcelable chartScrollView;
 		Parcelable chartScrollOverlayView;
-		Parcelable checkersView;
+//		Parcelable checkersView;
+		Parcelable chipsView;
 
 
 		public static final Parcelable.Creator<SavedState> CREATOR =

@@ -286,6 +286,7 @@ public class ChartScrollView extends View {
 			for (int i = 0; i < data.getLinesCount(); i++) {
 				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 			}
+			chartArray = new float[data.getLength() * 4];
 		}
 	}
 

@@ -28,6 +28,10 @@
 	<color name="view_background_night">#1d2733</color>
 
 	<color name="text_blue">#3896d4</color>
+	<color name="grey">#e6ecf0</color>
+	<color name="grey_night">#273442</color>
+	<color name="highlight_light">#33ffffff</color> <!-- 20% white -->
+	<color name="transparent">#00000000</color>
 
 	<!--<color name="md_yellow_A700">#FFD600</color>-->
 
