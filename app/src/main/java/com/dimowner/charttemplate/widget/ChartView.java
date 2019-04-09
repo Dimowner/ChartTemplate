@@ -302,7 +302,7 @@ public class ChartView extends View {
 			public void onAnimationUpdate(ValueAnimator animation) {
 				float val = (float) animation.getAnimatedValue();
 				maxValueVisible = maxValueCalculated -(int)val;
-				valueScaleY = (HEIGHT-BASE_LINE_Y-PADD_SMALL)/ maxValueVisible;
+				valueScaleY = (HEIGHT-2*BASE_LINE_Y-PADD_SMALL)/ maxValueVisible;
 				if (skipNextInvalidation) {
 					skipNextInvalidation = false;
 				} else {
@@ -338,7 +338,7 @@ public class ChartView extends View {
 		HEIGHT = getHeight();
 		gridStep = (HEIGHT/GRID_LINES_COUNT);
 		if (maxValueVisible > 0) {
-			valueScaleY = (HEIGHT - BASE_LINE_Y - PADD_SMALL) / maxValueVisible;
+			valueScaleY = (HEIGHT - 2*BASE_LINE_Y-PADD_SMALL) / maxValueVisible;
 			gridScaleY = valueScaleY;
 		}
 	}
@@ -388,22 +388,13 @@ public class ChartView extends View {
 	}
 
 	private void drawChart(Canvas canvas, int[] values, int index) {
-//		chartPath.rewind();
-//		float start = screenShift <= 0 ? -screenShift / STEP : 0;
-		float offset = -scrollPos % STEP;
-
-		float pos = 0;
-//		chartArray = new float[4* (int)Math.ceil((WIDTH/STEP))];
-		int skip = (int)(-scrollPos <= 0 ? scrollIndex : 0);
+		float offset = 0; //Remove this var
+		float pos = -scrollPos;
+		int skip = (int)scrollIndex-(int)(PADD_NORMAL/STEP);
+		if (skip < 0) {skip = 0;}
+		pos +=skip*STEP;
 		int k = skip;
 		for (int i = skip; i < values.length; i++) {
-			//Draw chart
-//			if (pos == 0) {
-//				chartPath.moveTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScaleY);
-//			} else {
-//				chartPath.lineTo(pos + offset, HEIGHT - BASE_LINE_Y - values[i] * valueScaleY);
-//			}
-
 			if (k < chartArray.length) {
 				chartArray[k] = pos + offset; //x
 				chartArray[k + 1] = HEIGHT - BASE_LINE_Y - values[i] * valueScaleY; //y
@@ -415,12 +406,10 @@ public class ChartView extends View {
 					chartArray[k + 3] = HEIGHT - BASE_LINE_Y - values[i] * valueScaleY; //y
 				}
 				k +=4;
-				if (pos - STEP > WIDTH) {
+				if (pos - STEP > WIDTH+PADD_NORMAL) {
 					if (pos/STEP < 130) {
-//						Timber.v("ROUND");
 						linePaints[index].setStrokeCap(Paint.Cap.ROUND);
 					} else {
-//						Timber.v("BUTT");
 						linePaints[index].setStrokeCap(Paint.Cap.BUTT);
 					}
 					break;

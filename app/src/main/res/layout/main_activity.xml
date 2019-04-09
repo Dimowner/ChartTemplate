@@ -71,12 +71,12 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content">
 
-		<LinearLayout
+		<FrameLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="vertical"
 				android:elevation="@dimen/elevation"
-				android:layout_marginTop="@dimen/spacing_double"
+				android:layout_marginTop="@dimen/spacing_big"
 				android:background="?attr/viewBackground">
 
 			<TextView
@@ -159,6 +159,6 @@
 					<!--android:layout_width="match_parent"-->
 					<!--android:layout_height="wrap_content"/>-->
 
-		</LinearLayout>
+		</FrameLayout>
 	</ScrollView>
 </LinearLayout>

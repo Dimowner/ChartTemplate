@@ -28,12 +28,15 @@ public class Data {
 	private Map<String, String> types;
 	private Map<String, String> names;
 	private Map<String, String> colors;
+	private boolean y_scaled;
 
-	public Data(Object[][] columns, Map<String, String> types, Map<String, String> names, Map<String, String> colors) {
+	public Data(Object[][] columns, Map<String, String> types, Map<String, String> names,
+					Map<String, String> colors, boolean y_scaled) {
 		this.columns = columns;
 		this.types = types;
 		this.names = names;
 		this.colors = colors;
+		this.y_scaled = y_scaled;
 	}
 
 	public Object[][] getColumns() {
@@ -53,78 +56,102 @@ public class Data {
 	}
 
 	public long[] getTimeArray() throws ClassCastException {
-		int pos = -1;
-		for (int i = 0; i < columns.length; i++) {
-			if (columns[i].length > 0 && columns[i][0].equals(TIME_ARRAY_NAME)) {
-				pos = i;
-			}
-		}
-		if (pos >= 0 && columns[pos].length > 1) {
-			long array[] = new long[columns[pos].length - 1];
-			for (int i = 1; i < columns[pos].length; i++) {
-				if (columns[pos][i] instanceof Double) {
-					array[i - 1] = ((Double) columns[pos][i]).longValue();
-				} else {
-					array[i - 1] = ((long) columns[pos][i]);
+		if (columns != null) {
+			int pos = -1;
+			for (int i = 0; i < columns.length; i++) {
+				if (columns[i].length > 0 && columns[i][0].equals(TIME_ARRAY_NAME)) {
+					pos = i;
 				}
 			}
-			return array;
+			if (pos >= 0 && columns[pos].length > 1) {
+				long array[] = new long[columns[pos].length - 1];
+				for (int i = 1; i < columns[pos].length; i++) {
+					if (columns[pos][i] instanceof Double) {
+						array[i - 1] = ((Double) columns[pos][i]).longValue();
+					} else {
+						array[i - 1] = ((long) columns[pos][i]);
+					}
+				}
+				return array;
+			}
 		}
 		return new long[0];
 	}
 
 	public int getColumnCount() {
-		return names.size();
+		if (names != null) {
+			return names.size();
+		}
+		return 0;
 	}
 
 	public String[] getColumnsKeys() {
-		Iterator<String> iterator = names.keySet().iterator();
-		String[] keys = new String[names.keySet().size()];
-		int i = 0;
-		while (iterator.hasNext()) {
-			keys[i] = iterator.next();
-			i++;
+		if (names != null) {
+			Iterator<String> iterator = names.keySet().iterator();
+			String[] keys = new String[names.keySet().size()];
+			int i = 0;
+			while (iterator.hasNext()) {
+				keys[i] = iterator.next();
+				i++;
+			}
+			return keys;
+		} else {
+			return new String[0];
 		}
-		return keys;
 	}
 
 	public String getColor(String key) {
-		return colors.get(key);
+		if (colors != null) {
+			return colors.get(key);
+		}
+		return "";
 	}
 
 	public String getName(String key) {
-		return names.get(key);
+		if (names != null) {
+			return names.get(key);
+		}
+		return "";
 	}
 
 	public String getType(String key) {
-		return types.get(key);
+		if (types != null) {
+			return types.get(key);
+		}
+		return "";
 	}
 
 	public int[] getValues(String key) throws ClassCastException {
-		int pos = -1;
-		for (int i = 0; i < columns.length; i++) {
-			if (columns[i].length > 0 && columns[i][0].equals(key)) {
-				pos = i;
-			}
-		}
-		if (pos >= 0 && columns[pos].length > 1) {
-			int array[] = new int [columns[pos].length - 1];
-			for (int i = 1; i < columns[pos].length; i++) {
-				if (columns[pos][i] instanceof Double) {
-					array[i - 1] = ((Double) columns[pos][i]).intValue();
-				} else {
-					array[i - 1] = ((int)columns[pos][i]);
+		if (columns != null) {
+			int pos = -1;
+			for (int i = 0; i < columns.length; i++) {
+				if (columns[i].length > 0 && columns[i][0].equals(key)) {
+					pos = i;
 				}
 			}
-			return array;
+			if (pos >= 0 && columns[pos].length > 1) {
+				int array[] = new int[columns[pos].length - 1];
+				for (int i = 1; i < columns[pos].length; i++) {
+					if (columns[pos][i] instanceof Double) {
+						array[i - 1] = ((Double) columns[pos][i]).intValue();
+					} else {
+						array[i - 1] = ((int) columns[pos][i]);
+					}
+				}
+				return array;
+			}
 		}
 		return new int[0];
 	}
 
 	public int getDataLength() {
-		if (columns.length > 0 && columns[0].length > 0) {
+		if (columns != null && columns.length > 0 && columns[0].length > 0) {
 			return columns[0].length-1;
 		}
 		return 0;
+	}
+
+	public boolean isYscaled() {
+		return y_scaled;
 	}
 }

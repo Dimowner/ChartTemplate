@@ -121,7 +121,7 @@ public class ChipsView extends LinearLayout {
 		textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
 		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams (textView.getLayoutParams());
 		if (container.getChildCount() == 0) {
-			params.setMargins(PADD_NORMAL, PADD_NORMAL, 0, PADD_NORMAL);
+			params.setMargins(0, PADD_NORMAL, 0, PADD_NORMAL);
 		} else {
 			params.setMargins(PADD_SMALL, PADD_NORMAL, 0, PADD_NORMAL);
 		}

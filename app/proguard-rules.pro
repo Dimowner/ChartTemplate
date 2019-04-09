@@ -41,3 +41,5 @@
 -keep class * implements com.google.gson.JsonDeserializer
 
 ##---------------End: proguard configuration for Gson  ----------
+
+-keep class com.dimowner.charttemplate.** { *; }

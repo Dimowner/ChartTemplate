@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -56,7 +57,7 @@ public class AndroidUtils {
 		return dp*DENSITY;
 	}
 
-	public static String readAsset(Context context, String name) throws IOException {
+	public static String readAsset(Context context, String name) throws FileNotFoundException, IOException {
 		InputStream is = context.getAssets().open(name);
 		int size = is.available();
 		byte[] buffer = new byte[size];

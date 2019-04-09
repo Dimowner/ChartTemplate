@@ -20,12 +20,11 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-//import android.graphics.Path;
+import android.graphics.Path;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
@@ -37,17 +36,19 @@ public class ChartScrollView extends View {
 	private static final int ANIMATION_DURATION = 80; //mills
 
 	private final float DENSITY;
-	private final float SELECTION;
+	private final float PADD_TINY;
+	private final float SELECTION_HALF;
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
-		SELECTION = 5*DENSITY;
+		PADD_TINY = 3*DENSITY;
+		SELECTION_HALF = 6*DENSITY;
 	}
 
 	private ChartData data;
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
-//	private Path path;
+	private Path path;
 	private float chartArray[];
 	private float STEP = 10;
 
@@ -78,7 +79,7 @@ public class ChartScrollView extends View {
 
 	private void init(Context context) {
 		setFocusable(false);
-//		path = new Path();
+		path = new Path();
 	}
 
 	private Paint createLinePaint(int color) {
@@ -98,7 +99,7 @@ public class ChartScrollView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		valueScaleY = (HEIGHT-SELECTION)/maxValueY;
+		valueScaleY = (HEIGHT-2*PADD_TINY)/maxValueY;
 
 		if (data != null) {
 			STEP = (WIDTH/data.getLength());
@@ -108,6 +109,10 @@ public class ChartScrollView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
+		if (path.isEmpty()) {
+			path.addRoundRect(0, 0, WIDTH, HEIGHT, SELECTION_HALF, SELECTION_HALF, Path.Direction.CW);
+		}
+		canvas.clipPath(path);
 		if (data != null) {
 			for (int i = 0; i < data.getNames().length; i++) {
 				if (linesVisibility[i]) {
@@ -130,12 +135,12 @@ public class ChartScrollView extends View {
 //				path.lineTo(x, HEIGHT - values[i] * valueScaleY);
 //			}
 			chartArray[k] = x; //x
-			chartArray[k+1] = HEIGHT - values[i] * valueScaleY; //y
+			chartArray[k+1] = HEIGHT-PADD_TINY - values[i] * valueScaleY; //y
 			chartArray[k + 2] = x + 2*STEP; //x
 			if (i+2 < values.length) {
-				chartArray[k + 3] = HEIGHT - values[i + 2] * valueScaleY; //y
+				chartArray[k + 3] = HEIGHT-PADD_TINY - values[i + 2] * valueScaleY; //y
 			} else {
-				chartArray[k + 3] = HEIGHT - values[i] * valueScaleY; //y
+				chartArray[k + 3] = HEIGHT-PADD_TINY - values[i] * valueScaleY; //y
 			}
 //			if (x - STEP > WIDTH) {
 //				break;
@@ -201,7 +206,7 @@ public class ChartScrollView extends View {
 				}
 			}
 		}
-		valueScaleY = (HEIGHT-SELECTION)/maxValueY;
+		valueScaleY = (HEIGHT-2*PADD_TINY)/maxValueY;
 		if (prev != maxValueY) {
 			animation(prev, maxValueY, invalidate);
 		}
@@ -218,7 +223,7 @@ public class ChartScrollView extends View {
 			@Override
 			public void onAnimationUpdate(ValueAnimator animation) {
 				maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
-				valueScaleY = (HEIGHT-SELECTION)/ maxValueY;
+				valueScaleY = (HEIGHT-2*PADD_TINY)/ maxValueY;
 				if (invalidate) {
 					invalidate();
 				}

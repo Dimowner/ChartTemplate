@@ -51,6 +51,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //	private CheckersView checkersView;
 	private ItemView itemView;
 	private TextView btnNext;
-	private int activeItem = 4;
+	private int activeItem = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -140,7 +141,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
-					final ChartData d = readDemoData(4);
+					final ChartData d = readDemoData(activeItem);
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
@@ -321,14 +322,15 @@ public class MainActivity extends Activity implements View.OnClickListener,
 
 	public ChartData readDemoData(int pos) {
 		try {
-			String DATA_ARRAY = "dataArray";
-			String COLUMNS = "columns";
-			String TYPES = "types";
-			String COLORS = "colors";
-			String NAMES = "names";
+//			String DATA_ARRAY = "dataArray";
+//			String COLUMNS = "columns";
+//			String TYPES = "types";
+//			String COLORS = "colors";
+//			String NAMES = "names";
 
-			String json = AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json");
-			Timber.v("json = %s", json);
+//			String json = AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json");
+			String json = AndroidUtils.readAsset(getApplicationContext(), "contest/2/overview.json");
+//			Timber.v("json = %s", json);
 //			JSONObject jo = new JSONObject(json);
 //			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
 //			Data[] dataValues = new Data[joArray.length()];
@@ -359,9 +361,9 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //			}
 
 			Gson gson = new Gson();
-			DataArray array = gson.fromJson(json, DataArray.class);
+			Data array = gson.fromJson(json, Data.class);
 //			dataArray = array.getDataArray();
-			CTApplication.setData(array.getDataArray());
+			CTApplication.setData(new Data[]{array});
 //			CTApplication.setData(dataValues);
 //		} catch (IOException | ClassCastException | JSONException ex) {
 		} catch (IOException | ClassCastException ex) {
@@ -373,18 +375,21 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	}
 
 	private ChartData toChartData(Data d) {
-		String[] keys = d.getColumnsKeys();
-		int[][] vals = new int[keys.length][d.getDataLength()];
-		String[] names = new String[keys.length];
-		String[] types = new String[keys.length];
-		String[] colors = new String[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			vals[i] = d.getValues(keys[i]);
-			names[i] = d.getName(keys[i]);
-			types[i] = d.getType(keys[i]);
-			colors[i] = d.getColor(keys[i]);
+		if (d != null) {
+			String[] keys = d.getColumnsKeys();
+			int[][] vals = new int[keys.length][d.getDataLength()];
+			String[] names = new String[keys.length];
+			String[] types = new String[keys.length];
+			String[] colors = new String[keys.length];
+			for (int i = 0; i < keys.length; i++) {
+				vals[i] = d.getValues(keys[i]);
+				names[i] = d.getName(keys[i]);
+				types[i] = d.getType(keys[i]);
+				colors[i] = d.getColor(keys[i]);
+			}
+			return new ChartData(d.getTimeArray(), vals, names, types, colors);
 		}
-		return new ChartData(d.getTimeArray(), vals, names, types, colors);
+		return null;
 	}
 
 	@Override
