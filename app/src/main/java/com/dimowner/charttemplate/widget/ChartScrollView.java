@@ -33,7 +33,7 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 
 public class ChartScrollView extends View {
 
-	private static final int ANIMATION_DURATION = 80; //mills
+	private static final int ANIMATION_DURATION = 100; //mills
 
 	private final float DENSITY;
 	private final float PADD_TINY;
@@ -61,6 +61,40 @@ public class ChartScrollView extends View {
 
 	private ValueAnimator animator;
 	private ValueAnimator alphaAnimator;
+	private DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+	private AccelerateInterpolator accelerateInterpolator= new AccelerateInterpolator();
+
+	private boolean invalidate = false;
+	private float start = 0;
+	private float end = 0;
+
+	ValueAnimator.AnimatorUpdateListener heightValueAnimator = new ValueAnimator.AnimatorUpdateListener() {
+		@Override
+		public void onAnimationUpdate(ValueAnimator animation) {
+			maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
+			valueScaleY = (HEIGHT-2*PADD_TINY)/ maxValueY;
+			if (invalidate) {
+				invalidate();
+			}
+		}
+	};
+
+	private boolean show = false;
+	private int index = 0;
+	private float end2 = 0;
+
+	ValueAnimator.AnimatorUpdateListener alphaValueAnimator = new ValueAnimator.AnimatorUpdateListener() {
+		@Override
+		public void onAnimationUpdate(ValueAnimator animation) {
+			float val = (float) animation.getAnimatedValue();
+			linePaints[index].setAlpha((int)val);
+			if (val == end2) {
+				linesVisibility[index] = show;
+			}
+			invalidate();
+		}
+	};
+
 
 	public ChartScrollView(Context context) {
 		super(context);
@@ -208,52 +242,60 @@ public class ChartScrollView extends View {
 		}
 		valueScaleY = (HEIGHT-2*PADD_TINY)/maxValueY;
 		if (prev != maxValueY) {
-			animation(prev, maxValueY, invalidate);
+			heightAnimation(prev, maxValueY, invalidate);
 		}
 	}
 
-	private void animation(final float start, final float end, final boolean invalidate) {
+	private void heightAnimation(final float start, final float end, final boolean invalidate) {
+		this.start = start;
+		this.end = end;
+		this.invalidate = invalidate;
 		if (animator != null && animator.isStarted()) {
 			animator.cancel();
 		}
 		animator = ValueAnimator.ofFloat(0.0f, 1.0f);
-		animator.setInterpolator(new DecelerateInterpolator());
+		animator.setInterpolator(decelerateInterpolator);
 		animator.setDuration(ANIMATION_DURATION);
-		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-			@Override
-			public void onAnimationUpdate(ValueAnimator animation) {
-				maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
-				valueScaleY = (HEIGHT-2*PADD_TINY)/ maxValueY;
-				if (invalidate) {
-					invalidate();
-				}
-			}
-		});
+		animator.addUpdateListener(heightValueAnimator);
+//		animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//			@Override
+//			public void onAnimationUpdate(ValueAnimator animation) {
+//				maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
+//				valueScaleY = (HEIGHT-2*PADD_TINY)/ maxValueY;
+//				if (invalidate) {
+//					invalidate();
+//				}
+//			}
+//		});
 		animator.start();
 	}
 
 	private void alphaAnimator(float start, final float end, final int index, final boolean show) {
+		this.end2 = end;
+		this.index = index;
+		this.show = show;
 		if (alphaAnimator != null && alphaAnimator.isRunning()) {
 			alphaAnimator.cancel();
 		}
 		alphaAnimator = ValueAnimator.ofFloat(start, end);
 		if (show) {
-			alphaAnimator.setInterpolator(new DecelerateInterpolator());
+			alphaAnimator.setInterpolator(decelerateInterpolator);
 		} else {
-			alphaAnimator.setInterpolator(new AccelerateInterpolator());
+			alphaAnimator.setInterpolator(accelerateInterpolator);
 		}
 		alphaAnimator.setDuration(ANIMATION_DURATION);
-		alphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-			@Override
-			public void onAnimationUpdate(ValueAnimator animation) {
-				float val = (float) animation.getAnimatedValue();
-				linePaints[index].setAlpha((int)val);
-				if (val == end) {
-					linesVisibility[index] = show;
-				}
-				invalidate();
-			}
-		});
+		alphaAnimator.addUpdateListener(alphaValueAnimator);
+//		alphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//			@Override
+//			public void onAnimationUpdate(ValueAnimator animation) {
+//				float val = (float) animation.getAnimatedValue();
+//				linePaints[index].setAlpha((int)val);
+//				if (val == end) {
+//					linesVisibility[index] = show;
+//				}
+//				invalidate();
+//			}
+//		});
 		alphaAnimator.start();
 	}
 
@@ -303,6 +345,7 @@ public class ChartScrollView extends View {
 		private SavedState(Parcel in) {
 			super(in);
 			maxValueY = in.readInt();
+			valueScaleY = in.readFloat();
 			in.readBooleanArray(linesVisibility);
 			in.readBooleanArray(linesCalculated);
 			data = in.readParcelable(ChartData.class.getClassLoader());
@@ -312,6 +355,7 @@ public class ChartScrollView extends View {
 		public void writeToParcel(Parcel out, int flags) {
 			super.writeToParcel(out, flags);
 			out.writeInt(maxValueY);
+			out.writeFloat(valueScaleY);
 			out.writeBooleanArray(linesVisibility);
 			out.writeBooleanArray(linesCalculated);
 			out.writeParcelable(data, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
@@ -319,6 +363,7 @@ public class ChartScrollView extends View {
 
 		private ChartData data;
 		private int maxValueY;
+		private float valueScaleY = 0;
 		private boolean[] linesVisibility;
 		private boolean[] linesCalculated;
 

@@ -264,7 +264,7 @@ public class ChartScrollOverlayView extends View {
 //			onScrollListener.onScroll(scrollX / STEP, selectionWidth / STEP);
 //			prevScroll = scrollX;
 //			prevWidth = selectionWidth;
-			onScroll(scrollX-SELECTION, selectionWidth+3*SELECTION);
+			onScroll(scrollX-SELECTION, selectionWidth+2*SELECTION);
 		}
 	}
 
@@ -357,6 +357,9 @@ public class ChartScrollOverlayView extends View {
 		ss.dataLength = dataLength;
 		ss.selectionWidth = selectionWidth;
 		ss.scrollX = scrollX;
+		ss.prevScroll = prevScroll;
+		ss.prevWidth = prevWidth;
+		ss.STEP = STEP;
 		return ss;
 	}
 
@@ -368,6 +371,9 @@ public class ChartScrollOverlayView extends View {
 		dataLength = ss.dataLength;
 		selectionWidth = ss.selectionWidth;
 		scrollX = ss.scrollX;
+		prevWidth = ss.prevWidth;
+		prevScroll = ss.prevScroll;
+		STEP = ss.STEP;
 	}
 
 	static class SavedState extends View.BaseSavedState {
@@ -378,22 +384,29 @@ public class ChartScrollOverlayView extends View {
 		private SavedState(Parcel in) {
 			super(in);
 			dataLength = in.readInt();
-			float[] floats = new float[2];
+			float[] floats = new float[5];
 			in.readFloatArray(floats);
 			selectionWidth = floats[0];
 			scrollX = floats[1];
+			prevScroll = floats[2];
+			prevWidth = floats[3];
+			STEP = floats[4];
 		}
 
 		@Override
 		public void writeToParcel(Parcel out, int flags) {
 			super.writeToParcel(out, flags);
 			out.writeInt(dataLength);
-			out.writeFloatArray(new float[] {selectionWidth, scrollX});
+			out.writeFloatArray(new float[] {selectionWidth, scrollX, prevScroll, prevWidth, STEP});
 		}
 
 		private int dataLength;
 		private float selectionWidth;
 		private float scrollX;
+
+		private float prevScroll = 0;
+		private float prevWidth = 0;
+		private float STEP;
 
 		public static final Parcelable.Creator<SavedState> CREATOR =
 				new Parcelable.Creator<SavedState>() {
