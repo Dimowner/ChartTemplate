@@ -52,7 +52,7 @@ public class ChartSelectionDrawer {
 	private float selectionX;
 	private int selectionIndex;
 	private String selectionDate;
-	private Date date;
+//	private Date date;
 
 	private RectF sizeRect;
 	private Rect tempRect;
@@ -68,7 +68,7 @@ public class ChartSelectionDrawer {
 										 int scrubblerColor, int shadowColor) {
 		sizeRect = new RectF();
 		tempRect = new Rect();
-		date = new Date();
+//		date = new Date();
 		selectionDate = "";
 		selectionX = -1;
 		selectionIndex = -1;
@@ -202,8 +202,8 @@ public class ChartSelectionDrawer {
 		}
 
 		//Calculate date sizes
-		date.setTime(data.getTime()[selectionIndex]);
-		selectionDate = String.valueOf(date.getTime()/1000000);//TimeUtils.formatDateWeek(date);
+//		date.setTime(data.getTimes()[selectionIndex]);
+		selectionDate = data.getTimes()[selectionIndex];//String.valueOf(date.getTime()/1000000);//TimeUtils.formatDateWeek(date);
 		selectedDatePaint.getTextBounds(selectionDate, 0, selectionDate.length(), tempRect);
 
 		if (selectedDateHeight < tempRect.height()) {

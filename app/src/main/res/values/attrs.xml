@@ -13,5 +13,6 @@
 	<attr name="panelTextColor" format="color" />
 	<attr name="scrubblerColor" format="color" />
 	<attr name="shadowColor" format="color" />
+	<attr name="tittleColor" format="color" />
 
 </resources>

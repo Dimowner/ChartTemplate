@@ -23,10 +23,12 @@ import java.util.Locale;
 public class TimeUtils {
 
 	/** Date format: May 16 */
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM", Locale.getDefault());
 
 	/** Date format: Sat, May 16 */
-	private static SimpleDateFormat dateFormatWeek = new SimpleDateFormat("EEE, MMM dd", Locale.getDefault());
+	private static SimpleDateFormat dateFormatWeek = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.getDefault());
+
+	private static SimpleDateFormat dateFormatLong = new SimpleDateFormat("EEE, dd MMMM yyyy", Locale.getDefault());
 
 	private TimeUtils() {
 	}
@@ -43,5 +45,12 @@ public class TimeUtils {
 			return "Wrong date!";
 		}
 		return dateFormatWeek.format(date);
+	}
+
+	public static String formatDateLong(Date date) {
+		if (date == null) {
+			return "Wrong date!";
+		}
+		return dateFormatLong.format(date);
 	}
 }

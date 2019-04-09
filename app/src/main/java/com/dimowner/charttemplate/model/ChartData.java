@@ -4,9 +4,16 @@ import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.dimowner.charttemplate.util.TimeUtils;
+
+import java.util.Date;
+
 public class ChartData implements Parcelable {
 
-	private long[] time;
+//	private long[] time;
+	private String[] times;
+	private String[] timesShort;
+//	private String[] timesLong;
 	private int[][] columns;
 	private String[] names;
 	private String[] types;
@@ -14,18 +21,30 @@ public class ChartData implements Parcelable {
 	private int[] colorsInts;
 
 	public ChartData(long[] time, int[][] columns, String[] names, String[] types, String[] colors) {
-		this.time = time;
+//		this.time = time;
 		this.columns = columns;
 		this.names = names;
 		this.types = types;
 		this.colors = colors;
 		this.colorsInts = parseColor(colors);
+		times = new String[time.length];
+		timesShort = new String[time.length];
+//		timesLong = new String[time.length];
+		Date date = new Date();
+		for (int i = 0; i < time.length; i++) {
+			date.setTime(time[i]);
+			times[i] = TimeUtils.formatDateWeek(date);
+			timesShort[i] = TimeUtils.formatDate(date);
+//			timesLong[i] = TimeUtils.formatDateLong(date);
+		}
 	}
 
 	//----- START Parcelable implementation ----------
 	private ChartData(Parcel in) {
+		in.readStringArray(times);
+		in.readStringArray(timesShort);
 		in.readIntArray(colorsInts);
-		in.readLongArray(time);
+//		in.readLongArray(time);
 		in.readStringArray(names);
 		in.readStringArray(types);
 		in.readStringArray(colors);
@@ -41,8 +60,10 @@ public class ChartData implements Parcelable {
 	}
 
 	public void writeToParcel(Parcel out, int flags) {
+		out.writeStringArray(times);
+		out.writeStringArray(timesShort);
 		out.writeIntArray(colorsInts);
-		out.writeLongArray(time);
+//		out.writeLongArray(time);
 		out.writeStringArray(names);
 		out.writeStringArray(types);
 		out.writeStringArray(colors);
@@ -72,9 +93,9 @@ public class ChartData implements Parcelable {
 		return c;
 	}
 
-	public long[] getTime() {
-		return time;
-	}
+//	public long[] getTime() {
+//		return time;
+//	}
 
 	public int[][] getColumns() {
 		return columns;
@@ -100,8 +121,20 @@ public class ChartData implements Parcelable {
 		return columns[p];
 	}
 
+	public String[] getTimes() {
+		return times;
+	}
+
+	public String[] getTimesShort() {
+		return timesShort;
+	}
+
+//	public String[] getTimesLong() {
+//		return timesLong;
+//	}
+
 	public int getLength() {
-		return time.length;
+		return times.length;
 	}
 
 	public int getLinesCount() {

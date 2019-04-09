@@ -22,6 +22,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 //import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -30,18 +31,12 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
-import com.dimowner.charttemplate.util.TimeUtils;
-
-import java.util.Date;
-
-import timber.log.Timber;
 
 public class ChartView extends View {
 
@@ -67,16 +62,13 @@ public class ChartView extends View {
 
 	private ChartData data;
 
-//	private Path chartPath;
 	private float chartArray[];
 
-	private Date date;
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
 
-	private String dateText;
-
 	private TextPaint textPaint;
+	private TextPaint dateRangePaint;
 	private TextPaint timelineTextPaint;
 	private Paint gridPaint;
 	private Paint baselinePaint;
@@ -87,7 +79,6 @@ public class ChartView extends View {
 
 	private float scrollPos;
 	private float scrollIndex;
-//	private float screenShift = 0;
 
 	private ChartSelectionDrawer selectionDrawer;
 
@@ -101,6 +92,9 @@ public class ChartView extends View {
 	private float gridStep = 1;
 	private float gridValueStep = 1;
 	private boolean skipNextInvalidation = false;
+	private String dateRange;
+	private float dateRangeHeight;
+	private Rect rect;
 
 	private OnMoveEventsListener onMoveEventsListener;
 
@@ -122,11 +116,9 @@ public class ChartView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 
-//		chartPath = new Path();
-		date = new Date();
-		dateText = null;
 		scrollPos = -1;
 		scrollIndex = 0;
+		rect = new Rect();
 
 		int gridColor;
 		int gridBaseLineColor;
@@ -135,6 +127,7 @@ public class ChartView extends View {
 		int panelColor;
 		int scrubblerColor;
 		int shadowColor;
+		int tittleColor;
 
 		Resources res = context.getResources();
 		TypedValue typedValue = new TypedValue();
@@ -174,6 +167,11 @@ public class ChartView extends View {
 		} else {
 			shadowColor = res.getColor(R.color.shadow_color);
 		}
+		if (theme.resolveAttribute(R.attr.tittleColor, typedValue, true)) {
+			tittleColor = typedValue.data;
+		} else {
+			tittleColor = res.getColor(R.color.black);
+		}
 
 		selectionDrawer = new ChartSelectionDrawer(getContext(), panelTextColor,
 					panelColor, scrubblerColor, shadowColor);
@@ -198,6 +196,12 @@ public class ChartView extends View {
 		textPaint.setTextAlign(Paint.Align.CENTER);
 		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
 		textPaint.setTextSize(context.getResources().getDimension(R.dimen.text_xsmall));
+
+		dateRangePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
+		dateRangePaint.setColor(tittleColor);
+		dateRangePaint.setTextAlign(Paint.Align.RIGHT);
+		dateRangePaint.setTypeface(Typeface.create("sans-serif-sans-serif-thin", Typeface.NORMAL));
+		dateRangePaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
 
 		timelineTextPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		timelineTextPaint.setColor(gridTextColor);
@@ -302,7 +306,7 @@ public class ChartView extends View {
 			public void onAnimationUpdate(ValueAnimator animation) {
 				float val = (float) animation.getAnimatedValue();
 				maxValueVisible = maxValueCalculated -(int)val;
-				valueScaleY = (HEIGHT-2*BASE_LINE_Y-PADD_SMALL)/ maxValueVisible;
+				valueScaleY = (HEIGHT-2*BASE_LINE_Y-PADD_NORMAL)/ maxValueVisible;
 				if (skipNextInvalidation) {
 					skipNextInvalidation = false;
 				} else {
@@ -324,7 +328,16 @@ public class ChartView extends View {
 			STEP = WIDTH / size;
 			scrollPos = (x * STEP);
 			scrollIndex = x;
+//			Timber.v("Times: " + data.getTimesLong()[(int)x] + " - " + data.getTimesLong()[(int)Math.floor(x+size)-1]);
 //			screenShift = -scrollPos;
+			int idx = (int) Math.ceil(x + size) - 1;
+			if (idx < data.getLength()) {
+				dateRange = data.getTimes()[(int) Math.floor(x)] + " - " + data.getTimes()[idx];
+				dateRangePaint.getTextBounds(dateRange, 0, dateRange.length(), rect);
+			}
+			if (dateRangeHeight < rect.height()) {
+				dateRangeHeight = rect.height();
+			}
 			calculateMaxValue2(false);
 			skipNextInvalidation = true;
 			invalidate();
@@ -338,7 +351,7 @@ public class ChartView extends View {
 		HEIGHT = getHeight();
 		gridStep = (HEIGHT/GRID_LINES_COUNT);
 		if (maxValueVisible > 0) {
-			valueScaleY = (HEIGHT - 2*BASE_LINE_Y-PADD_SMALL) / maxValueVisible;
+			valueScaleY = (HEIGHT - 2*BASE_LINE_Y-PADD_NORMAL) / maxValueVisible;
 			gridScaleY = valueScaleY;
 		}
 	}
@@ -361,7 +374,7 @@ public class ChartView extends View {
 					drawChart(canvas, data.getValues(i), i);
 				}
 			}
-
+			canvas.drawText(dateRange, WIDTH-2, dateRangeHeight+21*DENSITY, dateRangePaint);
 			//Draw selection panel with scrubbler
 			selectionDrawer.draw(canvas, data, linesVisibility, HEIGHT, linePaints, valueScaleY);
 		}
@@ -429,15 +442,12 @@ public class ChartView extends View {
 
 		for (int i = 0; i < data.getLength()/count+1; i++) {
 			if (pos-scrollPos+TEXT_SPACE >= 0 && pos-scrollPos < WIDTH && i*count < data.getLength()) {
-				date.setTime(data.getTime()[i * count]);
-				dateText = String.valueOf(date.getTime()/100000000);//TimeUtils.formatDate(date);
-
 				if (count*STEP > TEXT_SPACE && count*STEP < TEXT_SPACE*1.18f && (i)%2!=0) {
 					timelineTextPaint.setAlpha((int)(255/(TEXT_SPACE*0.18f)*(count*STEP-TEXT_SPACE)));
 				} else {
 					timelineTextPaint.setAlpha(255);
 				}
-				canvas.drawText(dateText, pos - scrollPos, HEIGHT - PADD_NORMAL, timelineTextPaint);
+				canvas.drawText(data.getTimesShort()[i*count], pos - scrollPos, HEIGHT - PADD_NORMAL, timelineTextPaint);
 			}
 			pos += count*STEP;
 		}
@@ -560,13 +570,16 @@ public class ChartView extends View {
 		ss.linesVisibility = linesVisibility;
 		ss.linesCalculated = linesCalculated;
 		ss.scrollPos = scrollPos;
+		ss.scrollIndex = scrollIndex;
 		ss.selectionX = selectionDrawer.getSelectionX();
-//		ss.screenShift = screenShift;
 		ss.valueScaleY = valueScaleY;
 		ss.STEP = STEP;
-//		ss.maxValueVisible = maxValueVisible;
-//		ss.maxValueCalculated = maxValueCalculated;
+		ss.maxValueVisible = maxValueVisible;
+		ss.maxValueCalculated = maxValueCalculated;
 		ss.maxValuesLine = maxValuesLine;
+		ss.gridValueStep = gridValueStep;
+		ss.dateRange = dateRange;
+		ss.dateRangeHeight = dateRangeHeight;
 		ss.data = data;
 		return ss;
 	}
@@ -579,13 +592,16 @@ public class ChartView extends View {
 		linesVisibility = ss.linesVisibility;
 		linesCalculated = ss.linesCalculated;
 		scrollPos = ss.scrollPos;
+		scrollIndex = ss.scrollIndex;
 		selectionDrawer.setSelectionX(ss.selectionX);
-//		screenShift = ss.screenShift;
 		valueScaleY = ss.valueScaleY;
 		STEP = ss.STEP;
-//		maxValueVisible = ss.maxValueVisible;
-//		maxValueCalculated = ss.maxValueCalculated;
+		maxValueVisible = ss.maxValueVisible;
+		maxValueCalculated = ss.maxValueCalculated;
 		maxValuesLine = ss.maxValuesLine;
+		gridValueStep = ss.gridValueStep;
+		dateRangeHeight = ss.dateRangeHeight;
+		dateRange = ss.dateRange;
 		data = ss.data;
 
 		if (data != null) {
@@ -612,16 +628,19 @@ public class ChartView extends View {
 			super(in);
 			in.readBooleanArray(linesVisibility);
 			in.readBooleanArray(linesCalculated);
-			float[] floats = new float[5];
+			float[] floats = new float[9];
 			in.readFloatArray(floats);
 			scrollPos = floats[0];
-			selectionX = floats[1];
-			screenShift = floats[2];
+			scrollIndex = floats[1];
+			selectionX = floats[2];
 			valueScaleY = floats[3];
 			STEP = floats[4];
-			maxValueVisible = in.readInt();
-			maxValueCalculated = in.readInt();
+			maxValueVisible = floats[5];
+			maxValueCalculated = floats[6];
+			gridValueStep = floats[7];
+			dateRangeHeight = floats[8];
 			in.readIntArray(maxValuesLine);
+			dateRange = in.readString();
 			data = in.readParcelable(ChartData.class.getClassLoader());
 		}
 
@@ -630,10 +649,10 @@ public class ChartView extends View {
 			super.writeToParcel(out, flags);
 			out.writeBooleanArray(linesVisibility);
 			out.writeBooleanArray(linesCalculated);
-			out.writeFloatArray(new float[] {scrollPos, selectionX, screenShift, valueScaleY, STEP});
-			out.writeInt(maxValueVisible);
-			out.writeInt(maxValueCalculated);
+			out.writeFloatArray(new float[] {scrollPos, scrollIndex, selectionX,
+					valueScaleY, STEP, maxValueVisible, maxValueCalculated, gridValueStep, dateRangeHeight});
 			out.writeIntArray(maxValuesLine);
+			out.writeString(dateRange);
 			out.writeParcelable(data, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
 		}
 
@@ -642,12 +661,15 @@ public class ChartView extends View {
 		boolean[] linesVisibility;
 		boolean[] linesCalculated;
 		float scrollPos;
+		float scrollIndex;
 		float selectionX;
-		float screenShift;
 		float valueScaleY;
-		int maxValueVisible;
-		int maxValueCalculated = 0;
+		float maxValueVisible;
+		float maxValueCalculated;
 		int[] maxValuesLine;
+		float gridValueStep;
+		String dateRange;
+		float dateRangeHeight;
 
 		public static final Parcelable.Creator<SavedState> CREATOR =
 				new Parcelable.Creator<SavedState>() {

@@ -38,6 +38,7 @@ import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.model.DataArray;
 import com.dimowner.charttemplate.util.AndroidUtils;
+import com.dimowner.charttemplate.util.TimeUtils;
 import com.dimowner.charttemplate.widget.ChartScrollOverlayView;
 import com.dimowner.charttemplate.widget.ChartScrollView;
 import com.dimowner.charttemplate.widget.ChartView;
@@ -53,6 +54,7 @@ import org.w3c.dom.Text;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -99,6 +101,9 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
 
+		Timber.v("Time 1 = " + TimeUtils.formatDate(new Date())
+				+ " 2 = " + TimeUtils.formatDateWeek(new Date())
+				+  " 3 = " + TimeUtils.formatDateLong(new Date()));
 //		ScrollView.LayoutParams params = new ScrollView.LayoutParams(
 //				LinearLayout.LayoutParams.MATCH_PARENT,
 //				LinearLayout.LayoutParams.MATCH_PARENT);

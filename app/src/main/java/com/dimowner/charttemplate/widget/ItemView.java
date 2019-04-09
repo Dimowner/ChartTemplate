@@ -87,7 +87,7 @@ public class ItemView extends LinearLayout implements
 		//CharView
 		chartView = new ChartView(context);
 		LinearLayout.LayoutParams chartLp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(390*DENSITY));
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(400*DENSITY));
 //		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chartView.setLayoutParams(chartLp);
 
