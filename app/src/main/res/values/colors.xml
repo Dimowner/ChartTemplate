@@ -22,10 +22,10 @@
 	<color name="window_background">#f0f0f0</color>
 	<color name="view_background">#ffffff</color>
 
-	<color name="primary_night">#212d3b</color>
+	<color name="primary_night">#242f3e</color>
 	<color name="primary_night_dark">#1a242e</color>
-	<color name="window_background_night">#151e27</color>
-	<color name="view_background_night">#1d2733</color>
+	<color name="window_background_night">#1b2433</color>
+	<color name="view_background_night">#242f3e</color>
 
 	<color name="text_blue">#3896d4</color>
 	<color name="grey">#e6ecf0</color>
@@ -43,11 +43,11 @@
 	<color name="grid_base_line">#e7e8e9</color>
 	<color name="grid_base_line_night">#101924</color>
 
-	<color name="grid_color2">#f1f1f2</color>
-	<color name="grid_color2_night">#161f2b</color>
+	<color name="grid_color2">#1A182D3B</color>
+	<color name="grid_color2_night">#1AFFFFFF</color>
 
-	<color name="text_color">#96a2aa</color>
-	<color name="text_color_night">#506372</color>
+	<color name="text_color">#8e8e93</color>
+	<color name="text_color_night">#99A3B1C2</color>
 
 	<color name="text_dark">#222222</color>
 	<color name="text_light">#ffffff</color>
@@ -56,17 +56,20 @@
 	<color name="panel_text_night">#e5eff5</color>
 
 	<color name="panel_background">#ffffff</color>
-	<color name="panel_background_night">#202b38</color>
+	<color name="panel_background_night">#1c2533</color>
 
-	<color name="selection_color">#33517DA2</color>
-	<color name="selection_color_night">#4F517DA2</color>
+	<color name="selection_color">#8086A9C4</color>
+	<color name="selection_color_night">#806F899E</color>
 
-	<color name="overlay_color">#C3F2F6F7</color>
-	<color name="overlay_color_night">#C319222C</color>
+	<color name="overlay_color">#99EDF5FB</color>
+	<color name="overlay_color_night">#99304259</color>
 
-	<color name="scrubbler_color">#27517DA2</color>
-	<color name="scrubbler_color_night">#990D141C</color>
+	<color name="scrubbler_color">#1A182D3B</color>
+	<color name="scrubbler_color_night">#1AFFFFFF</color>
 
 	<color name="shadow_color">#E2E4E6</color>
 	<color name="shadow_color_night">#161F29</color>
+
+	<color name="zoom_out_color">#108be3</color>
+	<color name="zoom_out_color_night">#48AAF0</color>
 </resources>

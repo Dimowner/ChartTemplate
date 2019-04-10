@@ -22,13 +22,14 @@ import java.util.Locale;
 
 public class TimeUtils {
 
-	/** Date format: May 16 */
+	/** Date format: 16 May */
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM", Locale.getDefault());
 
-	/** Date format: Sat, May 16 */
+	/** Date format: Sat, May 2019 */
 	private static SimpleDateFormat dateFormatWeek = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.getDefault());
 
-	private static SimpleDateFormat dateFormatLong = new SimpleDateFormat("EEE, dd MMMM yyyy", Locale.getDefault());
+	/** Date format: 10 April 2019 */
+	private static SimpleDateFormat dateFormatLong = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
 
 	private TimeUtils() {
 	}

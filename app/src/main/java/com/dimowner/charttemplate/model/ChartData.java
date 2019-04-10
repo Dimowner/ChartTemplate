@@ -13,14 +13,15 @@ public class ChartData implements Parcelable {
 //	private long[] time;
 	private String[] times;
 	private String[] timesShort;
-//	private String[] timesLong;
+	private String[] timesLong;
 	private int[][] columns;
 	private String[] names;
 	private String[] types;
 	private String[] colors;
 	private int[] colorsInts;
+	private boolean yScaled;
 
-	public ChartData(long[] time, int[][] columns, String[] names, String[] types, String[] colors) {
+	public ChartData(long[] time, int[][] columns, String[] names, String[] types, String[] colors, boolean yScaled) {
 //		this.time = time;
 		this.columns = columns;
 		this.names = names;
@@ -29,13 +30,14 @@ public class ChartData implements Parcelable {
 		this.colorsInts = parseColor(colors);
 		times = new String[time.length];
 		timesShort = new String[time.length];
-//		timesLong = new String[time.length];
+		timesLong = new String[time.length];
+		this.yScaled = yScaled;
 		Date date = new Date();
 		for (int i = 0; i < time.length; i++) {
 			date.setTime(time[i]);
 			times[i] = TimeUtils.formatDateWeek(date);
 			timesShort[i] = TimeUtils.formatDate(date);
-//			timesLong[i] = TimeUtils.formatDateLong(date);
+			timesLong[i] = TimeUtils.formatDateLong(date);
 		}
 	}
 
@@ -43,6 +45,7 @@ public class ChartData implements Parcelable {
 	private ChartData(Parcel in) {
 		in.readStringArray(times);
 		in.readStringArray(timesShort);
+		in.readStringArray(timesLong);
 		in.readIntArray(colorsInts);
 //		in.readLongArray(time);
 		in.readStringArray(names);
@@ -53,6 +56,9 @@ public class ChartData implements Parcelable {
 		for (int i = 0; i < size; i++) {
 			in.readIntArray(columns[i]);
 		}
+		boolean[] bools = new boolean[1];
+		in.readBooleanArray(bools);
+		yScaled = bools[0];
 	}
 
 	public int describeContents() {
@@ -62,12 +68,14 @@ public class ChartData implements Parcelable {
 	public void writeToParcel(Parcel out, int flags) {
 		out.writeStringArray(times);
 		out.writeStringArray(timesShort);
+		out.writeStringArray(timesLong);
 		out.writeIntArray(colorsInts);
 //		out.writeLongArray(time);
 		out.writeStringArray(names);
 		out.writeStringArray(types);
 		out.writeStringArray(colors);
 		out.writeInt(columns.length);
+		out.writeBooleanArray(new boolean[] {yScaled});
 		for (int i = 0; i < columns.length; i++) {
 			out.writeIntArray(columns[i]);
 		}
@@ -129,9 +137,13 @@ public class ChartData implements Parcelable {
 		return timesShort;
 	}
 
-//	public String[] getTimesLong() {
-//		return timesLong;
-//	}
+	public String[] getTimesLong() {
+		return timesLong;
+	}
+
+	public boolean isYscaled() {
+		return yScaled;
+	}
 
 	public int getLength() {
 		return times.length;

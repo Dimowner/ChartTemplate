@@ -65,7 +65,7 @@ public class ChartSelectionDrawer {
 	}
 
 	public ChartSelectionDrawer(Context context, int panelTextColor, int panelColor,
-										 int scrubblerColor, int shadowColor) {
+										 int scrubblerColor, int shadowColor, int windowBgColor) {
 		sizeRect = new RectF();
 		tempRect = new Rect();
 //		date = new Date();
@@ -104,7 +104,7 @@ public class ChartSelectionDrawer {
 		scrubblerPaint.setDither(false);
 		scrubblerPaint.setStyle(Paint.Style.STROKE);
 		scrubblerPaint.setColor(scrubblerColor);
-		scrubblerPaint.setStrokeWidth(1.5f*DENSITY);
+		scrubblerPaint.setStrokeWidth(1.2f*DENSITY);
 
 		shadowPaint = new Paint();
 		shadowPaint.setAntiAlias(true);
@@ -118,7 +118,7 @@ public class ChartSelectionDrawer {
 						  Paint[] linePaints, float valueScaleY) {
 		if (selectionX >= 0) {
 			//Draw scrubbler
-			canvas.drawLine(selectionX, 0, selectionX, HEIGHT - BASE_LINE_Y, scrubblerPaint);
+			canvas.drawLine(selectionX, BASE_LINE_Y+PADD_NORMAL, selectionX, HEIGHT - BASE_LINE_Y, scrubblerPaint);
 
 			//Draw circles on charts
 			for (int i = 0; i < data.getNames().length; i++) {
@@ -220,10 +220,10 @@ public class ChartSelectionDrawer {
 		}
 
 		//Set panel size.
-		sizeRect.left = selectionX - PADD_NORMAL;
-		sizeRect.right = selectionX + width;
-		sizeRect.top = PADD_NORMAL;
-		sizeRect.bottom = 3.5f * PADD_NORMAL + selectedDateHeight + selectedNameHeight + selectedValueHeight;
+		sizeRect.left = selectionX - width - 2*PADD_NORMAL;
+		sizeRect.right = selectionX - PADD_NORMAL;
+		sizeRect.top = BASE_LINE_Y + 2*PADD_NORMAL;
+		sizeRect.bottom = BASE_LINE_Y + 4.5f * PADD_NORMAL + selectedDateHeight + selectedNameHeight + selectedValueHeight;
 
 		//Set Panel edges
 		if (sizeRect.right > WIDTH - PADD_TINY) {

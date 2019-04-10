@@ -17,6 +17,7 @@
 package com.dimowner.charttemplate.widget;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -26,15 +27,20 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ChipsView extends LinearLayout {
 
 	private final float DENSITY;
+	private final int PADD_TINY;
 	private final int PADD_SMALL;
 	private final int PADD_NORMAL;
 	private final float RAD;
@@ -47,6 +53,7 @@ public class ChipsView extends LinearLayout {
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
 //		SELECTION = 5*DENSITY;
+		PADD_TINY = (int)(4*DENSITY);
 		PADD_SMALL = (int)(8*DENSITY);
 		PADD_NORMAL = (int)(16*DENSITY);
 		RAD = 24*DENSITY;
@@ -55,11 +62,17 @@ public class ChipsView extends LinearLayout {
 		CHIP_HEIGHT = (int)(42*DENSITY);
 	}
 
-	private LinearLayout container;
+	private FrameLayout container;
 	private boolean[] chipState;
 	private String[] names;
 	private int[] colors;
 //	private int gridTextColor;
+	private List<TextView> views;
+	private List<Integer> chipsWidth;
+	private int totalWidth = 0;
+	private float chipsHeight = 0;
+	private float shift = 0;
+	private float WIDTH = 1;
 
 	private OnCheckListener listener;
 
@@ -79,29 +92,38 @@ public class ChipsView extends LinearLayout {
 	}
 
 	private void init(Context context) {
-		TypedValue typedValue = new TypedValue();
+		chipsWidth = new ArrayList<>();
+		views = new ArrayList<>();
+//		TypedValue typedValue = new TypedValue();
 //		if (context.getTheme().resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
 //			gridTextColor = typedValue.data;
 //		} else {
 //			gridTextColor = context.getResources().getColor(R.color.text_color);
 //		}
 
-		//TODO: Add child positioning in layout
-		container = new LinearLayout(context);
-		LinearLayout.LayoutParams containerLp = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT);
+		container = new FrameLayout(context);
+		FrameLayout.LayoutParams containerLp = new FrameLayout.LayoutParams(
+				FrameLayout.LayoutParams.MATCH_PARENT,
+				FrameLayout.LayoutParams.WRAP_CONTENT);
+		containerLp.gravity = Gravity.START;
+		containerLp.topMargin = PADD_NORMAL;
+		containerLp.bottomMargin = PADD_SMALL+PADD_TINY;
 		container.setLayoutParams(containerLp);
-		container.setOrientation(LinearLayout.HORIZONTAL);
 		this.addView(container);
+	}
+
+	@Override
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+		super.onLayout(changed, left, top, right, bottom);
+		WIDTH = getWidth();
 	}
 
 	public TextView createChipView(int id, final Context context, final String name, final int color, boolean checked) {
 		final TextView textView = new TextView(context);
-		LinearLayout.LayoutParams  lp = new LinearLayout.LayoutParams (
-				LinearLayout.LayoutParams .WRAP_CONTENT, CHIP_HEIGHT);
+		FrameLayout.LayoutParams  lp = new FrameLayout.LayoutParams(
+				FrameLayout.LayoutParams .WRAP_CONTENT, CHIP_HEIGHT);
 		textView.setLayoutParams(lp);
-		textView.setGravity(Gravity.CENTER);
+		textView.setGravity(Gravity.START);
 		if (checked) {
 			textView.setCompoundDrawablesWithIntrinsicBounds(
 					ContextCompat.getDrawable(context, R.drawable.ic_check), null, null, null);
@@ -119,13 +141,14 @@ public class ChipsView extends LinearLayout {
 
 		textView.setText(name);
 		textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams (textView.getLayoutParams());
-		if (container.getChildCount() == 0) {
-			params.setMargins(0, PADD_NORMAL, 0, PADD_NORMAL);
-		} else {
-			params.setMargins(PADD_SMALL, PADD_NORMAL, 0, PADD_NORMAL);
-		}
-		textView.setLayoutParams(params);
+//		textView.getPaint().getTextBounds();
+//		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(textView.getLayoutParams());
+//		if (container.getChildCount() == 0) {
+//			params.setMargins(0, PADD_NORMAL, 0, PADD_NORMAL);
+//		} else {
+//			params.setMargins(PADD_SMALL, PADD_NORMAL, 0, PADD_NORMAL);
+//		}
+//		textView.setLayoutParams(params);
 
 		textView.setId(id);
 
@@ -185,15 +208,43 @@ public class ChipsView extends LinearLayout {
 
 	public void setData(String[] names, int[] colors) {
 		if (names != null && colors != null) {
+			views.clear();
+			chipsWidth.clear();
+			totalWidth = 0;
+			chipsHeight = 0;
+			shift = 0;
+
 			this.names = names;
 			this.colors = colors;
 			chipState = new boolean[names.length];
 			container.removeAllViews();
 			for (int i = 0; i < names.length; i++) {
 				chipState[i] = true;
-				container.addView(createChipView(i, getContext(), names[i], colors[i], true));
+				views.add(createChipView(i, getContext(), names[i], colors[i], true));
+				container.addView(views.get(i));
+				updatePositions(i);
 			}
 		}
+	}
+
+	private void updatePositions(int i) {
+		//Read view sizes;
+		Rect rect = new Rect();
+		views.get(i).getPaint().getTextBounds(names[i], 0, names[i].length(), rect);
+		int w = 2*NO_ICON_PADD + rect.width() + PADD_SMALL;
+		totalWidth +=w;
+		chipsWidth.add(w);
+		if (chipsHeight == 0) {
+			chipsHeight = 2*PADD_NORMAL + rect.height();
+		}
+		float x = totalWidth%WIDTH;
+		float y = (PADD_TINY+chipsHeight)*(totalWidth/(int)WIDTH);
+		if (x-w < 0) { shift = Math.abs(x-w);}
+		views.get(i).setTranslationX(x-w+shift);
+		views.get(i).setTranslationY(y);
+		ViewGroup.LayoutParams lp = container.getLayoutParams();
+		lp.height = (int)(y+chipsHeight);
+		container.setLayoutParams(lp);
 	}
 
 	public void setOnChipCheckListener(OnCheckListener l) {
@@ -205,6 +256,7 @@ public class ChipsView extends LinearLayout {
 		Parcelable superState = super.onSaveInstanceState();
 		SavedState ss = new SavedState(superState);
 
+		ss.WIDTH = WIDTH;
 		ss.chipState = chipState;
 		ss.names = names;
 		ss.colors = colors;
@@ -215,11 +267,17 @@ public class ChipsView extends LinearLayout {
 	public void onRestoreInstanceState(Parcelable state) {
 		SavedState ss = (SavedState) state;
 		super.onRestoreInstanceState(ss.getSuperState());
+		WIDTH = ss.WIDTH;
 		chipState = ss.chipState;
 		names = ss.names;
 		colors = ss.colors;
 		container.removeAllViews();
 		if (names != null && colors != null) {
+			views.clear();
+			chipsWidth.clear();
+			totalWidth = 0;
+			chipsHeight = 0;
+			shift = 0;
 //			for (int i = 0; i < names.length; i++) {
 //				container.addView(createChipView(i, names[i], colors[i]));
 //				if (i < names.length - 1) {
@@ -228,7 +286,9 @@ public class ChipsView extends LinearLayout {
 //			}
 			for (int i = 0; i < names.length; i++) {
 //				chipState[i] = true;
-				container.addView(createChipView(i, getContext(), names[i], colors[i], chipState[i]));
+				views.add(createChipView(i, getContext(), names[i], colors[i], chipState[i]));
+				container.addView(views.get(i));
+				updatePositions(i);
 			}
 		}
 	}
@@ -240,6 +300,7 @@ public class ChipsView extends LinearLayout {
 
 		private SavedState(Parcel in) {
 			super(in);
+			WIDTH = in.readFloat();
 			in.readBooleanArray(chipState);
 			in.writeStringArray(names);
 			in.writeIntArray(colors);
@@ -248,6 +309,7 @@ public class ChipsView extends LinearLayout {
 		@Override
 		public void writeToParcel(Parcel out, int flags) {
 			super.writeToParcel(out, flags);
+			out.writeFloat(WIDTH);
 			out.writeBooleanArray(chipState);
 			out.writeStringArray(names);
 			out.writeIntArray(colors);
@@ -256,6 +318,7 @@ public class ChipsView extends LinearLayout {
 		boolean[] chipState;
 		String[] names;
 		int[] colors;
+		float WIDTH;
 
 
 		public static final Parcelable.Creator<SavedState> CREATOR =

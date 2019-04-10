@@ -100,14 +100,14 @@ public class ItemView extends LinearLayout implements
 		chartScrollView = new ChartScrollView(context);
 		FrameLayout.LayoutParams scrollLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(45*DENSITY));
-		scrollLp.setMargins(0, PADD_TINY, 0, PADD_SMALL);
+		scrollLp.setMargins(0, PADD_TINY, 0, 0);
 		scrollLp.gravity = Gravity.CENTER;
 		chartScrollView.setLayoutParams(scrollLp);
 
 		chartScrollOverlayView = new ChartScrollOverlayView(context);
 		FrameLayout.LayoutParams scrollOverlayLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(45*DENSITY));
-		scrollOverlayLp.setMargins(0, PADD_TINY, 0, PADD_SMALL);
+		scrollOverlayLp.setMargins(0, PADD_TINY, 0, 0);
 		scrollOverlayLp.gravity = Gravity.CENTER;
 		chartScrollOverlayView.setLayoutParams(scrollOverlayLp);
 		chartScrollOverlayView.setOnScrollListener(this);

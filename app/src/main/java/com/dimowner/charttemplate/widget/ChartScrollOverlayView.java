@@ -54,7 +54,7 @@ public class ChartScrollOverlayView extends View {
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
-		SMALLEST_SELECTION_WIDTH = 45*DENSITY;
+		SMALLEST_SELECTION_WIDTH = 36*DENSITY;
 		LINE_HEIGHT = (int) (6*DENSITY);
 		LINE_WIDTH = (int) (1.5*DENSITY);
 		SELECTION = 12*DENSITY;

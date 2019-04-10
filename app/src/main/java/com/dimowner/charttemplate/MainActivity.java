@@ -334,7 +334,11 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //			String NAMES = "names";
 
 //			String json = AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json");
-			String json = AndroidUtils.readAsset(getApplicationContext(), "contest/2/overview.json");
+			String json1 = AndroidUtils.readAsset(getApplicationContext(), "contest/1/overview.json");
+			String json2 = AndroidUtils.readAsset(getApplicationContext(), "contest/2/overview.json");
+			String json3 = AndroidUtils.readAsset(getApplicationContext(), "contest/3/overview.json");
+			String json4 = AndroidUtils.readAsset(getApplicationContext(), "contest/4/overview.json");
+			String json5 = AndroidUtils.readAsset(getApplicationContext(), "contest/5/overview.json");
 //			Timber.v("json = %s", json);
 //			JSONObject jo = new JSONObject(json);
 //			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
@@ -366,9 +370,13 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //			}
 
 			Gson gson = new Gson();
-			Data array = gson.fromJson(json, Data.class);
+			Data data1 = gson.fromJson(json1, Data.class);
+			Data data2 = gson.fromJson(json2, Data.class);
+			Data data3 = gson.fromJson(json3, Data.class);
+			Data data4 = gson.fromJson(json4, Data.class);
+			Data data5 = gson.fromJson(json5, Data.class);
 //			dataArray = array.getDataArray();
-			CTApplication.setData(new Data[]{array});
+			CTApplication.setData(new Data[]{data1, data2, data3, data4, data5});
 //			CTApplication.setData(dataValues);
 //		} catch (IOException | ClassCastException | JSONException ex) {
 		} catch (IOException | ClassCastException ex) {
@@ -392,7 +400,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 				types[i] = d.getType(keys[i]);
 				colors[i] = d.getColor(keys[i]);
 			}
-			return new ChartData(d.getTimeArray(), vals, names, types, colors);
+			return new ChartData(d.getTimeArray(), vals, names, types, colors, d.isYscaled());
 		}
 		return null;
 	}
