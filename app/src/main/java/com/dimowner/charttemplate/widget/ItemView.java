@@ -126,6 +126,8 @@ public class ItemView extends LinearLayout implements
 				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		chipsView.setLayoutParams(checkersLp);
 		chipsView.setOnChipCheckListener(this);
+		chipsView.setClipChildren(false);
+		chipsView.setClipToPadding(false);
 
 //		container.addView(txtFollowers);
 		container.addView(chartView);

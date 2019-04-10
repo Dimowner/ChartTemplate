@@ -164,9 +164,9 @@ public class ChartScrollView extends View {
 //		Log.v("LOG", "drawChart size = " + chartArray.length + " WIDTH = " + WIDTH + " STEP = " + STEP);
 		for (int i = 0; i < values.length; i+=2) {
 //			if (x == 0) {
-//				path.moveTo(x, HEIGHT - values[i] * valueScaleY);
+//				path.moveTo(x, HEIGHT - values[i] * valueScale);
 //			} else {
-//				path.lineTo(x, HEIGHT - values[i] * valueScaleY);
+//				path.lineTo(x, HEIGHT - values[i] * valueScale);
 //			}
 			chartArray[k] = x; //x
 			chartArray[k+1] = HEIGHT-PADD_TINY - values[i] * valueScaleY; //y
@@ -261,7 +261,7 @@ public class ChartScrollView extends View {
 //			@Override
 //			public void onAnimationUpdate(ValueAnimator animation) {
 //				maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
-//				valueScaleY = (HEIGHT-2*PADD_TINY)/ maxValueY;
+//				valueScale = (HEIGHT-2*PADD_TINY)/ maxValueY;
 //				if (invalidate) {
 //					invalidate();
 //				}

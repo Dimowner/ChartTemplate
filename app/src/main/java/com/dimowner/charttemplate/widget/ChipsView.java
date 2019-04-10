@@ -102,12 +102,12 @@ public class ChipsView extends LinearLayout {
 //		}
 
 		container = new FrameLayout(context);
-		FrameLayout.LayoutParams containerLp = new FrameLayout.LayoutParams(
-				FrameLayout.LayoutParams.MATCH_PARENT,
-				FrameLayout.LayoutParams.WRAP_CONTENT);
+		LinearLayout.LayoutParams containerLp = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
 		containerLp.gravity = Gravity.START;
-		containerLp.topMargin = PADD_NORMAL;
-		containerLp.bottomMargin = PADD_SMALL+PADD_TINY;
+//		containerLp.topMargin = PADD_NORMAL;
+//		containerLp.bottomMargin = PADD_SMALL+PADD_TINY;
 		container.setLayoutParams(containerLp);
 		this.addView(container);
 	}
@@ -208,23 +208,38 @@ public class ChipsView extends LinearLayout {
 
 	public void setData(String[] names, int[] colors) {
 		if (names != null && colors != null) {
-			views.clear();
-			chipsWidth.clear();
-			totalWidth = 0;
-			chipsHeight = 0;
-			shift = 0;
-
 			this.names = names;
 			this.colors = colors;
 			chipState = new boolean[names.length];
-			container.removeAllViews();
-			for (int i = 0; i < names.length; i++) {
-				chipState[i] = true;
-				views.add(createChipView(i, getContext(), names[i], colors[i], true));
-				container.addView(views.get(i));
-				updatePositions(i);
+			if (names.length > 1) {
+				views.clear();
+				chipsWidth.clear();
+				totalWidth = 0;
+				chipsHeight = 0;
+				shift = 0;
+				container.removeAllViews();
+				for (int i = 0; i < names.length; i++) {
+					chipState[i] = true;
+					views.add(createChipView(i, getContext(), names[i], colors[i], true));
+					container.addView(views.get(i));
+					updatePositions(i);
+				}
+			} else {
+				clearChips();
 			}
 		}
+	}
+
+	public void clearChips() {
+		views.clear();
+		chipsWidth.clear();
+		totalWidth = 0;
+		chipsHeight = 0;
+		shift = 0;
+		container.removeAllViews();
+		ViewGroup.LayoutParams lp = container.getLayoutParams();
+		lp.height = PADD_NORMAL;
+		container.setLayoutParams(lp);
 	}
 
 	private void updatePositions(int i) {
@@ -238,12 +253,12 @@ public class ChipsView extends LinearLayout {
 			chipsHeight = 2*PADD_NORMAL + rect.height();
 		}
 		float x = totalWidth%WIDTH;
-		float y = (PADD_TINY+chipsHeight)*(totalWidth/(int)WIDTH);
+		float y = (PADD_TINY+chipsHeight)*(totalWidth/(int)WIDTH)+PADD_NORMAL;
 		if (x-w < 0) { shift = Math.abs(x-w);}
 		views.get(i).setTranslationX(x-w+shift);
 		views.get(i).setTranslationY(y);
 		ViewGroup.LayoutParams lp = container.getLayoutParams();
-		lp.height = (int)(y+chipsHeight);
+		lp.height = (int)(y+chipsHeight + PADD_NORMAL);
 		container.setLayoutParams(lp);
 	}
 
@@ -273,22 +288,19 @@ public class ChipsView extends LinearLayout {
 		colors = ss.colors;
 		container.removeAllViews();
 		if (names != null && colors != null) {
-			views.clear();
-			chipsWidth.clear();
-			totalWidth = 0;
-			chipsHeight = 0;
-			shift = 0;
-//			for (int i = 0; i < names.length; i++) {
-//				container.addView(createChipView(i, names[i], colors[i]));
-//				if (i < names.length - 1) {
-//					container.addView(createDivider());
-//				}
-//			}
-			for (int i = 0; i < names.length; i++) {
-//				chipState[i] = true;
-				views.add(createChipView(i, getContext(), names[i], colors[i], chipState[i]));
-				container.addView(views.get(i));
-				updatePositions(i);
+			if (names.length > 1) {
+				views.clear();
+				chipsWidth.clear();
+				totalWidth = 0;
+				chipsHeight = 0;
+				shift = 0;
+				for (int i = 0; i < names.length; i++) {
+					views.add(createChipView(i, getContext(), names[i], colors[i], chipState[i]));
+					container.addView(views.get(i));
+					updatePositions(i);
+				}
+			} else {
+				clearChips();
 			}
 		}
 	}
