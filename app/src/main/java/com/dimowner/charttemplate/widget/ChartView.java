@@ -51,7 +51,7 @@ public class ChartView extends View {
 	private final int MAX_GRID_STEP;
 	private final int DATE_RANGE_PADD;
 	private static final int GRID_LINES_COUNT = 6;
-	private static final int ANIMATION_DURATION = 280; //mills
+	private static final int ANIMATION_DURATION = 220; //mills
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
@@ -120,6 +120,10 @@ public class ChartView extends View {
 	private int gridTextColor;
 	private final String minus = " - ";
 
+	private boolean isAnimating = false;
+	private float scaleKoef = 1;
+	private int amnimItemIndex = -1;
+
 	private OnMoveEventsListener onMoveEventsListener;
 
 	ValueAnimator.AnimatorUpdateListener heightValueAnimator = new ValueAnimator.AnimatorUpdateListener() {
@@ -153,9 +157,12 @@ public class ChartView extends View {
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation) {
 			float val = (float) animation.getAnimatedValue();
-			linePaints[index].setAlpha((int)val);
+			scaleKoef = Math.abs(val/255);
+			linePaints[index].setAlpha((int) val);
 			if (val == end2) {
 				linesVisibility[index] = show;
+				isAnimating = false;
+				amnimItemIndex = -1;
 			}
 			skipNextInvalidation = true;
 			invalidate();
@@ -183,6 +190,7 @@ public class ChartView extends View {
 		scrollPos = -1;
 		scrollStartIndex = 0;
 		rect = new Rect();
+//		stackedData = new ArrayList<>();
 
 		int gridColor;
 //		int gridBaseLineColor;
@@ -377,10 +385,11 @@ public class ChartView extends View {
 		heightAnimator = ValueAnimator.ofFloat(diff, 0);
 		if (isLinear) {
 			heightAnimator.setInterpolator(linearInterpolator);
+			heightAnimator.setDuration(300);
 		} else {
 			heightAnimator.setInterpolator(decelerateInterpolator);
+			heightAnimator.setDuration(ANIMATION_DURATION);
 		}
-		heightAnimator.setDuration(ANIMATION_DURATION);
 		heightAnimator.addUpdateListener(heightValueAnimator);
 //		heightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 //			@Override
@@ -532,17 +541,34 @@ public class ChartView extends View {
 		pos +=skip*STEP;
 		int k = skip;
 		linePaints[index].setStrokeWidth(STEP+1);
-		if (data.isStacked() && index != 0) {
+		if (data.isStacked()) {
+			int j;
+			int sum=0;
 			for (int i = skip; i < values.length; i++) {
 				if (k < chartArray.length) {
+					for (j = 0; j <= index; j++) {
+						if (linesCalculated[j] && j != amnimItemIndex) { //
+							sum += data.getVal(j, i);
+						}
+					}
+					if (isAnimating && amnimItemIndex <= index) {
+						sum += scaleKoef*data.getVal(amnimItemIndex, i);
+					}
 					chartArray[k] = pos; //x1
-					chartArray[k + 1] = H - data.getValues(index-1)[i] * valueScale; //y1
+//					chartArray[k + 1] = H - data.getValues(index-1)[i] * valueScale; //y1
+					if (index == amnimItemIndex) {
+						chartArray[k + 1] = H - (sum - values[i]*scaleKoef) * valueScale; //y1
+					} else {
+						chartArray[k + 1] = H - (sum - values[i]) * valueScale; //y1
+					}
 					chartArray[k + 2] = pos; //x2
-					chartArray[k + 3] = H - values[i] * valueScale; //y2
+//					chartArray[k + 3] = H - values[i] * valueScale; //y2
+					chartArray[k + 3] = H - sum * valueScale; //y2
 					k += 4;
 					if (pos - STEP > WIDTH + PADD_NORMAL) {
 						break;
 					}
+					sum = 0;
 				}
 				pos += STEP;
 			}
@@ -590,8 +616,10 @@ public class ChartView extends View {
 	}
 
 	public void hideLine(String name) {
+		isAnimating = true;
 		int pos = findLinePosition(name);
 		if (pos >= 0) {
+			amnimItemIndex = pos;
 			linesCalculated[pos] = false;
 			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
 		}
@@ -602,7 +630,9 @@ public class ChartView extends View {
 	}
 
 	public void showLine(String name) {
+		isAnimating = true;
 		int pos = findLinePosition(name);
+		amnimItemIndex = pos;
 		if (pos >= 0) {
 			linesVisibility[pos] = true;
 			linesCalculated[pos] = true;
@@ -628,9 +658,9 @@ public class ChartView extends View {
 				linesCalculated[i] = true;
 				linePaints[i] = createLinePaint(data.getColorsInts()[i], data.getType(i) == ChartData.TYPE_BAR);
 			}
-			if (data.isStacked()) {
-				updateStackedData();
-			}
+//			if (data.isStacked()) {
+//				updateStackedData();
+//			}
 			calculateMaxValuesLine();
 			calculateMaxValue2(true, false);
 			if (isYscaled) {
@@ -654,9 +684,25 @@ public class ChartView extends View {
 		float prev = maxValueCalculated;
 		maxValueCalculated = 0;
 		int end = (int) ((scrollPos + WIDTH) / STEP);
+		int j;
+		int sum=0;
 		for (int i = (int) (scrollPos / STEP); i < end; i++) {
-			if (i >= 0 && i < maxValuesLine.length && maxValuesLine[i] > maxValueCalculated) {
-				maxValueCalculated = maxValuesLine[i];
+			if (!data.isStacked()) {
+				if (i >= 0 && i < maxValuesLine.length && maxValuesLine[i] > maxValueCalculated) {
+					maxValueCalculated = maxValuesLine[i];
+				}
+			} else {
+				if (i >= 0 && i < maxValuesLine.length) {
+					for (j = 0; j < data.getLinesCount(); j++) {
+						if (linesCalculated[j]) {
+							sum += data.getVal(j, i);
+						}
+					}
+					if (sum > maxValueCalculated) {
+						maxValueCalculated = sum;
+					}
+					sum =0;
+				}
 			}
 		}
 //
@@ -714,8 +760,8 @@ public class ChartView extends View {
 		}
 	}
 
-	private void updateStackedData() {
-		int[][] vals = data.getColumns();
+//	private void updateStackedData() {
+//		int[][] vals = data.getColumns();
 //		TreeMap<Long, Integer> order = new TreeMap<>();
 //		long[] sums = new long[vals.length];
 //		for (int i = 0; i < vals[0].length; i++) {
@@ -726,13 +772,11 @@ public class ChartView extends View {
 //		for (int i = 0; i < sums.length; i++) {
 //			order.put(sums[i], i);
 //		}
-		for (int i = 0; i < vals[0].length; i++) {
-			for (int j = 1; j < vals.length; j++) {
-//				vals[j][i] +=vals[j-1][i];
-				data.setData(data.getVal(j, i) + data.getVal(j-1, i), j, i);
-			}
-		}
-	}
+//		stackedData.clear();
+//		for (int i = 0; i < vals.length; i++) {
+//			stackedData.add(new Integer[vals[0].length]);
+//		}
+//	}
 
 	private float adjustToGrid(float val, int scale) {
 		int amp = 1;

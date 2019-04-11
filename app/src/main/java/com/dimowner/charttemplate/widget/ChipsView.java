@@ -224,6 +224,7 @@ public class ChipsView extends LinearLayout {
 					container.addView(views.get(i));
 					updatePositions(i);
 				}
+//				container.requestLayout();
 			} else {
 				clearChips();
 			}
