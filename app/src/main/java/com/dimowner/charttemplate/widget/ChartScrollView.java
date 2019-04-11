@@ -276,7 +276,7 @@ public class ChartScrollView extends View {
 		this.end2 = end;
 		this.index = index;
 		this.show = show;
-		if (alphaAnimator != null && alphaAnimator.isRunning()) {
+		if (alphaAnimator != null && alphaAnimator.isStarted()) {
 			alphaAnimator.cancel();
 		}
 		alphaAnimator = ValueAnimator.ofFloat(start, end);

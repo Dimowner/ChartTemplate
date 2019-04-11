@@ -32,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
@@ -50,7 +51,7 @@ public class ChartView extends View {
 	private final int MAX_GRID_STEP;
 	private final int DATE_RANGE_PADD;
 	private static final int GRID_LINES_COUNT = 6;
-	private static final int ANIMATION_DURATION = 220; //mills
+	private static final int ANIMATION_DURATION = 280; //mills
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
@@ -87,6 +88,7 @@ public class ChartView extends View {
 	private ValueAnimator alphaAnimator;
 	private ValueAnimator heightAnimator;
 	private DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+	private LinearInterpolator linearInterpolator = new LinearInterpolator();
 	private AccelerateInterpolator accelerateInterpolator= new AccelerateInterpolator();
 
 	private float scrollPos;
@@ -138,7 +140,7 @@ public class ChartView extends View {
 				gridValueStep /=2;
 			}
 			gridStep = gridValueStep* valueScale;
-			if (gridStep < MIN_GRID_STEP) { gridStep = MIN_GRID_STEP;}
+			if (gridStep < 40*DENSITY) { gridStep = 40*DENSITY;}
 			updateGrid();
 		}
 	};
@@ -342,7 +344,7 @@ public class ChartView extends View {
 		this.show = show;
 		this.index = index;
 		this.end2 = end;
-		if (alphaAnimator != null && alphaAnimator.isRunning()) {
+		if (alphaAnimator != null && alphaAnimator.isStarted()) {
 			alphaAnimator.cancel();
 		}
 		alphaAnimator = ValueAnimator.ofFloat(start, end);
@@ -368,14 +370,17 @@ public class ChartView extends View {
 		alphaAnimator.start();
 	}
 
-	private void heightAnimator(final float diff) {
-		if (heightAnimator != null && (heightAnimator.isRunning() && heightAnimator.isStarted())) {
+	private void heightAnimator(final float diff, boolean isLinear) {
+		if (heightAnimator != null && (heightAnimator.isStarted())) {
 			heightAnimator.cancel();
 		}
 		heightAnimator = ValueAnimator.ofFloat(diff, 0);
-		heightAnimator.setInterpolator(decelerateInterpolator);
+		if (isLinear) {
+			heightAnimator.setInterpolator(linearInterpolator);
+		} else {
+			heightAnimator.setInterpolator(decelerateInterpolator);
+		}
 		heightAnimator.setDuration(ANIMATION_DURATION);
-//		heightAnimator.setStartDelay(500);
 		heightAnimator.addUpdateListener(heightValueAnimator);
 //		heightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 //			@Override
@@ -400,7 +405,7 @@ public class ChartView extends View {
 	}
 
 	private void updateGrid() {
-		gridCount = (int)((HEIGHT-HEIGHT_PADDS)/gridStep);
+		gridCount = (int)((HEIGHT-BASE_LINE_Y-PADD_TINY)/gridStep);
 	}
 
 	public void scrollPos(float x, float size) {
@@ -416,7 +421,7 @@ public class ChartView extends View {
 			if (dateRangeHeight < rect.height()) {
 				dateRangeHeight = rect.height();
 			}
-			calculateMaxValue2(false);
+			calculateMaxValue2(false, true);
 			skipNextInvalidation = true;
 			updateGrid();
 			invalidate();
@@ -473,17 +478,16 @@ public class ChartView extends View {
 		} else {
 			textPaint.setColor(gridTextColor);
 		}
-		float g = H - gridStep;
 		for (int i = 0; i < gridCount; i++) {
-			canvas.drawLine(0, g * i, WIDTH, g * i, gridPaint);
-			canvas.drawText(formatValue(gridValueStep * i), 0, g * i - PADD_TINY, textPaint);
+			canvas.drawLine(0, H - gridStep * i, WIDTH, H - gridStep * i, gridPaint);
+			canvas.drawText(formatValue(gridValueStep * i), 0, H - gridStep * i - PADD_TINY, textPaint);
 		}
 		if (isYscaled) {
 			textPaint.setColor(data.getColorsInts()[yIndex]);
 			textPaint.setTextAlign(Paint.Align.RIGHT);
 			for (int i = 0; i < gridCount; i++) {
 				canvas.drawText(formatValue((gridValueStep * i)/yScale),
-						WIDTH, g * i - PADD_TINY, textPaint);
+						WIDTH, H - gridStep * i - PADD_TINY, textPaint);
 			}
 		}
 	}
@@ -592,7 +596,7 @@ public class ChartView extends View {
 			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
 		}
 		calculateMaxValuesLine();
-		calculateMaxValue2(true);
+		calculateMaxValue2(true, false);
 //		gridCount = (int)(HEIGHT/gridStep);
 		updateGrid();
 	}
@@ -605,7 +609,7 @@ public class ChartView extends View {
 			alphaAnimator(linePaints[pos].getAlpha(), 255, pos, true);
 		}
 		calculateMaxValuesLine();
-		calculateMaxValue2(true);
+		calculateMaxValue2(true, false);
 //		gridCount = (int)(HEIGHT/gridStep);
 		updateGrid();
 	}
@@ -628,7 +632,7 @@ public class ChartView extends View {
 				updateStackedData();
 			}
 			calculateMaxValuesLine();
-			calculateMaxValue2(true);
+			calculateMaxValue2(true, false);
 			if (isYscaled) {
 				updateYline();
 			}
@@ -646,7 +650,7 @@ public class ChartView extends View {
 	}
 
 	//TODO: optimize this method. There max val should not use all values to calculate max.
-	private void calculateMaxValue2(boolean adjust) {
+	private void calculateMaxValue2(boolean adjust, boolean linearAnim) {
 		float prev = maxValueCalculated;
 		maxValueCalculated = 0;
 		int end = (int) ((scrollPos + WIDTH) / STEP);
@@ -660,7 +664,7 @@ public class ChartView extends View {
 //			maxValueCalculated = (int) adjustToGrid((float) maxValueCalculated, (int)GRID_LINES_COUNT);
 //		}
 		if (prev != maxValueCalculated) {
-			heightAnimator(maxValueCalculated - maxValueVisible);
+			heightAnimator(maxValueCalculated - maxValueVisible, linearAnim);
 		}
 	}
 
