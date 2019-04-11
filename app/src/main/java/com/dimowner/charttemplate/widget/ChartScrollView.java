@@ -56,6 +56,7 @@ public class ChartScrollView extends View {
 
 	private float WIDTH = 1;
 	private float HEIGHT = 1;
+	private float H = 1;
 	private int maxValueY = 0;
 	private float valueScaleY = 0;
 
@@ -133,6 +134,7 @@ public class ChartScrollView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
+		H = HEIGHT-PADD_TINY;
 		valueScaleY = (HEIGHT-2*PADD_TINY)/maxValueY;
 
 		if (data != null) {
@@ -169,12 +171,12 @@ public class ChartScrollView extends View {
 //				path.lineTo(x, HEIGHT - values[i] * valueScale);
 //			}
 			chartArray[k] = x; //x
-			chartArray[k+1] = HEIGHT-PADD_TINY - values[i] * valueScaleY; //y
+			chartArray[k+1] = H - values[i] * valueScaleY; //y
 			chartArray[k + 2] = x + 2*STEP; //x
 			if (i+2 < values.length) {
-				chartArray[k + 3] = HEIGHT-PADD_TINY - values[i + 2] * valueScaleY; //y
+				chartArray[k + 3] = H - values[i + 2] * valueScaleY; //y
 			} else {
-				chartArray[k + 3] = HEIGHT-PADD_TINY - values[i] * valueScaleY; //y
+				chartArray[k + 3] = H - values[i] * valueScaleY; //y
 			}
 //			if (x - STEP > WIDTH) {
 //				break;

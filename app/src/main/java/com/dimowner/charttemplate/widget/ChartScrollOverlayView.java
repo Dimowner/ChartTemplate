@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.os.Parcel;
@@ -51,23 +50,23 @@ public class ChartScrollOverlayView extends View {
 
 	private Region.Op op = Region.Op.UNION;
 	private float[] borderLines = new float[8];
+	private float selectionWidth;
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
-		SMALLEST_SELECTION_WIDTH = 36*DENSITY;
+		SMALLEST_SELECTION_WIDTH = 20*DENSITY;
 		LINE_HEIGHT = (int) (6*DENSITY);
 		LINE_WIDTH = (int) (1.5*DENSITY);
 		SELECTION = 12*DENSITY;
 		SELECTION_HALF = SELECTION/2;
 		BORDER = 1.5f*DENSITY;
 		BORDER_HALF = BORDER /2;
+		selectionWidth = (int)(2*SMALLEST_SELECTION_WIDTH);
 	}
-
-	private float selectionWidth = (int)(1.3*SMALLEST_SELECTION_WIDTH);
 
 	private int dataLength = 0;
 
-	private Path path;
+//	private Path path;
 	private RectF rect;
 	private float STEP = 10;
 
@@ -104,7 +103,7 @@ public class ChartScrollOverlayView extends View {
 
 	private void init(Context context) {
 		setFocusable(false);
-		path = new Path();
+//		path = new Path();
 		rect = new RectF();
 
 		int overlayColor;
@@ -271,21 +270,21 @@ public class ChartScrollOverlayView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		if (path.isEmpty()) {
-			path.addRoundRect(0, 0, WIDTH, HEIGHT, SELECTION_HALF, SELECTION_HALF, Path.Direction.CCW);
-		}
-		canvas.clipPath(path);
+//		if (path.isEmpty()) {
+//			path.addRoundRect(0, 0, WIDTH, HEIGHT, SELECTION_HALF, SELECTION_HALF, Path.Direction.CCW);
+//		}
+//		canvas.clipPath(path);
 		selectionPaint.setColor(selectionColor);
 		rect.left = 0;
 		rect.top = BORDER;
 		rect.bottom = HEIGHT- BORDER;
 		rect.right = scrollX;
-		canvas.drawRect(rect, overlayPaint);
+		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, overlayPaint);
 		rect.left = scrollX + selectionWidth;
 		rect.top = BORDER;
 		rect.bottom = HEIGHT- BORDER;
 		rect.right = WIDTH;
-		canvas.drawRect(rect, overlayPaint);
+		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, overlayPaint);
 
 		borderLines[0] = scrollX; //x0 line1
 		borderLines[1] = BORDER_HALF; //y0

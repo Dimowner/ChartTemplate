@@ -10,6 +10,10 @@ import java.util.Date;
 
 public class ChartData implements Parcelable {
 
+	public static final int TYPE_LINE = 1;
+	public static final int TYPE_BAR = 2;
+	public static final int TYPE_AREA = 3;
+
 //	private long[] time;
 	private String[] times;
 	private String[] timesShort;
@@ -17,11 +21,15 @@ public class ChartData implements Parcelable {
 	private int[][] columns;
 	private String[] names;
 	private String[] types;
+	private int[] typesInt;
 	private String[] colors;
 	private int[] colorsInts;
 	private boolean yScaled;
+	private boolean percentage;
+	private boolean stacked;
 
-	public ChartData(long[] time, int[][] columns, String[] names, String[] types, String[] colors, boolean yScaled) {
+	public ChartData(long[] time, int[][] columns, String[] names, String[] types, String[] colors,
+						  boolean yScaled, boolean percentage, boolean stacked) {
 //		this.time = time;
 		this.columns = columns;
 		this.names = names;
@@ -32,12 +40,24 @@ public class ChartData implements Parcelable {
 		timesShort = new String[time.length];
 		timesLong = new String[time.length];
 		this.yScaled = yScaled;
+		this.percentage = percentage;
+		this.stacked = stacked;
 		Date date = new Date();
 		for (int i = 0; i < time.length; i++) {
 			date.setTime(time[i]);
 			times[i] = TimeUtils.formatDateWeek(date);
 			timesShort[i] = TimeUtils.formatDate(date);
 			timesLong[i] = TimeUtils.formatDateLong(date);
+		}
+		typesInt = new int[types.length];
+		for (int i = 0; i < types.length; i++) {
+			if (types[i].equalsIgnoreCase("line")) {
+				typesInt[i] = TYPE_LINE;
+			} else if (types[i].equalsIgnoreCase("bar")) {
+				typesInt[i] = TYPE_BAR;
+			} else if (types[i].equalsIgnoreCase("area")) {
+				typesInt[i] = TYPE_AREA;
+			}
 		}
 	}
 
@@ -51,14 +71,17 @@ public class ChartData implements Parcelable {
 		in.readStringArray(names);
 		in.readStringArray(types);
 		in.readStringArray(colors);
+		in.readIntArray(typesInt);
 		int size = in.readInt();
 		columns = new int[size][];
 		for (int i = 0; i < size; i++) {
 			in.readIntArray(columns[i]);
 		}
-		boolean[] bools = new boolean[1];
+		boolean[] bools = new boolean[3];
 		in.readBooleanArray(bools);
 		yScaled = bools[0];
+		percentage = bools[1];
+		stacked = bools[2];
 	}
 
 	public int describeContents() {
@@ -74,8 +97,9 @@ public class ChartData implements Parcelable {
 		out.writeStringArray(names);
 		out.writeStringArray(types);
 		out.writeStringArray(colors);
+		out.writeIntArray(typesInt);
 		out.writeInt(columns.length);
-		out.writeBooleanArray(new boolean[] {yScaled});
+		out.writeBooleanArray(new boolean[] {yScaled, percentage, stacked});
 		for (int i = 0; i < columns.length; i++) {
 			out.writeIntArray(columns[i]);
 		}
@@ -145,11 +169,31 @@ public class ChartData implements Parcelable {
 		return yScaled;
 	}
 
+	public boolean isPercentage() {
+		return percentage;
+	}
+
+	public boolean isStacked() {
+		return stacked;
+	}
+
 	public int getLength() {
 		return times.length;
 	}
 
 	public int getLinesCount() {
 		return names.length;
+	}
+
+	public int getType(int index) {
+		return typesInt[index];
+	}
+
+	public int getVal(int lineIndex, int valIndex) {
+		return columns[lineIndex][valIndex];
+	}
+
+	public void setData(int val, int lineIndex, int valIndex) {
+		columns[lineIndex][valIndex] = val;
 	}
 }

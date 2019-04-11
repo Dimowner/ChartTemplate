@@ -19,7 +19,7 @@ package com.dimowner.charttemplate;
 import android.app.Application;
 import android.content.res.Configuration;
 
-import com.dimowner.charttemplate.model.Data;
+import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
 import timber.log.Timber;
@@ -28,7 +28,7 @@ public class CTApplication extends Application {
 
 	private static boolean isNightMode = false;
 
-	private static Data[] data;
+	private static ChartData[] chartData;
 
 	@Override
 	public void onCreate() {
@@ -59,11 +59,11 @@ public class CTApplication extends Application {
 		isNightMode = b;
 	}
 
-	public static Data[] getData() {
-		return data;
+	public static ChartData[] getChartData() {
+		return chartData;
 	}
 
-	public static void setData(Data[] d) {
-		data = d;
+	public static void setChartData(ChartData[] chartData) {
+		CTApplication.chartData = chartData;
 	}
 }

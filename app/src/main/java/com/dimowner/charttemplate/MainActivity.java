@@ -142,7 +142,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 			AndroidUtils.statusBarLightMode(this);
 		}
 
-		if (savedInstanceState == null || CTApplication.getData() == null) {
+		if (savedInstanceState == null || CTApplication.getChartData() == null) {
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -376,15 +376,19 @@ public class MainActivity extends Activity implements View.OnClickListener,
 			Data data4 = gson.fromJson(json4, Data.class);
 			Data data5 = gson.fromJson(json5, Data.class);
 //			dataArray = array.getDataArray();
-			CTApplication.setData(new Data[]{data1, data2, data3, data4, data5});
+			ChartData[] chartData = new ChartData[] {toChartData(data1), toChartData(data2), toChartData(data3),
+				toChartData(data4), toChartData(data5)};
+			CTApplication.setChartData(chartData);
+//			CTApplication.setData(new Data[]{data1, data2, data3, data4, data5});
 //			CTApplication.setData(dataValues);
 //		} catch (IOException | ClassCastException | JSONException ex) {
 		} catch (IOException | ClassCastException ex) {
 			Timber.e(ex);
 			return null;
 		}
-		Timber.v("DATA = %s", CTApplication.getData()[0].getColumnCount() + " length = " + CTApplication.getData()[0].getDataLength());
-		return toChartData(CTApplication.getData()[pos]);
+//		Timber.v("DATA = %s", CTApplication.getData()[0].getColumnCount() + " length = " + CTApplication.getData()[0].getDataLength());
+//		return toChartData(CTApplication.getData()[pos]);
+		return CTApplication.getChartData()[pos];
 	}
 
 	private ChartData toChartData(Data d) {
@@ -400,7 +404,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
 				types[i] = d.getType(keys[i]);
 				colors[i] = d.getColor(keys[i]);
 			}
-			return new ChartData(d.getTimeArray(), vals, names, types, colors, d.isYscaled());
+			return new ChartData(d.getTimeArray(), vals, names, types, colors,
+					d.isYscaled(), d.isPercentage(), d.isStacked());
 		}
 		return null;
 	}
@@ -418,7 +423,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
 				activeItem = 4;
 			}
 			if (activeItem != prev) {
-				setData(toChartData(CTApplication.getData()[activeItem]));
+//				setData(toChartData(CTApplication.getData()[activeItem]));
+				setData(CTApplication.getChartData()[activeItem]);
 			}
 		}
 	}

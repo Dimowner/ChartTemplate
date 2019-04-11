@@ -29,14 +29,18 @@ public class Data {
 	private Map<String, String> names;
 	private Map<String, String> colors;
 	private boolean y_scaled;
+	private boolean percentage;
+	private boolean stacked;
 
 	public Data(Object[][] columns, Map<String, String> types, Map<String, String> names,
-					Map<String, String> colors, boolean y_scaled) {
+					Map<String, String> colors, boolean y_scaled, boolean percentage, boolean stacked) {
 		this.columns = columns;
 		this.types = types;
 		this.names = names;
 		this.colors = colors;
 		this.y_scaled = y_scaled;
+		this.percentage = percentage;
+		this.stacked = stacked;
 	}
 
 	public Object[][] getColumns() {
@@ -153,5 +157,13 @@ public class Data {
 
 	public boolean isYscaled() {
 		return y_scaled;
+	}
+
+	public boolean isPercentage() {
+		return percentage;
+	}
+
+	public boolean isStacked() {
+		return stacked;
 	}
 }
