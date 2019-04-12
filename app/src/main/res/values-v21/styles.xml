@@ -41,6 +41,7 @@
 		<item name="scrubblerColor">@color/scrubbler_color</item>
 		<item name="shadowColor">@color/shadow_color</item>
 		<item name="tittleColor">@color/black</item>
+		<item name="barOverlayColor">@color/bar_overlay_color</item>
 
 	</style>
 
@@ -69,6 +70,7 @@
 		<item name="scrubblerColor">@color/scrubbler_color_night</item>
 		<item name="shadowColor">@color/shadow_color_night</item>
 		<item name="tittleColor">@color/white</item>
+		<item name="barOverlayColor">@color/bar_overlay_color_night</item>
 
 	</style>
 

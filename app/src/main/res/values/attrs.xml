@@ -14,5 +14,6 @@
 	<attr name="scrubblerColor" format="color" />
 	<attr name="shadowColor" format="color" />
 	<attr name="tittleColor" format="color" />
+	<attr name="barOverlayColor" format="color" />
 
 </resources>

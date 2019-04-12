@@ -37,7 +37,7 @@
 				android:layout_gravity="start|left|center_vertical"
 				android:padding="@dimen/spacing_normal"
 				android:textColor="@color/black"
-				android:background="?android:selectableItemBackground"
+				android:background="?android:selectableItemBackgroundBorderless"
 				android:text="@string/next"/>
 
 		<TextView
@@ -59,7 +59,7 @@
 				android:layout_width="56dp"
 				android:layout_height="56dp"
 				android:layout_gravity="end|center_vertical"
-				android:background="?android:selectableItemBackground"
+				android:background="?android:selectableItemBackgroundBorderless"
 				android:contentDescription="@null"
 				android:padding="@dimen/spacing_normal"
 				android:src="@drawable/moon7"
@@ -76,7 +76,7 @@
 				android:layout_height="wrap_content"
 				android:orientation="vertical"
 				android:elevation="@dimen/elevation"
-				android:layout_marginTop="@dimen/spacing_big"
+				android:layout_marginTop="@dimen/spacing_double"
 				android:background="?attr/viewBackground">
 
 			<TextView

@@ -64,6 +64,9 @@
 	<color name="overlay_color">#99EDF5FB</color>
 	<color name="overlay_color_night">#99304259</color>
 
+	<color name="bar_overlay_color">#80FFFFFF</color>
+	<color name="bar_overlay_color_night">#80242F3E</color>
+
 	<color name="scrubbler_color">#1A182D3B</color>
 	<color name="scrubbler_color_night">#1AFFFFFF</color>
 

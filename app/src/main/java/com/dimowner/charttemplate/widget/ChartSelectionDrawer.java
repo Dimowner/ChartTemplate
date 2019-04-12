@@ -11,27 +11,34 @@ import android.text.TextPaint;
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
-import com.dimowner.charttemplate.util.TimeUtils;
 
-import java.util.Date;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 public class ChartSelectionDrawer {
 
 	private final float DENSITY;
+	private final int PADD_XNORMAL;
 	private final int PADD_NORMAL;
 	private final int PADD_SMALL;
 	private final int PADD_TINY;
 	private final int BASE_LINE_Y;
 	private final int CIRCLE_SIZE;
+	private final int RADIUS;
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
 		PADD_NORMAL = (int) (16*DENSITY);
+		PADD_XNORMAL = (int) (12*DENSITY);
 		PADD_SMALL = (int) (8*DENSITY);
 		PADD_TINY = (int) (4*DENSITY);
 		BASE_LINE_Y = (int) (32*DENSITY);
 		CIRCLE_SIZE = (int) (5*DENSITY);
+		RADIUS = (int) (6*DENSITY);
 	}
+
+	DecimalFormat format;
 
 	private TextPaint selectedDatePaint;
 	private TextPaint selectedNamePaint;
@@ -41,34 +48,41 @@ public class ChartSelectionDrawer {
 	private Paint circlePaint;
 	private Paint shadowPaint;
 
+	private int overlayColor;
+	private int panelColor;
+
 	private float[] selectedValues;
+	private String[] formattedValues;
 
 	private float selectedDateHeight = 0;
 	private float selectedDateWidth = 0;
 	private float selectedNameHeight = 0;
-	private float selectedValueHeight = 0;
-	private float selectedItemWidth = 0;
+	private float maxRowWidth = 0;
 
 	private float selectionX;
+	private float scrollPos;
 	private int selectionIndex;
 	private String selectionDate;
-//	private Date date;
 
 	private RectF sizeRect;
 	private Rect tempRect;
+	private float tempWidth = 0;
 
 	public void setLinesCount(int count) {
 		selectedValues = new float[count];
+		formattedValues = new String[count];
 		for (int i = 0; i < count; i++) {
 			selectedValues[i] = 0;
 		}
 	}
 
 	public ChartSelectionDrawer(Context context, int panelTextColor, int panelColor,
-										 int scrubblerColor, int shadowColor, int windowBgColor) {
+										 int scrubblerColor, int shadowColor, int windowBgColor, int overlayColor) {
+
+		this.panelColor = panelColor;
+		this.overlayColor = overlayColor;
 		sizeRect = new RectF();
 		tempRect = new Rect();
-//		date = new Date();
 		selectionDate = "";
 		selectionX = -1;
 		selectionIndex = -1;
@@ -76,17 +90,19 @@ public class ChartSelectionDrawer {
 		selectedDatePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		selectedDatePaint.setColor(panelTextColor);
 		selectedDatePaint.setTextAlign(Paint.Align.LEFT);
-		selectedDatePaint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
-		selectedDatePaint.setTextSize(context.getResources().getDimension(R.dimen.text_medium));
+		selectedDatePaint.setTypeface(Typeface.create("sans-serif-sans-serif-thin", Typeface.BOLD));
+		selectedDatePaint.setTextSize(context.getResources().getDimension(R.dimen.text_xnormal));
 
 		selectedNamePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		selectedNamePaint.setTextAlign(Paint.Align.LEFT);
+		selectedNamePaint.setColor(panelTextColor);
 		selectedNamePaint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
-		selectedNamePaint.setTextSize(context.getResources().getDimension(R.dimen.text_xmedium));
+		selectedNamePaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
 
 		selectedValuePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-		selectedValuePaint.setTextAlign(Paint.Align.LEFT);
-		selectedValuePaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
+		selectedValuePaint.setTextAlign(Paint.Align.RIGHT);
+		selectedValuePaint.setColor(panelTextColor);
+		selectedValuePaint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
 		selectedValuePaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
 
 		panelPaint = new Paint();
@@ -112,43 +128,62 @@ public class ChartSelectionDrawer {
 		shadowPaint.setStyle(Paint.Style.STROKE);
 		shadowPaint.setColor(shadowColor);
 		shadowPaint.setStrokeWidth(DENSITY);
+
+		DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols(Locale.getDefault());
+      formatSymbols.setDecimalSeparator('.');
+      formatSymbols.setGroupingSeparator(' ');
+		format = new DecimalFormat("###,###.#", formatSymbols);
+	}
+
+	public void drawBarOverlay(Canvas canvas, int type, float STEP, float H1, float WIDTH, float HEIGHT) {
+		if (selectionX >= 0 && type == ChartData.TYPE_BAR) {
+			float x = selectionIndex*STEP-scrollPos;
+			float half = (STEP-1)/2;
+			panelPaint.setColor(overlayColor);
+			canvas.drawRect(-PADD_NORMAL, H1, x-half, HEIGHT - H1 + PADD_XNORMAL, panelPaint);
+			canvas.drawRect(x+half, H1, WIDTH + PADD_NORMAL, HEIGHT - H1 + PADD_XNORMAL, panelPaint);
+		}
 	}
 
 	public void draw(Canvas canvas, ChartData data, boolean[] linesVisibility, float HEIGHT,
 						  Paint[] linePaints, float valueScaleY) {
 		if (selectionX >= 0) {
-			//Draw scrubbler
-			canvas.drawLine(selectionX, BASE_LINE_Y+PADD_NORMAL, selectionX, HEIGHT - BASE_LINE_Y, scrubblerPaint);
-
+			if (data.getType(0) == ChartData.TYPE_LINE || data.getType(0) == ChartData.TYPE_AREA) {
+				//Draw scrubbler
+				canvas.drawLine(selectionX, BASE_LINE_Y + PADD_XNORMAL, selectionX, HEIGHT - BASE_LINE_Y, scrubblerPaint);
+			}
 			//Draw circles on charts
-			for (int i = 0; i < data.getNames().length; i++) {
-				if (linesVisibility[i]) {
-					canvas.drawCircle(selectionX,
-							HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
-							CIRCLE_SIZE, circlePaint);
-					canvas.drawCircle(selectionX,
-							HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
-							CIRCLE_SIZE, linePaints[i]);
+			for (int i = 0; i < data.getLinesCount(); i++) {
+				if (data.getType(i) == ChartData.TYPE_LINE) {
+					if (linesVisibility[i]) {
+						canvas.drawCircle(selectionX,
+								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
+								CIRCLE_SIZE, circlePaint);
+						canvas.drawCircle(selectionX,
+								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
+								CIRCLE_SIZE, linePaints[i]);
+					}
 				}
 			}
+			panelPaint.setColor(panelColor);
 			//Draw selection panel
-			canvas.drawRoundRect(sizeRect, PADD_TINY, PADD_TINY, panelPaint);
-			canvas.drawRoundRect(sizeRect, PADD_TINY, PADD_TINY, shadowPaint);
+			canvas.drawRoundRect(sizeRect, RADIUS, RADIUS, panelPaint);
+			canvas.drawRoundRect(sizeRect, RADIUS, RADIUS, shadowPaint);
 			//Draw date on panel
-			canvas.drawText(selectionDate, sizeRect.left+PADD_NORMAL,
-					sizeRect.top+selectedDateHeight+PADD_SMALL, selectedDatePaint);
+			canvas.drawText(selectionDate, sizeRect.left+ PADD_XNORMAL,
+					sizeRect.top+selectedDateHeight+ PADD_XNORMAL, selectedDatePaint);
 			int count = 0;
 			//Draw names and values on panel
-			for (int i = 0; i < data.getNames().length; i++) {
+			for (int i = 0; i < data.getLinesCount(); i++) {
 				if (linesVisibility[i]) {
-					selectedNamePaint.setColor(data.getColorsInts()[i]);
 					canvas.drawText(data.getNames()[i],
-							sizeRect.left+ PADD_NORMAL + selectedItemWidth*count + PADD_NORMAL*count,
-							sizeRect.top+selectedDateHeight+selectedNameHeight+3*PADD_SMALL, selectedNamePaint);
+							sizeRect.left+ PADD_XNORMAL,
+							sizeRect.top+selectedDateHeight + PADD_SMALL+2* PADD_XNORMAL +PADD_TINY + selectedNameHeight*count, selectedNamePaint);
 					selectedValuePaint.setColor(data.getColorsInts()[i]);
-					canvas.drawText(String.valueOf(((int)selectedValues[i])),
-							sizeRect.left+ PADD_NORMAL + selectedItemWidth*count+ PADD_NORMAL*count,
-							sizeRect.top+selectedDateHeight+selectedNameHeight+selectedValueHeight+4*PADD_SMALL,
+//					canvas.drawText(String.valueOf(((int)selectedValues[i])),
+					canvas.drawText(formattedValues[i],
+							sizeRect.right- PADD_XNORMAL,
+							sizeRect.top+selectedDateHeight + PADD_SMALL+2* PADD_XNORMAL +PADD_TINY + selectedNameHeight*count,
 							selectedValuePaint);
 					count++;
 				}
@@ -160,19 +195,17 @@ public class ChartSelectionDrawer {
 		selectedDateHeight = 0;
 		selectedDateWidth = 0;
 		selectedNameHeight = 0;
-		selectedValueHeight = 0;
-		selectedItemWidth = 0;
+		maxRowWidth = 0;
 	}
 
 	public void calculatePanelSize(ChartData data, float STEP, boolean[] linesCalculated,
-											  float scrollPos, float WIDTH) {
-
+											  float scrollPos, float WIDTH, boolean isYscale, int yIndex, float yScale) {
+		this.scrollPos = scrollPos;
 		selectionIndex = (int)((scrollPos + selectionX)/STEP);
 		if (selectionIndex >= data.getLength()-1) {
 			selectionIndex = data.getLength()-1;
 		}
 
-		String val;
 		int visibleLinesCount = 0;
 		for (int i = 0; i < data.getLinesCount(); i++) {
 			if (linesCalculated[i]) {
@@ -189,15 +222,20 @@ public class ChartSelectionDrawer {
 				}
 				//Name height and width
 				selectedNamePaint.getTextBounds(data.getNames()[i], 0, data.getNames()[i].length(), tempRect);
-				selectedItemWidth = selectedItemWidth < tempRect.width() ? tempRect.width() : selectedItemWidth;
-				if (selectedNameHeight < tempRect.height()) selectedNameHeight = tempRect.height();
+				tempWidth = tempRect.width();
+				if (selectedNameHeight < tempRect.height()+PADD_SMALL) selectedNameHeight = tempRect.height()+PADD_SMALL;
 
-				val = String.valueOf((data.getValues(i)[selectionIndex]));
+//				val = String.valueOf((data.getValues(i)[selectionIndex]));
+				if (isYscale && i == yIndex) {
+					formattedValues[i] = format.format(data.getValues(i)[selectionIndex]/yScale);
+				} else {
+					formattedValues[i] = format.format(data.getValues(i)[selectionIndex]);
+				}
 
 				//Value height and width
-				selectedValuePaint.getTextBounds(val, 0, val.length(), tempRect);
-				selectedItemWidth = selectedItemWidth < tempRect.width() ? tempRect.width() : selectedItemWidth;
-				if (selectedValueHeight < tempRect.height()) selectedValueHeight = tempRect.height();
+//				selectedValuePaint.getTextBounds(val, 0, val.length(), tempRect);
+				selectedValuePaint.getTextBounds(formattedValues[i], 0, formattedValues[i].length(), tempRect);
+				maxRowWidth = maxRowWidth < tempWidth + tempRect.width() ? tempWidth + tempRect.width() : maxRowWidth;
 			}
 		}
 
@@ -213,17 +251,15 @@ public class ChartSelectionDrawer {
 			selectedDateWidth = tempRect.width();
 		}
 
-		//Calculate result width
-		float width = selectedItemWidth*visibleLinesCount + PADD_NORMAL*visibleLinesCount-PADD_SMALL;
-		if (selectedDateWidth+PADD_NORMAL > width) {
-			width = selectedDateWidth+PADD_NORMAL;
+		float width = 2*PADD_XNORMAL + selectedDateWidth + 24*DENSITY;
+		if (width < maxRowWidth+3* PADD_XNORMAL) {
+			width = maxRowWidth+3* PADD_XNORMAL;
 		}
 
-		//Set panel size.
-		sizeRect.left = selectionX - width - 2*PADD_NORMAL;
-		sizeRect.right = selectionX - PADD_NORMAL;
-		sizeRect.top = BASE_LINE_Y + 2*PADD_NORMAL;
-		sizeRect.bottom = BASE_LINE_Y + 4.5f * PADD_NORMAL + selectedDateHeight + selectedNameHeight + selectedValueHeight;
+		sizeRect.left = selectionX - width - PADD_XNORMAL;
+		sizeRect.right = selectionX - PADD_XNORMAL;
+		sizeRect.top = BASE_LINE_Y + 2* PADD_XNORMAL;
+		sizeRect.bottom = BASE_LINE_Y + 4.5f * PADD_XNORMAL + selectedDateHeight + visibleLinesCount*selectedNameHeight;
 
 		//Set Panel edges
 		if (sizeRect.right > WIDTH - PADD_TINY) {

@@ -39,6 +39,8 @@ import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import java.text.DecimalFormat;
 
+import timber.log.Timber;
+
 public class ChartView extends View {
 
 	private final float DENSITY;
@@ -66,8 +68,11 @@ public class ChartView extends View {
 	}
 
 	private float STEP = 10*DENSITY;
+	/** Chart view height except bottom timeline height */
 	private float H1 = 0;
+	/** Chart view height except bottom timeline and top texts heights*/
 	private float H2 = 0;
+	/** 1% of the H2 var. */
 	private float H3 = 0;
 	private float HEIGHT_PADDS = 2*BASE_LINE_Y+PADD_NORMAL;
 
@@ -81,7 +86,7 @@ public class ChartView extends View {
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
 
-	private TextPaint textPaint;
+//	private TextPaint textPaint;
 	private TextPaint dateRangePaint;
 	private TextPaint timelineTextPaint;
 	private Paint gridPaint;
@@ -120,12 +125,14 @@ public class ChartView extends View {
 	private float dateRangeHeight;
 	private Rect rect;
 	private int gridTextColor;
+	private int barOverlayColor;
 	private final String minus = " - ";
 
 	private boolean isAnimating = false;
 	private float scaleKoef = 1;
 	private int amnimItemIndex = -1;
 	private float[] sumVals;
+	private boolean isFirst = true;
 
 	private OnMoveEventsListener onMoveEventsListener;
 
@@ -256,9 +263,13 @@ public class ChartView extends View {
 		} else {
 			viewBackground = res.getColor(R.color.view_background);
 		}
-
+		if (theme.resolveAttribute(R.attr.barOverlayColor, typedValue, true)) {
+			barOverlayColor = typedValue.data;
+		} else {
+			barOverlayColor = res.getColor(R.color.bar_overlay_color);
+		}
 		selectionDrawer = new ChartSelectionDrawer(getContext(), panelTextColor,
-					panelColor, gridColor, shadowColor, viewBackground);
+					panelColor, gridColor, shadowColor, viewBackground, barOverlayColor);
 
 		gridPaint = new Paint();
 		gridPaint.setAntiAlias(false);
@@ -274,12 +285,12 @@ public class ChartView extends View {
 //		baselinePaint.setStyle(Paint.Style.STROKE);
 //		baselinePaint.setColor(gridBaseLineColor);
 //		baselinePaint.setStrokeWidth(DENSITY);
-
-		textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-		textPaint.setColor(gridTextColor);
-		textPaint.setTextAlign(Paint.Align.CENTER);
-		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-		textPaint.setTextSize(context.getResources().getDimension(R.dimen.text_xsmall));
+//
+//		textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
+//		textPaint.setColor(gridTextColor);
+//		textPaint.setTextAlign(Paint.Align.CENTER);
+//		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
+//		textPaint.setTextSize(context.getResources().getDimension(R.dimen.text_xsmall));
 
 		dateRangePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		dateRangePaint.setColor(tittleColor);
@@ -314,7 +325,7 @@ public class ChartView extends View {
 						}
 						if (Math.abs(motionEvent.getY() - startY) < 90*DENSITY) {
 							selectionDrawer.setSelectionX(selectionX);
-							selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH);
+							selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH, isYscaled, yIndex, yScale);
 							if (onMoveEventsListener != null) {
 								onMoveEventsListener.disallowTouchEvent();
 							}
@@ -437,7 +448,8 @@ public class ChartView extends View {
 				dateRangeHeight = rect.height();
 			}
 			if (!data.isPercentage()) {
-				calculateMaxValue2(false, true);
+				calculateMaxValue2(true, !isFirst);
+				isFirst = false;
 				updateGrid();
 				skipNextInvalidation = true;
 			}
@@ -465,7 +477,7 @@ public class ChartView extends View {
 		super.onDraw(canvas);
 		if (data != null) {
 			//Draw charts
-			textPaint.setTextAlign(Paint.Align.CENTER);
+			timelineTextPaint.setTextAlign(Paint.Align.CENTER);
 			for (int i = 0; i < data.getNames().length; i++) {
 				if (linesVisibility[i]) {
 					if (data.getType(i) == ChartData.TYPE_LINE) {
@@ -479,7 +491,8 @@ public class ChartView extends View {
 					}
 				}
 			}
-			textPaint.setTextAlign(Paint.Align.LEFT);
+			timelineTextPaint.setTextAlign(Paint.Align.LEFT);
+			selectionDrawer.drawBarOverlay(canvas, data.getType(0), STEP, H1, WIDTH, HEIGHT);
 			if (data.isPercentage()) {
 				drawPercentageGrid(canvas);
 			} else {
@@ -487,6 +500,8 @@ public class ChartView extends View {
 			}
 
 			if (data.getLinesCount() > 0) {
+				timelineTextPaint.setTextAlign(Paint.Align.CENTER);
+				timelineTextPaint.setColor(gridTextColor);
 				drawTimeline(canvas);
 			}
 			canvas.drawText(dateRange, WIDTH-2, dateRangeHeight+DATE_RANGE_PADD, dateRangePaint);
@@ -497,21 +512,23 @@ public class ChartView extends View {
 
 	private void drawGrid(Canvas canvas) {
 		if (isYscaled) {
-			textPaint.setColor(data.getColorsInts()[yIndex == 0 ? 1: 0]);
+			timelineTextPaint.setColor(data.getColorsInts()[yIndex == 0 ? 1: 0]);
 		} else {
-			textPaint.setColor(gridTextColor);
+			timelineTextPaint.setColor(gridTextColor);
 		}
 		for (int i = 0; i < gridCount; i++) {
 			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, gridPaint);
-			canvas.drawText(formatValue(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, textPaint);
+			canvas.drawText(formatValue(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, timelineTextPaint);
 		}
 		if (isYscaled) {
-			textPaint.setColor(data.getColorsInts()[yIndex]);
-			textPaint.setTextAlign(Paint.Align.RIGHT);
+			timelineTextPaint.setColor(data.getColorsInts()[yIndex]);
+			timelineTextPaint.setTextAlign(Paint.Align.RIGHT);
+			timelineTextPaint.setAlpha(linePaints[yIndex].getAlpha());
 			for (int i = 0; i < gridCount; i++) {
 				canvas.drawText(formatValue((gridValueStep * i)/yScale),
-						WIDTH, H1 - gridStep * i - PADD_TINY, textPaint);
+						WIDTH, H1 - gridStep * i - PADD_TINY, timelineTextPaint);
 			}
+			timelineTextPaint.setAlpha(255);
 		}
 	}
 
@@ -520,7 +537,7 @@ public class ChartView extends View {
 		gridValueStep = 20;//%
 		for (int i = 0; i < 5; i++) {
 			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, gridPaint);
-			canvas.drawText(String.valueOf(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, textPaint);
+			canvas.drawText(String.valueOf(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, timelineTextPaint);
 		}
 	}
 
@@ -580,12 +597,12 @@ public class ChartView extends View {
 					if (data.isPercentage()) {
 						chartArray[k] = pos; //x1
 						if (index == amnimItemIndex) {
-							chartArray[k + 1] = H1 - H3*(sum - values[i] * scaleKoef)/((float)sumVals[i]);
+							chartArray[k + 1] = H1 - H3*(sum - values[i] * scaleKoef)/(sumVals[i]);
 						} else {
-							chartArray[k + 1] = H1 - H3*(sum - values[i])/((float)sumVals[i]);
+							chartArray[k + 1] = H1 - H3*(sum - values[i])/(sumVals[i]);
 						}
 						chartArray[k + 2] = pos; //x2
-						chartArray[k + 3] = H1 - H3*sum/((float)sumVals[i]); //y2
+						chartArray[k + 3] = H1 - H3*sum/(sumVals[i]); //y2
 					} else {
 						chartArray[k] = pos; //x1
 	//					chartArray[k + 1] = H1 - data.getValues(index-1)[i] * valueScale; //y1
@@ -658,7 +675,7 @@ public class ChartView extends View {
 			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
 		}
 		calculateMaxValuesLine();
-		calculateMaxValue2(true, false);
+		calculateMaxValue2(false, true);
 //		gridCount = (int)(HEIGHT/gridStep);
 		updateGrid();
 	}
@@ -673,14 +690,22 @@ public class ChartView extends View {
 			alphaAnimator(linePaints[pos].getAlpha(), 255, pos, true);
 		}
 		calculateMaxValuesLine();
-		calculateMaxValue2(true, false);
+		calculateMaxValue2(false, true);
 //		gridCount = (int)(HEIGHT/gridStep);
 		updateGrid();
 	}
 
 	public void setData(ChartData d) {
+		//Recalculate back Y-scaled values.
+		if (isYscaled) {
+			int[] v = data.getValues(yIndex);
+			for (int j = 0; j < v.length; j++) {
+				data.setData((int) (v[j]/yScale), yIndex, j);
+			}
+		}
 		this.data = d;
 		if (data != null) {
+			maxValueCalculated = 0;
 			isYscaled = data.isYscaled();
 			//Init lines visibility state, all visible by default.
 			linesVisibility = new boolean[data.getLinesCount()];
@@ -697,11 +722,12 @@ public class ChartView extends View {
 //			}
 			calculateMaxValuesLine();
 			calculateSumsLine();
-			calculateMaxValue2(true, false);
+			calculateMaxValue2(false, false);
 			if (isYscaled) {
+				yScale = 1;
+				yIndex = 0;
 				updateYline();
 			}
-			gridValueStep = maxValueCalculated/GRID_LINES_COUNT;
 //			if (HEIGHT > 1) {
 				chartArray = new float[data.getLength() * 4];
 //				for (int i = 0; i < data.getLength(); i += 2) {
@@ -715,7 +741,7 @@ public class ChartView extends View {
 	}
 
 	//TODO: optimize this method. There max val should not use all values to calculate max.
-	private void calculateMaxValue2(boolean adjust, boolean linearAnim) {
+	private void calculateMaxValue2(boolean linearAnim, boolean animate) {
 		float prev = maxValueCalculated;
 		maxValueCalculated = 0;
 		int end = (int) ((scrollPos + WIDTH) / STEP);
@@ -744,8 +770,24 @@ public class ChartView extends View {
 //		if (adjust) {
 //			maxValueCalculated = (int) adjustToGrid((float) maxValueCalculated, (int)GRID_LINES_COUNT);
 //		}
+		gridValueStep = maxValueCalculated/GRID_LINES_COUNT;
 		if (prev != maxValueCalculated) {
-			heightAnimator(maxValueCalculated - maxValueVisible, linearAnim);
+			if (animate) {
+				heightAnimator(maxValueCalculated - maxValueVisible, linearAnim);
+			} else {
+				maxValueVisible = maxValueCalculated;
+				valueScale = (HEIGHT-HEIGHT_PADDS)/ maxValueVisible;
+				if (gridStep < MIN_GRID_STEP) {
+					gridValueStep *=2;
+				}
+				if (gridStep > MAX_GRID_STEP) {
+					gridValueStep /=2;
+				}
+				gridStep = gridValueStep* valueScale;
+				if (gridStep < 40*DENSITY) { gridStep = 40*DENSITY;}
+				updateGrid();
+				invalidate();
+			}
 		}
 	}
 
@@ -830,19 +872,19 @@ public class ChartView extends View {
 //			stackedData.add(new Integer[vals[0].length]);
 //		}
 //	}
-
-	private float adjustToGrid(float val, int scale) {
-		int amp = 1;
-		while (val > scale*100) {
-			val = val/(scale*10);
-			amp *=(scale*10);
-		}
-		if (val > (scale*10)) {
-			val = (float) Math.ceil(val/scale);
-			amp *=scale;
-		}
-		return (float) Math.ceil(val)*amp;
-	}
+//
+//	private float adjustToGrid(float val, int scale) {
+//		int amp = 1;
+//		while (val > scale*100) {
+//			val = val/(scale*10);
+//			amp *=(scale*10);
+//		}
+//		if (val > (scale*10)) {
+//			val = (float) Math.ceil(val/scale);
+//			amp *=scale;
+//		}
+//		return (float) Math.ceil(val)*amp;
+//	}
 
 	private int findLinePosition(String name) {
 		for (int i = 0; i < data.getLinesCount(); i++) {
