@@ -66,7 +66,9 @@ public class ChartView extends View {
 	}
 
 	private float STEP = 10*DENSITY;
-	private float H = 0;
+	private float H1 = 0;
+	private float H2 = 0;
+	private float H3 = 0;
 	private float HEIGHT_PADDS = 2*BASE_LINE_Y+PADD_NORMAL;
 
 	private DecimalFormat format = new DecimalFormat("#,##0.#");
@@ -123,6 +125,7 @@ public class ChartView extends View {
 	private boolean isAnimating = false;
 	private float scaleKoef = 1;
 	private int amnimItemIndex = -1;
+	private float[] sumVals;
 
 	private OnMoveEventsListener onMoveEventsListener;
 
@@ -165,6 +168,9 @@ public class ChartView extends View {
 				amnimItemIndex = -1;
 			}
 			skipNextInvalidation = true;
+			if (data.isPercentage()) {
+				calculateSumsLine();
+			}
 			invalidate();
 		}
 	};
@@ -430,9 +436,11 @@ public class ChartView extends View {
 			if (dateRangeHeight < rect.height()) {
 				dateRangeHeight = rect.height();
 			}
-			calculateMaxValue2(false, true);
-			skipNextInvalidation = true;
-			updateGrid();
+			if (!data.isPercentage()) {
+				calculateMaxValue2(false, true);
+				updateGrid();
+				skipNextInvalidation = true;
+			}
 			invalidate();
 		}
 	}
@@ -442,7 +450,9 @@ public class ChartView extends View {
 		super.onLayout(changed, left, top, right, bottom);
 		WIDTH = getWidth();
 		HEIGHT = getHeight();
-		H = HEIGHT - BASE_LINE_Y;
+		H1 = HEIGHT - BASE_LINE_Y;
+		H2 = (HEIGHT-HEIGHT_PADDS);
+		H3 = H2/100;
 //		gridStep = (HEIGHT/GRID_LINES_COUNT);
 		if (maxValueVisible > 0) {
 			valueScale = (HEIGHT - 2*BASE_LINE_Y-PADD_NORMAL) / maxValueVisible;
@@ -463,14 +473,18 @@ public class ChartView extends View {
 					} else if (data.getType(i) == ChartData.TYPE_BAR) {
 						drawBars(canvas, data.getValues(i), i);
 					} else if (data.getType(i) == ChartData.TYPE_AREA) {
-
+						drawBars(canvas, data.getValues(i), i);
 					} else {
 						drawChart(canvas, data.getValues(i), i);
 					}
 				}
 			}
 			textPaint.setTextAlign(Paint.Align.LEFT);
-			drawGrid(canvas);
+			if (data.isPercentage()) {
+				drawPercentageGrid(canvas);
+			} else {
+				drawGrid(canvas);
+			}
 
 			if (data.getLinesCount() > 0) {
 				drawTimeline(canvas);
@@ -488,16 +502,25 @@ public class ChartView extends View {
 			textPaint.setColor(gridTextColor);
 		}
 		for (int i = 0; i < gridCount; i++) {
-			canvas.drawLine(0, H - gridStep * i, WIDTH, H - gridStep * i, gridPaint);
-			canvas.drawText(formatValue(gridValueStep * i), 0, H - gridStep * i - PADD_TINY, textPaint);
+			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, gridPaint);
+			canvas.drawText(formatValue(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, textPaint);
 		}
 		if (isYscaled) {
 			textPaint.setColor(data.getColorsInts()[yIndex]);
 			textPaint.setTextAlign(Paint.Align.RIGHT);
 			for (int i = 0; i < gridCount; i++) {
 				canvas.drawText(formatValue((gridValueStep * i)/yScale),
-						WIDTH, H - gridStep * i - PADD_TINY, textPaint);
+						WIDTH, H1 - gridStep * i - PADD_TINY, textPaint);
 			}
+		}
+	}
+
+	private void drawPercentageGrid(Canvas canvas) {
+		gridStep = H2/5;
+		gridValueStep = 20;//%
+		for (int i = 0; i < 5; i++) {
+			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, gridPaint);
+			canvas.drawText(String.valueOf(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, textPaint);
 		}
 	}
 
@@ -510,13 +533,13 @@ public class ChartView extends View {
 		for (int i = skip; i < values.length; i++) {
 			if (k < chartArray.length) {
 				chartArray[k] = pos; //x1
-				chartArray[k + 1] = H - values[i] * valueScale; //y1
+				chartArray[k + 1] = H1 - values[i] * valueScale; //y1
 				if (i + 1 < values.length) {
 					chartArray[k + 2] = pos + STEP; //x2
-					chartArray[k + 3] = H - values[i + 1] * valueScale; //y2
+					chartArray[k + 3] = H1 - values[i + 1] * valueScale; //y2
 				} else {
 					chartArray[k + 2] = pos; //x2
-					chartArray[k + 3] = H - values[i] * valueScale; //y2
+					chartArray[k + 3] = H1 - values[i] * valueScale; //y2
 				}
 				k +=4;
 				if (pos - STEP > WIDTH+PADD_NORMAL) {
@@ -554,16 +577,27 @@ public class ChartView extends View {
 					if (isAnimating && amnimItemIndex <= index) {
 						sum += scaleKoef*data.getVal(amnimItemIndex, i);
 					}
-					chartArray[k] = pos; //x1
-//					chartArray[k + 1] = H - data.getValues(index-1)[i] * valueScale; //y1
-					if (index == amnimItemIndex) {
-						chartArray[k + 1] = H - (sum - values[i]*scaleKoef) * valueScale; //y1
+					if (data.isPercentage()) {
+						chartArray[k] = pos; //x1
+						if (index == amnimItemIndex) {
+							chartArray[k + 1] = H1 - H3*(sum - values[i] * scaleKoef)/((float)sumVals[i]);
+						} else {
+							chartArray[k + 1] = H1 - H3*(sum - values[i])/((float)sumVals[i]);
+						}
+						chartArray[k + 2] = pos; //x2
+						chartArray[k + 3] = H1 - H3*sum/((float)sumVals[i]); //y2
 					} else {
-						chartArray[k + 1] = H - (sum - values[i]) * valueScale; //y1
+						chartArray[k] = pos; //x1
+	//					chartArray[k + 1] = H1 - data.getValues(index-1)[i] * valueScale; //y1
+						if (index == amnimItemIndex) {
+							chartArray[k + 1] = H1 - (sum - values[i] * scaleKoef) * valueScale; //y1
+						} else {
+							chartArray[k + 1] = H1 - (sum - values[i]) * valueScale; //y1
+						}
+						chartArray[k + 2] = pos; //x2
+	//					chartArray[k + 3] = H1 - values[i] * valueScale; //y2
+						chartArray[k + 3] = H1 - sum * valueScale; //y2
 					}
-					chartArray[k + 2] = pos; //x2
-//					chartArray[k + 3] = H - values[i] * valueScale; //y2
-					chartArray[k + 3] = H - sum * valueScale; //y2
 					k += 4;
 					if (pos - STEP > WIDTH + PADD_NORMAL) {
 						break;
@@ -576,9 +610,9 @@ public class ChartView extends View {
 			for (int i = skip; i < values.length; i++) {
 				if (k < chartArray.length) {
 					chartArray[k] = pos; //x1
-					chartArray[k + 1] = H; //y1
+					chartArray[k + 1] = H1; //y1
 					chartArray[k + 2] = pos; //x2
-					chartArray[k + 3] = H - values[i] * valueScale; //y2
+					chartArray[k + 3] = H1 - values[i] * valueScale; //y2
 					k += 4;
 					if (pos - STEP > WIDTH + PADD_NORMAL) {
 						break;
@@ -662,6 +696,7 @@ public class ChartView extends View {
 //				updateStackedData();
 //			}
 			calculateMaxValuesLine();
+			calculateSumsLine();
 			calculateMaxValue2(true, false);
 			if (isYscaled) {
 				updateYline();
@@ -711,6 +746,24 @@ public class ChartView extends View {
 //		}
 		if (prev != maxValueCalculated) {
 			heightAnimator(maxValueCalculated - maxValueVisible, linearAnim);
+		}
+	}
+
+	private void calculateSumsLine() {
+		sumVals = new float[data.getLength()];
+		int sum = 0;
+		for (int i = 0; i < data.getLength(); i++) {
+			for (int j = 0; j < data.getLinesCount(); j++) {
+				if (linesVisibility[j]) {
+					if (isAnimating && j == amnimItemIndex) {
+						sum += data.getValues(j)[i]*scaleKoef;
+					} else {
+						sum += data.getValues(j)[i];
+					}
+				}
+			}
+			sumVals[i] = (float)sum/100;
+			sum = 0;
 		}
 	}
 
@@ -849,6 +902,7 @@ public class ChartView extends View {
 		ss.yScale = yScale;
 		ss.yIndex = yIndex;
 		ss.isYscaled = isYscaled;
+		ss.sumVals = sumVals;
 		return ss;
 	}
 
@@ -877,6 +931,7 @@ public class ChartView extends View {
 		yScale = ss.yScale;
 		yIndex = ss.yIndex;
 		isYscaled = ss.isYscaled;
+		sumVals = ss.sumVals;
 
 		if (data != null) {
 			selectionDrawer.setLinesCount(data.getLinesCount());
@@ -922,6 +977,7 @@ public class ChartView extends View {
 			gridCount = in.readInt();
 			yIndex = in.readInt();
 			in.readIntArray(maxValuesLine);
+			in.readFloatArray(sumVals);
 			dateRange = in.readString();
 			data = in.readParcelable(ChartData.class.getClassLoader());
 		}
@@ -938,6 +994,7 @@ public class ChartView extends View {
 			out.writeInt(gridCount);
 			out.writeInt(yIndex);
 			out.writeIntArray(maxValuesLine);
+			out.writeFloatArray(sumVals);
 			out.writeString(dateRange);
 			out.writeParcelable(data, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
 		}
@@ -953,6 +1010,7 @@ public class ChartView extends View {
 		float maxValueVisible;
 		float maxValueCalculated;
 		int[] maxValuesLine;
+		float[] sumVals;
 		float gridValueStep;
 		String dateRange;
 		float dateRangeHeight;
