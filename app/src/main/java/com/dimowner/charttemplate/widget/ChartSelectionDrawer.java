@@ -59,11 +59,13 @@ public class ChartSelectionDrawer {
 
 	private float[] selectedValues;
 	private String[] formattedValues;
+	private String[] formattedPrecents;
 
 	private float selectedDateHeight = 0;
 	private float selectedDateWidth = 0;
 	private float selectedNameHeight = 0;
 	private float maxRowWidth = 0;
+	private float percentWidth = 0;
 
 	private float selectionX;
 	private float scrollPos;
@@ -114,9 +116,11 @@ public class ChartSelectionDrawer {
 	public void setLinesCount(int count) {
 		selectedValues = new float[count];
 		formattedValues = new String[count];
+		formattedPrecents = new String[count];
 		for (int i = 0; i < count; i++) {
 			selectedValues[i] = 0;
 			formattedValues[i] = "";
+			formattedPrecents[i] = "";
 		}
 	}
 
@@ -223,9 +227,18 @@ public class ChartSelectionDrawer {
 			//Draw names and values on panel
 			for (int i = 0; i < data.getLinesCount(); i++) {
 				if (linesVisibility[i]) {
-					canvas.drawText(data.getNames()[i],
-							sizeRect.left+ PADD_XNORMAL,
-							sizeRect.top+selectedDateHeight + PADD_SMALL+2* PADD_XNORMAL +PADD_TINY + selectedNameHeight*count, selectedNamePaint);
+					if (data.isPercentage()) {
+						canvas.drawText(formattedPrecents[i],
+								sizeRect.left + PADD_XNORMAL,
+								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
+						canvas.drawText(data.getNames()[i],
+								sizeRect.left + PADD_XNORMAL + percentWidth + PADD_SMALL,
+								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
+					} else {
+						canvas.drawText(data.getNames()[i],
+								sizeRect.left + PADD_XNORMAL,
+								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
+					}
 					selectedValuePaint.setColor(data.getColorsInts()[i]);
 					selectedValuePaint.setAlpha(alpha);
 //					canvas.drawText(String.valueOf(((int)selectedValues[i])),
@@ -248,10 +261,12 @@ public class ChartSelectionDrawer {
 		selectedDateWidth = 0;
 		selectedNameHeight = 0;
 		maxRowWidth = 0;
+		percentWidth = 0;
 	}
 
 	public void calculatePanelSize(ChartData data, float STEP, boolean[] linesCalculated,
-											  float scrollPos, float WIDTH, boolean isYscale, int yIndex, float yScale) {
+											 float scrollPos, float WIDTH, boolean isYscale, int yIndex,
+											 float yScale, float[] sumVals) {
 		this.STEP = STEP;
 		this.scrollPos = scrollPos;
 		selectionIndex = (int)((scrollPos + selectionX)/STEP);
@@ -279,6 +294,13 @@ public class ChartSelectionDrawer {
 				if (selectedNameHeight < tempRect.height()+PADD_SMALL) selectedNameHeight = tempRect.height()+PADD_SMALL;
 
 //				val = String.valueOf((data.getValues(i)[selectionIndex]));
+				if (data.isPercentage()) {
+					formattedPrecents[i] = format.format(data.getValues(i)[selectionIndex]/sumVals[selectionIndex])+"%";
+					selectedValuePaint.getTextBounds(formattedPrecents[i], 0, formattedPrecents[i].length(), tempRect);
+					percentWidth = percentWidth < tempRect.width() ? tempRect.width() : percentWidth;
+				} else {
+					percentWidth = 0;
+				}
 				if (isYscale && i == yIndex) {
 					formattedValues[i] = format.format(data.getValues(i)[selectionIndex]/yScale);
 				} else {
@@ -288,7 +310,8 @@ public class ChartSelectionDrawer {
 				//Value height and width
 //				selectedValuePaint.getTextBounds(val, 0, val.length(), tempRect);
 				selectedValuePaint.getTextBounds(formattedValues[i], 0, formattedValues[i].length(), tempRect);
-				maxRowWidth = maxRowWidth < tempWidth + tempRect.width() ? tempWidth + tempRect.width() : maxRowWidth;
+				maxRowWidth = maxRowWidth < tempWidth + tempRect.width() + percentWidth
+						? tempWidth + tempRect.width() + percentWidth : maxRowWidth;
 			}
 		}
 
@@ -305,8 +328,8 @@ public class ChartSelectionDrawer {
 		}
 
 		float width = 2*PADD_XNORMAL + selectedDateWidth + 24*DENSITY;
-		if (width < maxRowWidth+3* PADD_XNORMAL) {
-			width = maxRowWidth+3* PADD_XNORMAL;
+		if (width < maxRowWidth+4* PADD_XNORMAL) {
+			width = maxRowWidth+4* PADD_XNORMAL;
 		}
 
 		sizeRect.left = selectionX - width - PADD_XNORMAL;

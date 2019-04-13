@@ -316,7 +316,8 @@ public class ChartView extends View {
 				if (!selectionDrawer.isShowPanel()) {
 					selectionDrawer.showPanel();
 					selectionDrawer.setSelectionX(e.getX());
-					selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH, isYscaled, yIndex, yScale);
+					selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH,
+							isYscaled, yIndex, yScale, sumVals);
 				} else
 				if (!selectionDrawer.checkCoordinateInPanel(e.getX(), e.getY())) {
 					selectionDrawer.hidePanel();
@@ -363,7 +364,8 @@ public class ChartView extends View {
 							}
 							if (Math.abs(motionEvent.getY() - startY) < 90 * DENSITY) {
 								selectionDrawer.setSelectionX(selectionX);
-								selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH, isYscaled, yIndex, yScale);
+								selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos,
+										WIDTH, isYscaled, yIndex, yScale, sumVals);
 								if (onMoveEventsListener != null) {
 									onMoveEventsListener.disallowTouchEvent();
 								}
@@ -482,7 +484,7 @@ public class ChartView extends View {
 			STEP = WIDTH / size;
 			scrollPos = (x * STEP);
 			scrollStartIndex = x;
-			scale = (int)Math.ceil(size/50);
+//			scale = (int)Math.ceil(size/50);
 //			Timber.v("x = " + x + " size = " + size + " STEP = " + STEP);
 //			selectionDrawer.setScrollPos(scrollPos);
 			selectionDrawer.setScrollPos(scrollStartIndex, STEP);
@@ -512,7 +514,7 @@ public class ChartView extends View {
 		HEIGHT = getHeight();
 		H1 = HEIGHT - BASE_LINE_Y;
 		H2 = (HEIGHT-HEIGHT_PADDS);
-		H3 = H2/100;
+		H3 = (H2-PADD_NORMAL)/100; //1% of view height
 //		gridStep = (HEIGHT/GRID_LINES_COUNT);
 		if (maxValueVisible > 0) {
 			valueScale = (HEIGHT - 2*BASE_LINE_Y-PADD_NORMAL) / maxValueVisible;
@@ -587,10 +589,10 @@ public class ChartView extends View {
 	}
 
 	private void drawPercentageGrid(Canvas canvas) {
-		gridStep = H2/5;
+		gridStep = (H2-PADD_NORMAL)/5;
 		gridValueStep = 20;//%
 		timelineTextPaint.setAlpha(255);
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i <= 5; i++) {
 			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, gridPaint);
 			canvas.drawText(String.valueOf(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, timelineTextPaint);
 		}
@@ -724,12 +726,12 @@ public class ChartView extends View {
 				}
 				chartArray[k] = pos; //x1
 				if (index == amnimItemIndex) {
-					chartArray[k + 1] = H1-STEP*scale/2 - H3*(sum - values[i] * scaleKoef)/(sumVals[i]);
+					chartArray[k + 1] = H1 - H3*(sum - values[i] * scaleKoef)/(sumVals[i]);
 				} else {
-					chartArray[k + 1] = H1-STEP*scale/2 - H3*(sum - values[i])/(sumVals[i]);
+					chartArray[k + 1] = H1 - H3*(sum - values[i])/(sumVals[i]);
 				}
 				chartArray[k + 2] = pos; //x2
-				chartArray[k + 3] = H1-STEP*scale/2 - H3*sum/(sumVals[i]); //y2
+				chartArray[k + 3] = H1 - H3*sum/(sumVals[i]); //y2
 
 				///Draw lines
 				chartArray2[k] = pos-1; //x1
@@ -764,28 +766,30 @@ public class ChartView extends View {
 		}
 
 		linePaints[index].setStrokeWidth(scale*STEP+1);
-		linePaints[index].setStrokeCap(Paint.Cap.SQUARE);
+		linePaints[index].setTextAlign(Paint.Align.RIGHT);
+		linePaints[index].setStrokeCap(Paint.Cap.BUTT);
 		canvas.drawLines(chartArray, skip, k-skip, linePaints[index]);
 		if (data.isPercentage() && index > 0 && !isBottomLine(index)) {
 			linePaints[index].setStrokeWidth(STEP*scale);
 			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
 			canvas.drawLines(chartArray2, skip, k - skip, linePaints[index]);
-
-			int n = 5;
-			linePaints[index].setStrokeWidth(STEP/n*scale+1);
-			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
-			canvas.save();
-			canvas.translate(0, -STEP/4*scale);
-			for (int i = 0; i < 8; i++) {
-				canvas.translate(0, STEP/n*scale);
-				canvas.drawLines(chartArray2, skip, k - skip, linePaints[index]);
-			}
+			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
+			canvas.drawPoints(chartArray2, skip, k - skip, linePaints[index]);
+//			int n = 5;
+//			linePaints[index].setStrokeWidth(STEP/n*scale+1);
+//			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
+//			canvas.save();
+//			canvas.translate(0, -STEP/4*scale);
+//			for (int i = 0; i < 8; i++) {
+//				canvas.translate(0, STEP/n*scale);
+//				canvas.drawLines(chartArray2, skip, k - skip, linePaints[index]);
+//			}
 //			linePaints[index-1].setStrokeWidth(STEP/n*scale+1);
 //			for (int i = 0; i < 10; i++) {
 //				canvas.translate(0, STEP/n*scale+1);
 //				canvas.drawLines(chartArray2, skip, k - skip, linePaints[index-1]);
 //			}
-			canvas.restore();
+//			canvas.restore();
 		}
 	}
 
@@ -834,6 +838,7 @@ public class ChartView extends View {
 		calculateMaxValuesLine();
 		calculateMaxValue2(false, true);
 //		gridCount = (int)(HEIGHT/gridStep);
+		selectionDrawer.hidePanel();
 		updateGrid();
 	}
 
@@ -849,6 +854,7 @@ public class ChartView extends View {
 		calculateMaxValuesLine();
 		calculateMaxValue2(false, true);
 //		gridCount = (int)(HEIGHT/gridStep);
+		selectionDrawer.hidePanel();
 		updateGrid();
 	}
 
