@@ -274,17 +274,6 @@ public class ChartScrollOverlayView extends View {
 //			path.addRoundRect(0, 0, WIDTH, HEIGHT, SELECTION_HALF, SELECTION_HALF, Path.Direction.CCW);
 //		}
 //		canvas.clipPath(path);
-		selectionPaint.setColor(selectionColor);
-		rect.left = 0;
-		rect.top = BORDER;
-		rect.bottom = HEIGHT- BORDER;
-		rect.right = scrollX;
-		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, overlayPaint);
-		rect.left = scrollX + selectionWidth;
-		rect.top = BORDER;
-		rect.bottom = HEIGHT- BORDER;
-		rect.right = WIDTH;
-		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, overlayPaint);
 
 		borderLines[0] = scrollX; //x0 line1
 		borderLines[1] = BORDER_HALF; //y0
@@ -296,11 +285,28 @@ public class ChartScrollOverlayView extends View {
 		borderLines[7] = HEIGHT- BORDER_HALF; //y1
 		canvas.drawLines(borderLines, borderPaint);
 
+		selectionPaint.setColor(selectionColor);
+		rect.left = 0;
+		rect.top = BORDER;
+		rect.bottom = HEIGHT- BORDER;
+		rect.right = scrollX;
+		canvas.clipRect(rect);
+		rect.right = scrollX+SELECTION_HALF;
+		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, overlayPaint);
+
+		rect.left = scrollX + selectionWidth;
+		rect.top = BORDER;
+		rect.bottom = HEIGHT- BORDER;
+		rect.right = WIDTH;
+		canvas.clipRect(rect,op);
+		rect.left = scrollX + selectionWidth-SELECTION_HALF;
+		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, overlayPaint);
+
 		rect.left = scrollX - SELECTION;
 		rect.top = 0;
 		rect.bottom = HEIGHT;
 		rect.right = scrollX;// + SELECTION_HALF;
-		canvas.clipRect(rect);
+		canvas.clipRect(rect,op);
 		rect.right = scrollX + SELECTION_HALF;
 		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, selectionPaint);
 

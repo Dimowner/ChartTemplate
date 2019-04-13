@@ -1,5 +1,6 @@
 package com.dimowner.charttemplate.widget;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -7,6 +8,9 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.text.TextPaint;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
@@ -15,6 +19,8 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+
+//import timber.log.Timber;
 
 public class ChartSelectionDrawer {
 
@@ -67,12 +73,50 @@ public class ChartSelectionDrawer {
 	private RectF sizeRect;
 	private Rect tempRect;
 	private float tempWidth = 0;
+	private float STEP = 10;
+	private boolean show = false;
+
+	private View view;
+
+	private ValueAnimator alphaAnimator;
+	private DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+	private AccelerateInterpolator accelerateInterpolator= new AccelerateInterpolator();
+
+	private boolean showAnimation = false;
+	private int alpha = 255;
+
+	ValueAnimator.AnimatorUpdateListener alphaValueAnimator = new ValueAnimator.AnimatorUpdateListener() {
+		@Override
+		public void onAnimationUpdate(ValueAnimator animation) {
+			float val = (float) animation.getAnimatedValue();
+			alpha = (int) val;
+
+			selectedDatePaint.setAlpha(alpha);
+			selectedNamePaint.setAlpha(alpha);
+			selectedValuePaint.setAlpha(alpha);
+			panelPaint.setAlpha(alpha);
+//			scrubblerPaint.setAlpha(alpha);
+//			circlePaint.setAlpha(alpha);
+			shadowPaint.setAlpha(alpha);
+//			selectedDatePaint.setAlpha((int)val);
+			if (!showAnimation && val == 0) {
+				show = false;
+				selectionX = -1;
+			}
+			view.invalidate();
+		}
+	};
+
+	public void setView(View view) {
+		this.view = view;
+	}
 
 	public void setLinesCount(int count) {
 		selectedValues = new float[count];
 		formattedValues = new String[count];
 		for (int i = 0; i < count; i++) {
 			selectedValues[i] = 0;
+			formattedValues[i] = "";
 		}
 	}
 
@@ -90,6 +134,7 @@ public class ChartSelectionDrawer {
 		selectedDatePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		selectedDatePaint.setColor(panelTextColor);
 		selectedDatePaint.setTextAlign(Paint.Align.LEFT);
+		selectedDatePaint.setAlpha(50);
 		selectedDatePaint.setTypeface(Typeface.create("sans-serif-sans-serif-thin", Typeface.BOLD));
 		selectedDatePaint.setTextSize(context.getResources().getDimension(R.dimen.text_xnormal));
 
@@ -113,7 +158,7 @@ public class ChartSelectionDrawer {
 
 		circlePaint = new Paint();
 		circlePaint.setStyle(Paint.Style.FILL);
-		circlePaint.setColor(panelColor);
+		circlePaint.setColor(windowBgColor);
 
 		scrubblerPaint = new Paint();
 		scrubblerPaint.setAntiAlias(false);
@@ -136,18 +181,19 @@ public class ChartSelectionDrawer {
 	}
 
 	public void drawBarOverlay(Canvas canvas, int type, float STEP, float H1, float WIDTH, float HEIGHT) {
-		if (selectionX >= 0 && type == ChartData.TYPE_BAR) {
+		if (show && type == ChartData.TYPE_BAR) {
 			float x = selectionIndex*STEP-scrollPos;
 			float half = (STEP-1)/2;
 			panelPaint.setColor(overlayColor);
-			canvas.drawRect(-PADD_NORMAL, H1, x-half, HEIGHT - H1 + PADD_XNORMAL, panelPaint);
-			canvas.drawRect(x+half, H1, WIDTH + PADD_NORMAL, HEIGHT - H1 + PADD_XNORMAL, panelPaint);
+			panelPaint.setAlpha(alpha > 127 ? 127 : alpha);
+			canvas.drawRect(-PADD_NORMAL, 0, x-half, H1 + PADD_XNORMAL, panelPaint);
+			canvas.drawRect(x+half, 0, WIDTH + PADD_NORMAL, H1 + PADD_XNORMAL, panelPaint);
 		}
 	}
 
 	public void draw(Canvas canvas, ChartData data, boolean[] linesVisibility, float HEIGHT,
 						  Paint[] linePaints, float valueScaleY) {
-		if (selectionX >= 0) {
+		if (show) {
 			if (data.getType(0) == ChartData.TYPE_LINE || data.getType(0) == ChartData.TYPE_AREA) {
 				//Draw scrubbler
 				canvas.drawLine(selectionX, BASE_LINE_Y + PADD_XNORMAL, selectionX, HEIGHT - BASE_LINE_Y, scrubblerPaint);
@@ -166,6 +212,7 @@ public class ChartSelectionDrawer {
 				}
 			}
 			panelPaint.setColor(panelColor);
+			panelPaint.setAlpha(alpha);
 			//Draw selection panel
 			canvas.drawRoundRect(sizeRect, RADIUS, RADIUS, panelPaint);
 			canvas.drawRoundRect(sizeRect, RADIUS, RADIUS, shadowPaint);
@@ -180,15 +227,20 @@ public class ChartSelectionDrawer {
 							sizeRect.left+ PADD_XNORMAL,
 							sizeRect.top+selectedDateHeight + PADD_SMALL+2* PADD_XNORMAL +PADD_TINY + selectedNameHeight*count, selectedNamePaint);
 					selectedValuePaint.setColor(data.getColorsInts()[i]);
+					selectedValuePaint.setAlpha(alpha);
 //					canvas.drawText(String.valueOf(((int)selectedValues[i])),
 					canvas.drawText(formattedValues[i],
-							sizeRect.right- PADD_XNORMAL,
+							sizeRect.right - PADD_XNORMAL,
 							sizeRect.top+selectedDateHeight + PADD_SMALL+2* PADD_XNORMAL +PADD_TINY + selectedNameHeight*count,
 							selectedValuePaint);
 					count++;
 				}
 			}
 		}
+	}
+
+	public boolean checkCoordinateInPanel(float x, float y) {
+		return x > sizeRect.left && x < sizeRect.right && y > sizeRect.top && y < sizeRect.bottom;
 	}
 
 	public void reset() {
@@ -200,6 +252,7 @@ public class ChartSelectionDrawer {
 
 	public void calculatePanelSize(ChartData data, float STEP, boolean[] linesCalculated,
 											  float scrollPos, float WIDTH, boolean isYscale, int yIndex, float yScale) {
+		this.STEP = STEP;
 		this.scrollPos = scrollPos;
 		selectionIndex = (int)((scrollPos + selectionX)/STEP);
 		if (selectionIndex >= data.getLength()-1) {
@@ -287,7 +340,48 @@ public class ChartSelectionDrawer {
 		this.selectionX = selectionX;
 	}
 
+	public boolean isShowPanel() {
+		return show;
+	}
+
 	public float getSelectionX() {
 		return selectionX;
+	}
+
+	public void setScrollPos(float index, float ST) {
+		float i = selectionX/STEP;
+		selectionX = i*ST;
+
+		float dx = index - (selectionIndex-i);
+		selectionX -= dx*ST;
+		sizeRect.left = selectionX - sizeRect.width() - PADD_XNORMAL;
+		sizeRect.right = selectionX - PADD_XNORMAL;
+		this.scrollPos = index*ST;
+		STEP = ST;
+	}
+
+	public void showPanel() {
+		this.show = true;
+		alphaAnimator(0, 255, true);
+	}
+
+	public void hidePanel() {
+		alphaAnimator(255, 0, false);
+	}
+
+	private void alphaAnimator(float start, final float end, boolean show) {
+		showAnimation = show;
+		if (alphaAnimator != null && alphaAnimator.isStarted()) {
+			alphaAnimator.cancel();
+		}
+		alphaAnimator = ValueAnimator.ofFloat(start, end);
+		if (show) {
+			alphaAnimator.setInterpolator(decelerateInterpolator);
+		} else {
+			alphaAnimator.setInterpolator(accelerateInterpolator);
+		}
+		alphaAnimator.setDuration(150);
+		alphaAnimator.addUpdateListener(alphaValueAnimator);
+		alphaAnimator.start();
 	}
 }

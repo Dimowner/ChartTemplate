@@ -79,6 +79,11 @@
 				android:layout_marginTop="@dimen/spacing_double"
 				android:background="?attr/viewBackground">
 
+			<com.dimowner.charttemplate.widget.ItemView
+					android:id="@+id/itemView"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
+
 			<TextView
 					android:id="@+id/txtChartTitle"
 					android:layout_width="match_parent"
@@ -95,11 +100,6 @@
 					android:textColor="@color/black"
 					android:textSize="@dimen/text_xmedium"
 					/>
-			<com.dimowner.charttemplate.widget.ItemView
-					android:id="@+id/itemView"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"/>
-
 			<!--<TextView-->
 					<!--android:layout_width="match_parent"-->
 					<!--android:layout_height="wrap_content"-->

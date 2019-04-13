@@ -28,6 +28,7 @@ import android.os.Parcelable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
@@ -40,6 +41,8 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 import java.text.DecimalFormat;
 
 import timber.log.Timber;
+
+//import timber.log.Timber;
 
 public class ChartView extends View {
 
@@ -133,8 +136,11 @@ public class ChartView extends View {
 	private int amnimItemIndex = -1;
 	private float[] sumVals;
 	private boolean isFirst = true;
+	private boolean isMove = false;
+	private boolean isScroll = false;
 
 	private OnMoveEventsListener onMoveEventsListener;
+	private GestureDetector gestureDetector;
 
 	ValueAnimator.AnimatorUpdateListener heightValueAnimator = new ValueAnimator.AnimatorUpdateListener() {
 		@Override
@@ -270,6 +276,7 @@ public class ChartView extends View {
 		}
 		selectionDrawer = new ChartSelectionDrawer(getContext(), panelTextColor,
 					panelColor, gridColor, shadowColor, viewBackground, barOverlayColor);
+		selectionDrawer.setView(this);
 
 		gridPaint = new Paint();
 		gridPaint.setAntiAlias(false);
@@ -304,6 +311,37 @@ public class ChartView extends View {
 		timelineTextPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
 		timelineTextPaint.setTextSize(context.getResources().getDimension(R.dimen.text_xsmall));
 
+		gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+			@Override
+			public boolean onSingleTapUp(MotionEvent e) {
+				if (!selectionDrawer.isShowPanel()) {
+					selectionDrawer.showPanel();
+					selectionDrawer.setSelectionX(e.getX());
+					selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH, isYscaled, yIndex, yScale);
+				} else
+				if (!selectionDrawer.checkCoordinateInPanel(e.getX(), e.getY())) {
+					selectionDrawer.hidePanel();
+				} else {
+					//TODO: open details;
+				}
+				return super.onSingleTapUp(e);
+			}
+
+			@Override
+			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+				isMove = true;
+				if (!selectionDrawer.isShowPanel()) {
+					selectionDrawer.showPanel();
+				}
+				return super.onScroll(e1, e2, distanceX, distanceY);
+			}
+
+			@Override
+			public boolean onDown(MotionEvent e) {
+				return true;
+			}
+		});
+
 		setOnTouchListener(new OnTouchListener() {
 
 			float startY = 0;
@@ -312,39 +350,45 @@ public class ChartView extends View {
 			public boolean onTouch(View v, MotionEvent motionEvent) {
 				switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
 					case MotionEvent.ACTION_DOWN:
-						selectionDrawer.reset();
+//						selectionDrawer.reset();
 						startY = motionEvent.getY();
 						break;
 					case MotionEvent.ACTION_MOVE:
-						float selectionX = motionEvent.getX();
-						if (selectionX > WIDTH) {
-							selectionX = WIDTH;
-						}
-						if (selectionX < 0) {
-							selectionX = -1;
-						}
-						if (Math.abs(motionEvent.getY() - startY) < 90*DENSITY) {
-							selectionDrawer.setSelectionX(selectionX);
-							selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH, isYscaled, yIndex, yScale);
-							if (onMoveEventsListener != null) {
-								onMoveEventsListener.disallowTouchEvent();
+						if (isMove) {
+							float selectionX = motionEvent.getX();
+							if (selectionX > WIDTH) {
+								selectionX = WIDTH;
 							}
-						} else {
-							selectionX = -1;
-							selectionDrawer.setSelectionX(selectionX);
-							if (onMoveEventsListener != null) {
-								onMoveEventsListener.allowTouchEvent();
+							if (selectionX < 0) {
+								selectionX = -1;
 							}
+							if (Math.abs(motionEvent.getY() - startY) < 90 * DENSITY) {
+								selectionDrawer.setSelectionX(selectionX);
+								selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH, isYscaled, yIndex, yScale);
+								if (onMoveEventsListener != null) {
+									onMoveEventsListener.disallowTouchEvent();
+								}
+							} else {
+								selectionX = -1;
+								selectionDrawer.setSelectionX(selectionX);
+								if (onMoveEventsListener != null) {
+									onMoveEventsListener.allowTouchEvent();
+								}
+							}
+							invalidate();
 						}
-						invalidate();
 						break;
 					case MotionEvent.ACTION_UP:
-						selectionDrawer.setSelectionX(-1);
+						if (isMove) {
+//							selectionDrawer.setSelectionX(-1);
+							selectionDrawer.hidePanel();
+							isMove = false;
+						}
 						invalidate();
 						performClick();
 						break;
 				}
-				return true;
+				return gestureDetector.onTouchEvent(motionEvent);
 			}
 		});
 	}
@@ -439,6 +483,8 @@ public class ChartView extends View {
 			STEP = WIDTH / size;
 			scrollPos = (x * STEP);
 			scrollStartIndex = x;
+//			selectionDrawer.setScrollPos(scrollPos);
+			selectionDrawer.setScrollPos(scrollStartIndex, STEP);
 			int idx = (int) Math.ceil(x + size) - 1;
 			if (idx < data.getLength()) {
 				dateRange = data.getTimesLong()[(int) Math.floor(x)] + minus + data.getTimesLong()[idx];
@@ -453,6 +499,7 @@ public class ChartView extends View {
 				updateGrid();
 				skipNextInvalidation = true;
 			}
+
 			invalidate();
 		}
 	}
@@ -530,6 +577,12 @@ public class ChartView extends View {
 			}
 			timelineTextPaint.setAlpha(255);
 		}
+	}
+
+	@Override
+	protected void onDetachedFromWindow() {
+		super.onDetachedFromWindow();
+		selectionDrawer.setView(null);
 	}
 
 	private void drawPercentageGrid(Canvas canvas) {
@@ -705,6 +758,8 @@ public class ChartView extends View {
 		}
 		this.data = d;
 		if (data != null) {
+//			selectionDrawer.setSelectionX(-1);
+			selectionDrawer.hidePanel();
 			maxValueCalculated = 0;
 			isYscaled = data.isYscaled();
 			//Init lines visibility state, all visible by default.
@@ -736,7 +791,8 @@ public class ChartView extends View {
 //				}
 //			}
 		}
-		selectionDrawer.setSelectionX(-1);
+//		selectionDrawer.setSelectionX(-1);
+//		selectionDrawer.hidePanel();
 		invalidate();
 	}
 
@@ -983,6 +1039,8 @@ public class ChartView extends View {
 			}
 			chartArray = new float[data.getLength() * 4];
 		}
+//		selectionDrawer.setSelectionX(-1);
+		selectionDrawer.hidePanel();
 	}
 
 	public interface OnMoveEventsListener {
