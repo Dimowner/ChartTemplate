@@ -20,7 +20,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
+//import android.graphics.Path;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -41,10 +41,12 @@ public class ChartScrollView extends View {
 	private final float PADD_TINY;
 	private final float PADD_NORMAL;
 	private final float SELECTION_HALF;
+	private final float BORDER;
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
 		PADD_TINY = 3*DENSITY;
+		BORDER = 4*DENSITY;
 		PADD_NORMAL = 16*DENSITY;
 		SELECTION_HALF = 8*DENSITY;
 	}
@@ -52,8 +54,9 @@ public class ChartScrollView extends View {
 	private ChartData data;
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
-	private Path path;
+//	private Path path;
 	private float chartArray[];
+	private float chartArray2[];
 	private float STEP = 10;
 
 	private Paint[] linePaints;
@@ -133,7 +136,7 @@ public class ChartScrollView extends View {
 
 	private void init(Context context) {
 		setFocusable(false);
-		path = new Path();
+//		path = new Path();
 
 		int viewBackground;
 		TypedValue typedValue = new TypedValue();
@@ -144,7 +147,7 @@ public class ChartScrollView extends View {
 		}
 		borderPaint = new Paint();
 		borderPaint.setStyle(Paint.Style.STROKE);
-		borderPaint.setStrokeWidth(PADD_TINY);
+		borderPaint.setStrokeWidth(BORDER);
 		borderPaint.setColor(viewBackground);
 		borderPaint.setAntiAlias(true);
 	}
@@ -191,14 +194,15 @@ public class ChartScrollView extends View {
 					} else if (data.getType(i) == ChartData.TYPE_BAR) {
 						drawBars(canvas, data.getValues(i), i);
 					} else if (data.getType(i) == ChartData.TYPE_AREA) {
-						drawBars(canvas, data.getValues(i), i);
+//						drawBars(canvas, data.getValues(i), i);
+						drawAreaPercentage(canvas, data.getValues(i), i);
 					} else {
 						drawChart(canvas, data.getValues(i), i);
 					}
 				}
 			}
 			//Draw round borders.
-			canvas.drawRoundRect(-DENSITY, 0, WIDTH+DENSITY, HEIGHT, SELECTION_HALF, SELECTION_HALF, borderPaint);
+			canvas.drawRoundRect(-1.5f*DENSITY, 0, WIDTH+1.5f*DENSITY, HEIGHT, SELECTION_HALF, SELECTION_HALF, borderPaint);
 		}
 	}
 
@@ -302,6 +306,97 @@ public class ChartScrollView extends View {
 		canvas.drawLines(chartArray, linePaints[index]);
 	}
 
+	private void drawAreaPercentage(Canvas canvas, int[] values, int index) {
+		int scale = 6;
+		float pos = 0;
+//		int skip = 0;
+//		if (skip < 0) {skip = 0;}
+//		skip -= skip%scale;
+		pos +=0;
+		int k = 0;
+		int j;
+		int sum=0;
+		int sum2=0;
+		float H3 = H1/100;
+		for (int i = 0; i < values.length; i+=scale) {
+			if (k < chartArray.length) {
+				for (j = 0; j <= index; j++) {
+					if (linesCalculated[j] && j != amnimItemIndex) { //
+						sum += data.getVal(j, i);
+						if (i+scale < values.length) {
+							sum2 += data.getVal(j, i + scale);
+						}
+					}
+				}
+				if (isAnimating && amnimItemIndex <= index) {
+					sum += scaleKoef*data.getVal(amnimItemIndex, i);
+					if (i+scale < values.length) {
+						sum2 += scaleKoef * data.getVal(amnimItemIndex, i+scale);
+					}
+				}
+				chartArray[k] = pos; //x1
+				if (index == amnimItemIndex) {
+					chartArray[k + 1] = H1 - H3*(sum - values[i] * scaleKoef)/(sumVals[i]);
+				} else {
+					chartArray[k + 1] = H1 - H3*(sum - values[i])/(sumVals[i]);
+				}
+				chartArray[k + 2] = pos; //x2
+				chartArray[k + 3] = H1 - H3*sum/(sumVals[i]); //y2
+
+				///Draw lines
+				chartArray2[k] = pos-1; //x1
+				if (index == amnimItemIndex) {
+					chartArray2[k + 1] = H1 - H3*(sum - values[i] * scaleKoef)/(sumVals[i]);
+				} else {
+					chartArray2[k + 1] = H1 - H3*(sum - values[i])/(sumVals[i]);
+				}
+				if (i + scale < values.length) {
+					chartArray2[k + 2] = pos + STEP*scale; //x2
+					if (index == amnimItemIndex) {
+						chartArray2[k + 3] = H1 - H3 * (sum2 - values[i+scale]* scaleKoef) / (sumVals[i + scale]);
+					} else {
+						chartArray2[k + 3] = H1 - H3 * (sum2 - values[i+scale]) / (sumVals[i + scale]);
+					}
+				} else {
+					chartArray2[k + 2] = pos+STEP*scale/2; //x2
+					if (index == amnimItemIndex) {
+						chartArray2[k + 3] = H1 - H3 * (sum - values[i]*scaleKoef) / (sumVals[i]); //y2
+					} else {
+						chartArray2[k + 3] = H1 - H3 * (sum - values[i]) / (sumVals[i]); //y2
+					}
+				}
+				k += 4;
+				if (pos - STEP*scale > WIDTH + PADD_NORMAL) {
+					break;
+				}
+				sum = 0;
+				sum2 = 0;
+			}
+			pos += scale*STEP;
+		}
+
+		linePaints[index].setStrokeWidth(scale*STEP+1);
+		linePaints[index].setTextAlign(Paint.Align.RIGHT);
+		linePaints[index].setStrokeCap(Paint.Cap.BUTT);
+		canvas.drawLines(chartArray, 0, k, linePaints[index]);
+		if (data.isPercentage() && index > 0 && !isBottomLine(index)) {
+			linePaints[index].setStrokeWidth(STEP*scale);
+			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
+			canvas.drawLines(chartArray2, 0, k, linePaints[index]);
+//			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
+//			canvas.drawPoints(chartArray2, skip, k - skip-1, linePaints[index]);
+		}
+	}
+
+	private boolean isBottomLine(int index) {
+		for (int i = 0; i < index; i++) {
+			if (linesVisibility[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public void hideLine(String name) {
 		isAnimating = true;
 		final int pos = findLinePosition(name);
@@ -345,6 +440,11 @@ public class ChartScrollView extends View {
 				STEP = (WIDTH / data.getLength());
 			}
 			chartArray = new float[data.getLength() * 4];
+			if (data.isPercentage()) {
+				chartArray2 = new float[data.getLength() * 4];
+			} else {
+				chartArray2 = null;
+			}
 		}
 		invalidate();
 	}

@@ -486,6 +486,11 @@ public class ChartView extends View {
 			scrollStartIndex = x;
 //			scale = (int)Math.ceil(size/50);
 //			Timber.v("x = " + x + " size = " + size + " STEP = " + STEP);
+			if (size > data.getLength()/2) {
+				scale = 2;
+			} else {
+				scale = 1;
+			}
 //			selectionDrawer.setScrollPos(scrollPos);
 			selectionDrawer.setScrollPos(scrollStartIndex, STEP);
 			int idx = (int) Math.ceil(x + size) - 1;
@@ -774,7 +779,7 @@ public class ChartView extends View {
 			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
 			canvas.drawLines(chartArray2, skip, k - skip, linePaints[index]);
 			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
-			canvas.drawPoints(chartArray2, skip, k - skip, linePaints[index]);
+			canvas.drawPoints(chartArray2, skip, k - skip-1, linePaints[index]);
 //			int n = 5;
 //			linePaints[index].setStrokeWidth(STEP/n*scale+1);
 //			linePaints[index].setStrokeCap(Paint.Cap.BUTT);

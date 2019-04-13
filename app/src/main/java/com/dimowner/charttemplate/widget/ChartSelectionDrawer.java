@@ -49,6 +49,7 @@ public class ChartSelectionDrawer {
 	private TextPaint selectedDatePaint;
 	private TextPaint selectedNamePaint;
 	private TextPaint selectedValuePaint;
+	private TextPaint percentsPaint;
 	private Paint panelPaint;
 	private Paint scrubblerPaint;
 	private Paint circlePaint;
@@ -86,6 +87,9 @@ public class ChartSelectionDrawer {
 
 	private boolean showAnimation = false;
 	private int alpha = 255;
+
+//	private Typeface boldTypeface;
+//	private Typeface normalTypeface;
 
 	ValueAnimator.AnimatorUpdateListener alphaValueAnimator = new ValueAnimator.AnimatorUpdateListener() {
 		@Override
@@ -135,10 +139,13 @@ public class ChartSelectionDrawer {
 		selectionX = -1;
 		selectionIndex = -1;
 
+//		normalTypeface = Typeface.create("sans-serif", Typeface.NORMAL);
+//		boldTypeface = Typeface.create("sans-serif", Typeface.BOLD);
+
 		selectedDatePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		selectedDatePaint.setColor(panelTextColor);
 		selectedDatePaint.setTextAlign(Paint.Align.LEFT);
-		selectedDatePaint.setAlpha(50);
+//		selectedDatePaint.setAlpha(50);
 		selectedDatePaint.setTypeface(Typeface.create("sans-serif-sans-serif-thin", Typeface.BOLD));
 		selectedDatePaint.setTextSize(context.getResources().getDimension(R.dimen.text_xnormal));
 
@@ -153,6 +160,12 @@ public class ChartSelectionDrawer {
 		selectedValuePaint.setColor(panelTextColor);
 		selectedValuePaint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
 		selectedValuePaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
+
+		percentsPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
+		percentsPaint.setTextAlign(Paint.Align.LEFT);
+		percentsPaint.setColor(panelTextColor);
+		percentsPaint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+		percentsPaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
 
 		panelPaint = new Paint();
 		panelPaint.setStyle(Paint.Style.FILL);
@@ -228,13 +241,16 @@ public class ChartSelectionDrawer {
 			for (int i = 0; i < data.getLinesCount(); i++) {
 				if (linesVisibility[i]) {
 					if (data.isPercentage()) {
+						//Draw percents
 						canvas.drawText(formattedPrecents[i],
 								sizeRect.left + PADD_XNORMAL,
-								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
+								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, percentsPaint);
+						//Draw names
 						canvas.drawText(data.getNames()[i],
 								sizeRect.left + PADD_XNORMAL + percentWidth + PADD_SMALL,
 								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
 					} else {
+						//Draw names
 						canvas.drawText(data.getNames()[i],
 								sizeRect.left + PADD_XNORMAL,
 								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
@@ -242,6 +258,7 @@ public class ChartSelectionDrawer {
 					selectedValuePaint.setColor(data.getColorsInts()[i]);
 					selectedValuePaint.setAlpha(alpha);
 //					canvas.drawText(String.valueOf(((int)selectedValues[i])),
+					//Draw values
 					canvas.drawText(formattedValues[i],
 							sizeRect.right - PADD_XNORMAL,
 							sizeRect.top+selectedDateHeight + PADD_SMALL+2* PADD_XNORMAL +PADD_TINY + selectedNameHeight*count,
