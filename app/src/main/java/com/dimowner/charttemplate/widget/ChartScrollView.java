@@ -24,10 +24,12 @@ import android.graphics.Path;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
+import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
@@ -55,6 +57,7 @@ public class ChartScrollView extends View {
 	private float STEP = 10;
 
 	private Paint[] linePaints;
+	private Paint borderPaint;
 
 	private float WIDTH = 1;
 	private float HEIGHT = 1;
@@ -131,6 +134,19 @@ public class ChartScrollView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 		path = new Path();
+
+		int viewBackground;
+		TypedValue typedValue = new TypedValue();
+		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
+			viewBackground = typedValue.data;
+		} else {
+			viewBackground = context.getResources().getColor(R.color.view_background);
+		}
+		borderPaint = new Paint();
+		borderPaint.setStyle(Paint.Style.STROKE);
+		borderPaint.setStrokeWidth(PADD_TINY);
+		borderPaint.setColor(viewBackground);
+		borderPaint.setAntiAlias(true);
 	}
 
 	private Paint createLinePaint(int color) {
@@ -181,6 +197,8 @@ public class ChartScrollView extends View {
 					}
 				}
 			}
+			//Draw round borders.
+			canvas.drawRoundRect(-DENSITY, 0, WIDTH+DENSITY, HEIGHT, SELECTION_HALF, SELECTION_HALF, borderPaint);
 		}
 	}
 

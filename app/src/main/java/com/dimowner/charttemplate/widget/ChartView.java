@@ -40,8 +40,6 @@ import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import java.text.DecimalFormat;
 
-import timber.log.Timber;
-
 //import timber.log.Timber;
 
 public class ChartView extends View {
@@ -85,6 +83,7 @@ public class ChartView extends View {
 	private ChartData data;
 
 	private float chartArray[];
+	private float chartArray2[];
 
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
@@ -137,7 +136,7 @@ public class ChartView extends View {
 	private float[] sumVals;
 	private boolean isFirst = true;
 	private boolean isMove = false;
-	private boolean isScroll = false;
+	private int scale = 1;
 
 	private OnMoveEventsListener onMoveEventsListener;
 	private GestureDetector gestureDetector;
@@ -483,6 +482,8 @@ public class ChartView extends View {
 			STEP = WIDTH / size;
 			scrollPos = (x * STEP);
 			scrollStartIndex = x;
+			scale = (int)Math.ceil(size/50);
+//			Timber.v("x = " + x + " size = " + size + " STEP = " + STEP);
 //			selectionDrawer.setScrollPos(scrollPos);
 			selectionDrawer.setScrollPos(scrollStartIndex, STEP);
 			int idx = (int) Math.ceil(x + size) - 1;
@@ -532,7 +533,7 @@ public class ChartView extends View {
 					} else if (data.getType(i) == ChartData.TYPE_BAR) {
 						drawBars(canvas, data.getValues(i), i);
 					} else if (data.getType(i) == ChartData.TYPE_AREA) {
-						drawBars(canvas, data.getValues(i), i);
+						drawAreaPercentage(canvas, data.getValues(i), i);
 					} else {
 						drawChart(canvas, data.getValues(i), i);
 					}
@@ -588,6 +589,7 @@ public class ChartView extends View {
 	private void drawPercentageGrid(Canvas canvas) {
 		gridStep = H2/5;
 		gridValueStep = 20;//%
+		timelineTextPaint.setAlpha(255);
 		for (int i = 0; i < 5; i++) {
 			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, gridPaint);
 			canvas.drawText(String.valueOf(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, timelineTextPaint);
@@ -613,7 +615,7 @@ public class ChartView extends View {
 				}
 				k +=4;
 				if (pos - STEP > WIDTH+PADD_NORMAL) {
-					if (pos/STEP < 130) {
+					if (pos/STEP < 120) {
 						linePaints[index].setStrokeCap(Paint.Cap.ROUND);
 					} else {
 						linePaints[index].setStrokeCap(Paint.Cap.BUTT);
@@ -692,6 +694,108 @@ public class ChartView extends View {
 			}
 		}
 		canvas.drawLines(chartArray, skip, k-skip, linePaints[index]);
+	}
+
+	private void drawAreaPercentage(Canvas canvas, int[] values, int index) {
+		float pos = -scrollPos;
+		int skip = (int) scrollStartIndex -(int)(PADD_NORMAL/STEP);
+		if (skip < 0) {skip = 0;}
+		skip -= skip%scale;
+		pos +=skip*STEP;
+		int k = skip;
+		int j;
+		int sum=0;
+		int sum2=0;
+		for (int i = skip; i < values.length; i+=scale) {
+			if (k < chartArray.length) {
+				for (j = 0; j <= index; j++) {
+					if (linesCalculated[j] && j != amnimItemIndex) { //
+						sum += data.getVal(j, i);
+						if (i+scale < values.length) {
+							sum2 += data.getVal(j, i + scale);
+						}
+					}
+				}
+				if (isAnimating && amnimItemIndex <= index) {
+					sum += scaleKoef*data.getVal(amnimItemIndex, i);
+					if (i+scale < values.length) {
+						sum2 += scaleKoef * data.getVal(amnimItemIndex, i+scale);
+					}
+				}
+				chartArray[k] = pos; //x1
+				if (index == amnimItemIndex) {
+					chartArray[k + 1] = H1-STEP*scale/2 - H3*(sum - values[i] * scaleKoef)/(sumVals[i]);
+				} else {
+					chartArray[k + 1] = H1-STEP*scale/2 - H3*(sum - values[i])/(sumVals[i]);
+				}
+				chartArray[k + 2] = pos; //x2
+				chartArray[k + 3] = H1-STEP*scale/2 - H3*sum/(sumVals[i]); //y2
+
+				///Draw lines
+				chartArray2[k] = pos-1; //x1
+				if (index == amnimItemIndex) {
+					chartArray2[k + 1] = H1 - H3*(sum - values[i] * scaleKoef)/(sumVals[i]);
+				} else {
+					chartArray2[k + 1] = H1 - H3*(sum - values[i])/(sumVals[i]);
+				}
+				if (i + scale < values.length) {
+					chartArray2[k + 2] = pos + STEP*scale; //x2
+					if (index == amnimItemIndex) {
+						chartArray2[k + 3] = H1 - H3 * (sum2 - values[i+scale]* scaleKoef) / (sumVals[i + scale]);
+					} else {
+						chartArray2[k + 3] = H1 - H3 * (sum2 - values[i+scale]) / (sumVals[i + scale]);
+					}
+				} else {
+					chartArray2[k + 2] = pos+STEP*scale/2; //x2
+					if (index == amnimItemIndex) {
+						chartArray2[k + 3] = H1 - H3 * (sum - values[i]*scaleKoef) / (sumVals[i]); //y2
+					} else {
+						chartArray2[k + 3] = H1 - H3 * (sum - values[i]) / (sumVals[i]); //y2
+					}
+				}
+				k += 4;
+				if (pos - STEP*scale > WIDTH + PADD_NORMAL) {
+					break;
+				}
+				sum = 0;
+				sum2 = 0;
+			}
+			pos += scale*STEP;
+		}
+
+		linePaints[index].setStrokeWidth(scale*STEP+1);
+		linePaints[index].setStrokeCap(Paint.Cap.SQUARE);
+		canvas.drawLines(chartArray, skip, k-skip, linePaints[index]);
+		if (data.isPercentage() && index > 0 && !isBottomLine(index)) {
+			linePaints[index].setStrokeWidth(STEP*scale);
+			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
+			canvas.drawLines(chartArray2, skip, k - skip, linePaints[index]);
+
+			int n = 5;
+			linePaints[index].setStrokeWidth(STEP/n*scale+1);
+			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
+			canvas.save();
+			canvas.translate(0, -STEP/4*scale);
+			for (int i = 0; i < 8; i++) {
+				canvas.translate(0, STEP/n*scale);
+				canvas.drawLines(chartArray2, skip, k - skip, linePaints[index]);
+			}
+//			linePaints[index-1].setStrokeWidth(STEP/n*scale+1);
+//			for (int i = 0; i < 10; i++) {
+//				canvas.translate(0, STEP/n*scale+1);
+//				canvas.drawLines(chartArray2, skip, k - skip, linePaints[index-1]);
+//			}
+			canvas.restore();
+		}
+	}
+
+	private boolean isBottomLine(int index) {
+		for (int i = 0; i < index; i++) {
+			if (linesVisibility[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void drawTimeline(Canvas canvas) {
@@ -784,7 +888,12 @@ public class ChartView extends View {
 				updateYline();
 			}
 //			if (HEIGHT > 1) {
-				chartArray = new float[data.getLength() * 4];
+			chartArray = new float[data.getLength() * 4];
+			if (data.isPercentage()) {
+				chartArray2 = new float[data.getLength() * 4];
+			} else {
+				chartArray2 = null;
+			}
 //				for (int i = 0; i < data.getLength(); i += 2) {
 //					chartArray[i] = i;
 //					chartArray[i + 1] = HEIGHT - BASE_LINE_Y - data.getValues(0)[(i / 2 + 1)] * valueScale;
@@ -999,6 +1108,7 @@ public class ChartView extends View {
 		ss.data = data;
 		ss.yScale = yScale;
 		ss.yIndex = yIndex;
+		ss.scale = scale;
 		ss.isYscaled = isYscaled;
 		ss.sumVals = sumVals;
 		return ss;
@@ -1028,6 +1138,7 @@ public class ChartView extends View {
 		data = ss.data;
 		yScale = ss.yScale;
 		yIndex = ss.yIndex;
+		scale = ss.scale;
 		isYscaled = ss.isYscaled;
 		sumVals = ss.sumVals;
 
@@ -1038,6 +1149,7 @@ public class ChartView extends View {
 				linePaints[i] = createLinePaint(data.getColorsInts()[i], data.getType(i) == ChartData.TYPE_BAR);
 			}
 			chartArray = new float[data.getLength() * 4];
+			chartArray2 = new float[data.getLength() * 4];
 		}
 //		selectionDrawer.setSelectionX(-1);
 		selectionDrawer.hidePanel();
@@ -1076,6 +1188,7 @@ public class ChartView extends View {
 			yScale = floats[11];
 			gridCount = in.readInt();
 			yIndex = in.readInt();
+			scale = in.readInt();
 			in.readIntArray(maxValuesLine);
 			in.readFloatArray(sumVals);
 			dateRange = in.readString();
@@ -1093,6 +1206,7 @@ public class ChartView extends View {
 					dateRangeHeight, gridScale, gridStep, yScale});
 			out.writeInt(gridCount);
 			out.writeInt(yIndex);
+			out.writeInt(scale);
 			out.writeIntArray(maxValuesLine);
 			out.writeFloatArray(sumVals);
 			out.writeString(dateRange);
@@ -1120,6 +1234,7 @@ public class ChartView extends View {
 		float yScale;
 		int yIndex;
 		boolean isYscaled;
+		int scale = 1;
 
 		public static final Parcelable.Creator<SavedState> CREATOR =
 				new Parcelable.Creator<SavedState>() {
