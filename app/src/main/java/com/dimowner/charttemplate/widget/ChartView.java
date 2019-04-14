@@ -149,6 +149,8 @@ public class ChartView extends View {
 	private OnMoveEventsListener onMoveEventsListener;
 	private GestureDetector gestureDetector;
 
+	public OnDetailsListener onDetailsListener;
+
 	ValueAnimator.AnimatorUpdateListener heightValueAnimator = new ValueAnimator.AnimatorUpdateListener() {
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation) {
@@ -227,6 +229,7 @@ public class ChartView extends View {
 		int shadowColor;
 		int tittleColor;
 		int viewBackground;
+		int arrowColor;
 
 		Resources res = context.getResources();
 		TypedValue typedValue = new TypedValue();
@@ -281,9 +284,21 @@ public class ChartView extends View {
 		} else {
 			barOverlayColor = res.getColor(R.color.bar_overlay_color);
 		}
-		selectionDrawer = new ChartSelectionDrawer(getContext(), panelTextColor,
+		if (theme.resolveAttribute(R.attr.arrowColor, typedValue, true)) {
+			arrowColor = typedValue.data;
+		} else {
+			arrowColor = res.getColor(R.color.arrow_color);
+		}
+		selectionDrawer = new ChartSelectionDrawer(getContext(), panelTextColor, arrowColor,
 					panelColor, gridColor, shadowColor, viewBackground, barOverlayColor);
-		selectionDrawer.setView(this);
+		selectionDrawer.setInvalidateIlstener(new ChartSelectionDrawer.InvalidateIlstener() {
+			@Override
+			public void onInvalidate() {
+//				Timber.v("onInvalidate");
+				invalidate();
+			}
+		});
+//		selectionDrawer.setView(this);
 
 		gridPaint = new Paint();
 		gridPaint.setAntiAlias(false);
@@ -330,21 +345,25 @@ public class ChartView extends View {
 				if (!selectionDrawer.checkCoordinateInPanel(e.getX(), e.getY())) {
 					selectionDrawer.hidePanel();
 				} else {
-					try {
-						//TODO: open details;
-						TimeUtils.getMonthYear(data.getTime()[0]);
-//						String json1 = AndroidUtils.readAsset(getContext(), "contest/1/2018-04/07.json");
-						String json1 = AndroidUtils.readAsset(getContext(),
-								"contest/"+data.getChartNum()
-								+"/"+ TimeUtils.getMonthYear(data.getTime()[0])
-								+ "/" + TimeUtils.getDayOfMonth(data.getTime()[0]) + ".json");
-						Gson gson = new Gson();
-						Data data1 = gson.fromJson(json1, Data.class);
-						setData(toChartData(data1));
-						invalidate();
-					} catch (IOException | ClassCastException ex) {
-						Timber.e(ex);
+					//TODO: open details;
+					if (onDetailsListener != null) {
+						onDetailsListener.showDetails(data.getChartNum(), data.getTime()[selectionDrawer.getSelectionIndex()]);
 					}
+//					try {
+//
+//						TimeUtils.getMonthYear(data.getTime()[0]);
+////						String json1 = AndroidUtils.readAsset(getContext(), "contest/1/2018-04/07.json");
+//						String json1 = AndroidUtils.readAsset(getContext(),
+//								"contest/"+data.getChartNum()
+//								+"/"+ TimeUtils.getMonthYear(data.getTime()[0])
+//								+ "/" + TimeUtils.getDayOfMonth(data.getTime()[0]) + ".json");
+//						Gson gson = new Gson();
+//						Data data1 = gson.fromJson(json1, Data.class);
+//						setData(toChartData(data1));
+//						invalidate();
+//					} catch (IOException | ClassCastException ex) {
+//						Timber.e(ex);
+//					}
 				}
 				return super.onSingleTapUp(e);
 			}
@@ -510,11 +529,19 @@ public class ChartView extends View {
 			scrollStartIndex = x;
 //			scale = (int)Math.ceil(size/50);
 //			Timber.v("x = " + x + " size = " + size + " STEP = " + STEP);
-			if (size > data.getLength()/2) {
+			if (size > 250) {
+				scale = 3;
+			} else if (size > 120) {
 				scale = 2;
 			} else {
 				scale = 1;
 			}
+			Timber.v("scale = " + scale);
+//			if (size > data.getLength()/3) {
+//				scale = 2;
+//			} else {
+//				scale = 1;
+//			}
 //			selectionDrawer.setScrollPos(scrollPos);
 			selectionDrawer.setScrollPos(scrollStartIndex, STEP);
 			int idx = (int) Math.ceil(x + size) - 1;
@@ -524,6 +551,9 @@ public class ChartView extends View {
 			}
 			if (dateRangeHeight < rect.height()) {
 				dateRangeHeight = rect.height();
+			}
+			if (dateRange == null) {
+				dateRange = "Unknown";
 			}
 			if (!data.isPercentage()) {
 				calculateMaxValue2(true, !isFirst);
@@ -614,7 +644,7 @@ public class ChartView extends View {
 	@Override
 	protected void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
-		selectionDrawer.setView(null);
+//		selectionDrawer.setView(null);
 	}
 
 	private void drawPercentageGrid(Canvas canvas) {
@@ -1121,24 +1151,28 @@ public class ChartView extends View {
 		}
 	}
 
-	//TODO: remove this method from this class.
-	private ChartData toChartData(Data d) {
-		if (d != null) {
-			String[] keys = d.getColumnsKeys();
-			int[][] vals = new int[keys.length][d.getDataLength()];
-			String[] names = new String[keys.length];
-			String[] types = new String[keys.length];
-			String[] colors = new String[keys.length];
-			for (int i = 0; i < keys.length; i++) {
-				vals[i] = d.getValues(keys[i]);
-				names[i] = d.getName(keys[i]);
-				types[i] = d.getType(keys[i]);
-				colors[i] = d.getColor(keys[i]);
-			}
-			return new ChartData(1, d.getTimeArray(), vals, names, types, colors,
-					d.isYscaled(), d.isPercentage(), d.isStacked());
-		}
-		return null;
+//	//TODO: remove this method from this class.
+//	private ChartData toChartData(Data d) {
+//		if (d != null) {
+//			String[] keys = d.getColumnsKeys();
+//			int[][] vals = new int[keys.length][d.getDataLength()];
+//			String[] names = new String[keys.length];
+//			String[] types = new String[keys.length];
+//			String[] colors = new String[keys.length];
+//			for (int i = 0; i < keys.length; i++) {
+//				vals[i] = d.getValues(keys[i]);
+//				names[i] = d.getName(keys[i]);
+//				types[i] = d.getType(keys[i]);
+//				colors[i] = d.getColor(keys[i]);
+//			}
+//			return new ChartData(1, d.getTimeArray(), vals, names, types, colors,
+//					d.isYscaled(), d.isPercentage(), d.isStacked());
+//		}
+//		return null;
+//	}
+
+	public void setOnDetailsListener(OnDetailsListener onDetailsListener) {
+		this.onDetailsListener = onDetailsListener;
 	}
 
 	@Override
@@ -1305,5 +1339,10 @@ public class ChartView extends View {
 						return new SavedState[size];
 					}
 				};
+	}
+
+	public interface OnDetailsListener {
+		void showDetails(int num, long time);
+		void hideDetails(int num);
 	}
 }

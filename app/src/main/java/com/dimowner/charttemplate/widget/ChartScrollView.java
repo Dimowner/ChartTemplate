@@ -378,8 +378,8 @@ public class ChartScrollView extends View {
 			linePaints[index].setStrokeWidth(STEP*scale);
 			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
 			canvas.drawLines(chartArray2, 0, k, linePaints[index]);
-//			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
-//			canvas.drawPoints(chartArray2, skip, k - skip-1, linePaints[index]);
+			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
+			canvas.drawPoints(chartArray2, 0, k-1, linePaints[index]);
 		}
 	}
 

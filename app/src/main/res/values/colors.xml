@@ -29,6 +29,10 @@
 
 	<color name="text_blue">#3896d4</color>
 	<color name="grey">#e6ecf0</color>
+
+	<color name="arrow_color">#d2d5d7</color>
+	<color name="arrow_color_night">#767c85</color>
+
 	<color name="grey_night">#273442</color>
 	<color name="highlight_light">#33ffffff</color> <!-- 20% white -->
 	<color name="transparent">#00000000</color>

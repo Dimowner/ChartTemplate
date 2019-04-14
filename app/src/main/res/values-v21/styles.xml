@@ -42,6 +42,7 @@
 		<item name="shadowColor">@color/shadow_color</item>
 		<item name="tittleColor">@color/black</item>
 		<item name="barOverlayColor">@color/bar_overlay_color</item>
+		<item name="arrowColor">@color/arrow_color</item>
 
 	</style>
 
@@ -71,6 +72,7 @@
 		<item name="shadowColor">@color/shadow_color_night</item>
 		<item name="tittleColor">@color/white</item>
 		<item name="barOverlayColor">@color/bar_overlay_color_night</item>
+		<item name="arrowColor">@color/arrow_color_night</item>
 
 	</style>
 

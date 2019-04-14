@@ -8,7 +8,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.text.TextPaint;
-import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
@@ -28,7 +27,9 @@ public class ChartSelectionDrawer {
 	private final int PADD_XNORMAL;
 	private final int PADD_NORMAL;
 	private final int PADD_SMALL;
+	private final int PADD_XSMALL;
 	private final int PADD_TINY;
+	private final int ARROW_LENGTH;
 	private final int BASE_LINE_Y;
 	private final int CIRCLE_SIZE;
 	private final int RADIUS;
@@ -38,9 +39,11 @@ public class ChartSelectionDrawer {
 		PADD_NORMAL = (int) (16*DENSITY);
 		PADD_XNORMAL = (int) (12*DENSITY);
 		PADD_SMALL = (int) (8*DENSITY);
+		PADD_XSMALL = (int) (10*DENSITY);
 		PADD_TINY = (int) (4*DENSITY);
+		ARROW_LENGTH = (int) (4.5*DENSITY);
 		BASE_LINE_Y = (int) (32*DENSITY);
-		CIRCLE_SIZE = (int) (5*DENSITY);
+		CIRCLE_SIZE = (int) (4.5f*DENSITY);
 		RADIUS = (int) (6*DENSITY);
 	}
 
@@ -54,6 +57,7 @@ public class ChartSelectionDrawer {
 	private Paint scrubblerPaint;
 	private Paint circlePaint;
 	private Paint shadowPaint;
+	private Paint arrowPaint;
 
 	private int overlayColor;
 	private int panelColor;
@@ -79,7 +83,7 @@ public class ChartSelectionDrawer {
 	private float STEP = 10;
 	private boolean show = false;
 
-	private View view;
+//	private View view;
 
 	private ValueAnimator alphaAnimator;
 	private DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
@@ -87,6 +91,16 @@ public class ChartSelectionDrawer {
 
 	private boolean showAnimation = false;
 	private int alpha = 255;
+
+	private InvalidateIlstener invalidateIlstener;
+
+	public void setInvalidateIlstener(InvalidateIlstener invalidateIlstener) {
+		this.invalidateIlstener = invalidateIlstener;
+	}
+
+	public interface InvalidateIlstener {
+		void onInvalidate();
+	}
 
 //	private Typeface boldTypeface;
 //	private Typeface normalTypeface;
@@ -110,15 +124,18 @@ public class ChartSelectionDrawer {
 				selectionX = -1;
 			}
 //			TODO:  fix this NULL
-			if (view != null) {
-				view.invalidate();
+//			if (view != null) {
+//				view.invalidate();
+//			}
+			if (invalidateIlstener != null) {
+				invalidateIlstener.onInvalidate();
 			}
 		}
 	};
 
-	public void setView(View view) {
-		this.view = view;
-	}
+//	public void setView(View view) {
+//		this.view = view;
+//	}
 
 	public void setLinesCount(int count) {
 		selectedValues = new float[count];
@@ -131,7 +148,7 @@ public class ChartSelectionDrawer {
 		}
 	}
 
-	public ChartSelectionDrawer(Context context, int panelTextColor, int panelColor,
+	public ChartSelectionDrawer(Context context, int panelTextColor, int arrowColor, int panelColor,
 										 int scrubblerColor, int shadowColor, int windowBgColor, int overlayColor) {
 
 		this.panelColor = panelColor;
@@ -182,17 +199,22 @@ public class ChartSelectionDrawer {
 
 		scrubblerPaint = new Paint();
 		scrubblerPaint.setAntiAlias(false);
-		scrubblerPaint.setDither(false);
 		scrubblerPaint.setStyle(Paint.Style.STROKE);
 		scrubblerPaint.setColor(scrubblerColor);
 		scrubblerPaint.setStrokeWidth(1.2f*DENSITY);
 
 		shadowPaint = new Paint();
 		shadowPaint.setAntiAlias(true);
-		shadowPaint.setDither(false);
 		shadowPaint.setStyle(Paint.Style.STROKE);
 		shadowPaint.setColor(shadowColor);
 		shadowPaint.setStrokeWidth(DENSITY);
+
+		arrowPaint = new Paint();
+		arrowPaint.setAntiAlias(true);
+		arrowPaint.setStyle(Paint.Style.STROKE);
+		arrowPaint.setColor(arrowColor);
+		arrowPaint.setStrokeWidth(1.6f*DENSITY);
+		arrowPaint.setStrokeCap(Paint.Cap.ROUND);
 
 		DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols(Locale.getDefault());
       formatSymbols.setDecimalSeparator('.');
@@ -236,6 +258,15 @@ public class ChartSelectionDrawer {
 			//Draw selection panel
 			canvas.drawRoundRect(sizeRect, RADIUS, RADIUS, panelPaint);
 			canvas.drawRoundRect(sizeRect, RADIUS, RADIUS, shadowPaint);
+
+			//Draw arrow icon.
+			canvas.drawLine(sizeRect.right - PADD_XNORMAL, sizeRect.top + selectedDateHeight/2+ PADD_XNORMAL,
+					sizeRect.right - PADD_XNORMAL-ARROW_LENGTH, sizeRect.top + selectedDateHeight/2 + PADD_XNORMAL-ARROW_LENGTH,
+					arrowPaint);
+			canvas.drawLine(sizeRect.right - PADD_XNORMAL, sizeRect.top + selectedDateHeight/2+ PADD_XNORMAL,
+					sizeRect.right - PADD_XNORMAL-ARROW_LENGTH, sizeRect.top + selectedDateHeight/2+ARROW_LENGTH + PADD_XNORMAL,
+					arrowPaint);
+
 			//Draw date on panel
 			canvas.drawText(selectionDate, sizeRect.left+ PADD_XNORMAL,
 					sizeRect.top+selectedDateHeight+ PADD_XNORMAL, selectedDatePaint);
@@ -247,11 +278,11 @@ public class ChartSelectionDrawer {
 						//Draw percents
 						canvas.drawText(formattedPrecents[i],
 								sizeRect.left + PADD_XNORMAL,
-								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, percentsPaint);
+								sizeRect.top + selectedDateHeight + PADD_XSMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, percentsPaint);
 						//Draw names
 						canvas.drawText(data.getNames()[i],
 								sizeRect.left + PADD_XNORMAL + percentWidth + PADD_SMALL,
-								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
+								sizeRect.top + selectedDateHeight + PADD_XSMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
 					} else {
 						//Draw names
 						canvas.drawText(data.getNames()[i],
@@ -311,7 +342,7 @@ public class ChartSelectionDrawer {
 				//Name height and width
 				selectedNamePaint.getTextBounds(data.getNames()[i], 0, data.getNames()[i].length(), tempRect);
 				tempWidth = tempRect.width();
-				if (selectedNameHeight < tempRect.height()+PADD_SMALL) selectedNameHeight = tempRect.height()+PADD_SMALL;
+				if (selectedNameHeight < tempRect.height()+PADD_XSMALL) selectedNameHeight = tempRect.height()+PADD_XSMALL;
 
 //				val = String.valueOf((data.getValues(i)[selectionIndex]));
 				if (data.isPercentage()) {
@@ -347,7 +378,7 @@ public class ChartSelectionDrawer {
 			selectedDateWidth = tempRect.width();
 		}
 
-		float width = 2*PADD_XNORMAL + selectedDateWidth + 24*DENSITY;
+		float width = 2*PADD_XNORMAL + selectedDateWidth + 30*DENSITY; //30dp is space for arrow icon
 		if (width < maxRowWidth+4* PADD_XNORMAL) {
 			width = maxRowWidth+4* PADD_XNORMAL;
 		}
@@ -389,6 +420,10 @@ public class ChartSelectionDrawer {
 
 	public float getSelectionX() {
 		return selectionX;
+	}
+
+	public int getSelectionIndex() {
+		return selectionIndex;
 	}
 
 	public void setScrollPos(float index, float ST) {

@@ -87,7 +87,7 @@ public class ItemView extends LinearLayout implements
 		//CharView
 		chartView = new ChartView(context);
 		LinearLayout.LayoutParams chartLp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(400*DENSITY));
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(390*DENSITY));
 //		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chartView.setLayoutParams(chartLp);
 
@@ -99,14 +99,14 @@ public class ItemView extends LinearLayout implements
 		//CharScrollView
 		chartScrollView = new ChartScrollView(context);
 		FrameLayout.LayoutParams scrollLp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(45*DENSITY));
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(47*DENSITY));
 		scrollLp.setMargins(0, PADD_TINY, 0, 0);
 		scrollLp.gravity = Gravity.CENTER;
 		chartScrollView.setLayoutParams(scrollLp);
 
 		chartScrollOverlayView = new ChartScrollOverlayView(context);
 		FrameLayout.LayoutParams scrollOverlayLp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT, (int)(45*DENSITY));
+				ViewGroup.LayoutParams.MATCH_PARENT, (int)(47*DENSITY));
 		scrollOverlayLp.setMargins(0, PADD_TINY, 0, 0);
 		scrollOverlayLp.gravity = Gravity.CENTER;
 		chartScrollOverlayView.setLayoutParams(scrollOverlayLp);
@@ -156,6 +156,10 @@ public class ItemView extends LinearLayout implements
 				chipsView.setData(d.getNames(), d.getColorsInts());
 			}
 		}
+	}
+
+	public void setOnDetailsListener(ChartView.OnDetailsListener listener) {
+		chartView.setOnDetailsListener(listener);
 	}
 
 	public void setOnMoveEventsListener(ChartView.OnMoveEventsListener listener) {

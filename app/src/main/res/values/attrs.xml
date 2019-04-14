@@ -15,5 +15,6 @@
 	<attr name="shadowColor" format="color" />
 	<attr name="tittleColor" format="color" />
 	<attr name="barOverlayColor" format="color" />
+	<attr name="arrowColor" format="color" />
 
 </resources>

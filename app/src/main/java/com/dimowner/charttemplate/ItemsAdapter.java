@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.dimowner.charttemplate.model.ChartData;
+import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.ItemView;
 
 import java.util.LinkedList;
@@ -43,6 +44,8 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 	private Bundle viewsState;
 
 	private ItemClickListener itemClickListener;
+
+	private ChartView.OnDetailsListener onDetailsListener;
 
 	public ItemsAdapter() {
 		data = new ChartData[0];
@@ -61,9 +64,18 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 	public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int p) {
 		final ItemViewHolder holder = (ItemViewHolder) viewHolder;
 		holder.itemView.setData(data[p]);
+		holder.itemView.setOnDetailsListener(onDetailsListener);
 		holder.txtTitle.setText("Chart " + data[p].getChartNum());
+		holder.txtTitle.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (onDetailsListener != null) {
+					onDetailsListener.hideDetails(data[p].getChartNum());
+				}
+			}
+		});
 		if (viewsState.containsKey(holder.getKey())) {
-			Timber.v("onBindViewHolder restore key = "+holder.getKey());
+//			Timber.v("onBindViewHolder restore key = "+holder.getKey());
 			holder.restoreState(viewsState.getParcelable(holder.getKey()));
 		}
 	}
@@ -72,16 +84,17 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 	public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
 		super.onViewAttachedToWindow(holder);
 		holders.add((ItemViewHolder) holder);
-		Timber.v("onViewAttachedToWindow size = " + holders.size());
+//		Timber.v("onViewAttachedToWindow size = " + holders.size());
 	}
 
 	@Override
 	public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
 		super.onViewDetachedFromWindow(holder);
 		ItemViewHolder h = (ItemViewHolder) holder;
+		h.itemView.setOnDetailsListener(null);
 		holders.remove(h);
-		Timber.v("onViewDetachedFromWindow size = " + holders.size());
-		Timber.v("onViewDetachedFromWindow saveState key = " + h.getKey());
+//		Timber.v("onViewDetachedFromWindow size = " + holders.size());
+//		Timber.v("onViewDetachedFromWindow saveState key = " + h.getKey());
 		if (viewsState.containsKey(h.getKey())) {
 			viewsState.remove(h.getKey());
 		}
@@ -93,14 +106,32 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		return data.length;
 	}
 
-	public void setData(ChartData[] data) {
-		this.data = data;
+	public void setData(ChartData[] d) {
+		this.data = new ChartData[d.length];
+		for (int i = 0; i < d.length; i++) {
+			data[i] = d[i];
+		}
 		notifyDataSetChanged();
 		holders.clear();
 	}
 
+	public void setItem(int pos, ChartData item) {
+		if (pos < data.length) {
+			data[pos] = item;
+			notifyItemChanged(pos);
+			String key = "Chart " + item.getChartNum();
+			if (viewsState.containsKey(key)) {
+				viewsState.remove(key);
+			}
+		}
+	}
+
 	public void setItemClickListener(ItemClickListener itemClickListener) {
 		this.itemClickListener = itemClickListener;
+	}
+
+	public void setOnDetailsListener(ChartView.OnDetailsListener onDetailsListener) {
+		this.onDetailsListener = onDetailsListener;
 	}
 
 	public interface ItemClickListener{
@@ -114,13 +145,13 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 			}
 			viewsState.putParcelable(holders.get(i).getKey(), holders.get(i).saveState());
 		}
-		Timber.v("onSaveState size = " + holders.size());
-		Timber.v("ADAPTER onSaveState bundle size = " + viewsState.size());
+//		Timber.v("onSaveState size = " + holders.size());
+//		Timber.v("ADAPTER onSaveState bundle size = " + viewsState.size());
 		return viewsState;
 	}
 
 	public void onRestoreState(Bundle state) {
-		Timber.v("onRestoreState bundlee size = " + state.size() );
+//		Timber.v("onRestoreState bundlee size = " + state.size() );
 		viewsState = state;
 	}
 

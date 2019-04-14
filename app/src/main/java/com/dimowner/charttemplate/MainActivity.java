@@ -24,13 +24,13 @@ import android.os.Parcelable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.util.AndroidUtils;
+import com.dimowner.charttemplate.util.TimeUtils;
 import com.dimowner.charttemplate.widget.ChartScrollOverlayView;
 import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.ItemView;
@@ -73,6 +73,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //	private ImageButton btnNightMode;
 //	private TextView txtTitle;
 //	private FrameLayout toolbar;
+
+	private Gson gson = new Gson();
 
 	private RecyclerView recyclerView;
 	private LinearLayoutManager layoutManager;
@@ -139,6 +141,27 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		recyclerView.setLayoutManager(layoutManager);
 		adapter = new ItemsAdapter();
 		recyclerView.setAdapter(adapter);
+		adapter.setOnDetailsListener(new ChartView.OnDetailsListener() {
+			@Override
+			public void showDetails(final int num, long time) {
+//				Timber.v("showDetails num = " + num + " time = " + time);
+				loadChartAsync(num, time, new OnLoadCharListener() {
+					@Override
+					public void onLoadChart(ChartData chart) {
+						if (chart != null) {
+//							Timber.v("onLoadChart chart = " + chart.getChartNum());
+							adapter.setItem(num-1, chart);
+						}
+					}
+				});
+			}
+
+			@Override
+			public void hideDetails(int num) {
+//				Timber.v("hideDetails num = " + num);
+				adapter.setItem(num-1, CTApplication.getChartData()[num-1]);
+			}
+		});
 
 		if (savedInstanceState == null || CTApplication.getChartData() == null) {
 			Thread thread = new Thread(new Runnable() {
@@ -346,6 +369,46 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		}
 	}
 
+	/**
+	 * Load chart data
+	 * if time <= 0 load overview chart with selected num
+	 */
+	public ChartData loadChart(int num, long time) {
+		try {
+			String location;
+			if (time > 0) {
+				location = "contest/" + num + "/" + TimeUtils.getMonthYear(time) + "/"
+						+ TimeUtils.getDayOfMonth(time) + ".json";
+			} else {
+				location = "contest/" + num + "/overview.json";
+			}
+
+			String json1 = AndroidUtils.readAsset(getApplicationContext(), location);
+			return toChartData(num, gson.fromJson(json1, Data.class));
+		} catch (IOException | ClassCastException ex) {
+			Timber.e(ex);
+		}
+		return null;
+	}
+
+	public void loadChartAsync(final int num, final long time, final OnLoadCharListener listener) {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				final ChartData data = loadChart(num, time);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (listener != null) {
+							listener.onLoadChart(data);
+						}
+					}
+				});
+			}
+		});
+		thread.start();
+	}
+
 	public ChartData readDemoData(int pos) {
 		try {
 //			String DATA_ARRAY = "dataArray";
@@ -494,4 +557,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //			chartScrollView.hideLine(name);
 //		}
 //	}
+
+	public interface OnLoadCharListener {
+		void onLoadChart(ChartData chart);
+	}
 }
