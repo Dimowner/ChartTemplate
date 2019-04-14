@@ -14,6 +14,7 @@ public class ChartData implements Parcelable {
 	public static final int TYPE_BAR = 2;
 	public static final int TYPE_AREA = 3;
 
+	private boolean detailsMode;
 	private int chartNum;
 	private long[] time;
 	private String[] times;
@@ -29,8 +30,9 @@ public class ChartData implements Parcelable {
 	private boolean percentage;
 	private boolean stacked;
 
-	public ChartData(int chartNum, long[] time, int[][] columns, String[] names, String[] types, String[] colors,
+	public ChartData(boolean detailsMode, int chartNum, long[] time, int[][] columns, String[] names, String[] types, String[] colors,
 						  boolean yScaled, boolean percentage, boolean stacked) {
+		this.detailsMode = detailsMode;
 		this.chartNum = chartNum;
 		this.time = time;
 		this.columns = columns;
@@ -47,7 +49,11 @@ public class ChartData implements Parcelable {
 		Date date = new Date();
 		for (int i = 0; i < time.length; i++) {
 			date.setTime(time[i]);
-			times[i] = TimeUtils.formatDateWeek(date);
+			if (detailsMode) {
+				times[i] = TimeUtils.formatTime(date);
+			} else {
+				times[i] = TimeUtils.formatDateWeek(date);
+			}
 			timesShort[i] = TimeUtils.formatDate(date);
 			timesLong[i] = TimeUtils.formatDateLong(date);
 		}
@@ -200,6 +206,10 @@ public class ChartData implements Parcelable {
 
 	public int getChartNum() {
 		return chartNum;
+	}
+
+	public boolean isDetailsMode() {
+		return detailsMode;
 	}
 
 	public void setData(int val, int lineIndex, int valIndex) {

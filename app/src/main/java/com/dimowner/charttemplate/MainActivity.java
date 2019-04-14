@@ -373,18 +373,22 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	 * Load chart data
 	 * if time <= 0 load overview chart with selected num
 	 */
-	public ChartData loadChart(int num, long time) {
+	public ChartData loadChart(int chartNum, long time) {
 		try {
+			boolean detailsMode;
 			String location;
 			if (time > 0) {
-				location = "contest/" + num + "/" + TimeUtils.getMonthYear(time) + "/"
+				location = "contest/" + chartNum + "/" + TimeUtils.getMonthYear(time) + "/"
 						+ TimeUtils.getDayOfMonth(time) + ".json";
+//				Timber.v("loadChart: " + location);
+				detailsMode = true;
 			} else {
-				location = "contest/" + num + "/overview.json";
+				location = "contest/" + chartNum + "/overview.json";
+				detailsMode = false;
 			}
 
 			String json1 = AndroidUtils.readAsset(getApplicationContext(), location);
-			return toChartData(num, gson.fromJson(json1, Data.class));
+			return toChartData(detailsMode, chartNum, gson.fromJson(json1, Data.class));
 		} catch (IOException | ClassCastException ex) {
 			Timber.e(ex);
 		}
@@ -460,8 +464,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
 			Data data4 = gson.fromJson(json4, Data.class);
 			Data data5 = gson.fromJson(json5, Data.class);
 //			dataArray = array.getDataArray();
-			ChartData[] chartData = new ChartData[] {toChartData(1, data1), toChartData(2, data2), toChartData(3, data3),
-				toChartData(4, data4), toChartData(5, data5)};
+			ChartData[] chartData = new ChartData[] {toChartData(false, 1, data1), toChartData(false, 2, data2),
+					toChartData(false, 3, data3), toChartData(false, 4, data4), toChartData(false, 5, data5)};
 			CTApplication.setChartData(chartData);
 //			CTApplication.setData(new Data[]{data1, data2, data3, data4, data5});
 //			CTApplication.setData(dataValues);
@@ -475,7 +479,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		return CTApplication.getChartData()[pos];
 	}
 
-	private ChartData toChartData(int num, Data d) {
+	private ChartData toChartData(boolean detailsMode, int chartNum, Data d) {
 		if (d != null) {
 			String[] keys = d.getColumnsKeys();
 			int[][] vals = new int[keys.length][d.getDataLength()];
@@ -488,7 +492,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 				types[i] = d.getType(keys[i]);
 				colors[i] = d.getColor(keys[i]);
 			}
-			return new ChartData(num, d.getTimeArray(), vals, names, types, colors,
+			return new ChartData(detailsMode, chartNum, d.getTimeArray(), vals, names, types, colors,
 					d.isYscaled(), d.isPercentage(), d.isStacked());
 		}
 		return null;

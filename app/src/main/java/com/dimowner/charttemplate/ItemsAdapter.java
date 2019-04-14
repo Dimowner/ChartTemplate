@@ -16,6 +16,7 @@
 
 package com.dimowner.charttemplate;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -27,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.dimowner.charttemplate.model.ChartData;
+import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.ItemView;
 
@@ -47,6 +49,11 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
 	private ChartView.OnDetailsListener onDetailsListener;
 
+	private int zoomOutColor;
+	private int zoomOutColorNight;
+	private int titleColor;
+	private int titleColorNight;
+
 	public ItemsAdapter() {
 		data = new ChartData[0];
 		holders = new LinkedList<>();
@@ -56,6 +63,11 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int type) {
+		Resources res = viewGroup.getContext().getResources();
+		zoomOutColor = res.getColor(R.color.zoom_out_color);
+		zoomOutColorNight = res.getColor(R.color.zoom_out_color_night);
+		titleColor = res.getColor(R.color.black);
+		titleColorNight = res.getColor(R.color.white);
 		View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item, viewGroup, false);
 		return new ItemViewHolder(v);
 	}
@@ -64,12 +76,31 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 	public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int p) {
 		final ItemViewHolder holder = (ItemViewHolder) viewHolder;
 		holder.itemView.setData(data[p]);
-		holder.itemView.setOnDetailsListener(onDetailsListener);
-		holder.txtTitle.setText("Chart " + data[p].getChartNum());
+//		Timber.v("onBindViewHolder pos = " + p);
+//		holder.itemView.setOnDetailsListener(onDetailsListener);
+		if (data[p].isDetailsMode()) {
+			holder.txtTitle.setText("Zoom Out");
+			if (CTApplication.isNightMode()) {
+				holder.txtTitle.setTextColor(zoomOutColorNight);
+				holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_zoom_out_night, 0, 0, 0);
+			} else {
+				holder.txtTitle.setTextColor(zoomOutColor);
+				holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_zoom_out, 0, 0, 0);
+			}
+			holder.txtTitle.setCompoundDrawablePadding((int)AndroidUtils.dpToPx(6));
+		} else {
+			holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+			holder.txtTitle.setText("Chart " + data[p].getChartNum());
+			if (CTApplication.isNightMode()) {
+				holder.txtTitle.setTextColor(titleColorNight);
+			} else {
+				holder.txtTitle.setTextColor(titleColor);
+			}
+		}
 		holder.txtTitle.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (onDetailsListener != null) {
+				if (onDetailsListener != null && data[p].isDetailsMode()) {
 					onDetailsListener.hideDetails(data[p].getChartNum());
 				}
 			}
@@ -84,12 +115,15 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 	public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
 		super.onViewAttachedToWindow(holder);
 		holders.add((ItemViewHolder) holder);
+//		Timber.v("onViewAttachedToWindow");
+		((ItemViewHolder)holder).itemView.setOnDetailsListener(onDetailsListener);
 //		Timber.v("onViewAttachedToWindow size = " + holders.size());
 	}
 
 	@Override
 	public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
 		super.onViewDetachedFromWindow(holder);
+//		Timber.v("onViewDetachedFromWindow");
 		ItemViewHolder h = (ItemViewHolder) holder;
 		h.itemView.setOnDetailsListener(null);
 		holders.remove(h);
@@ -98,7 +132,10 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		if (viewsState.containsKey(h.getKey())) {
 			viewsState.remove(h.getKey());
 		}
-		viewsState.putParcelable(h.getKey(), h.saveState());
+		if (!h.getKey().contains("Zoom Out")) {
+//			Timber.v("putparcelable key = " + h.getKey());
+			viewsState.putParcelable(h.getKey(), h.saveState());
+		}
 	}
 
 	@Override
@@ -117,6 +154,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
 	public void setItem(int pos, ChartData item) {
 		if (pos < data.length) {
+//			Timber.v("setItem num = " + item.getChartNum());
 			data[pos] = item;
 			notifyItemChanged(pos);
 			String key = "Chart " + item.getChartNum();
@@ -143,7 +181,10 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 			if (viewsState.containsKey(holders.get(i).getKey())) {
 				viewsState.remove(holders.get(i).getKey());
 			}
-			viewsState.putParcelable(holders.get(i).getKey(), holders.get(i).saveState());
+			if (!holders.get(i).getKey().contains("Zoom Out")) {
+//				Timber.v("putparcelable key = " + holders.get(i).getKey());
+				viewsState.putParcelable(holders.get(i).getKey(), holders.get(i).saveState());
+			}
 		}
 //		Timber.v("onSaveState size = " + holders.size());
 //		Timber.v("ADAPTER onSaveState bundle size = " + viewsState.size());

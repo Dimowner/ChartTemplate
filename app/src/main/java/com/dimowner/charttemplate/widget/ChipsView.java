@@ -209,7 +209,7 @@ public class ChipsView extends LinearLayout {
 	public void setData(String[] names, int[] colors) {
 		if (names != null && colors != null) {
 			if (WIDTH <= 1) {
-				WIDTH = AndroidUtils.getScreenWidth(getContext());
+				WIDTH = AndroidUtils.getScreenWidth(getContext())-2*PADD_NORMAL;
 			}
 			this.names = names;
 			this.colors = colors;

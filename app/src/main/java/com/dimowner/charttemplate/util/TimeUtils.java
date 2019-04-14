@@ -32,6 +32,9 @@ public class TimeUtils {
 	/** Date format: 10 April 2019 */
 	private static SimpleDateFormat dateFormatLong = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
 
+	/** Time format: 15:30 */
+	private static SimpleDateFormat timeFormat24H = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
 	private TimeUtils() {
 	}
 
@@ -56,6 +59,13 @@ public class TimeUtils {
 		return dateFormatLong.format(date);
 	}
 
+	public static String formatTime(Date date) {
+		if (date == null) {
+			return "Wrong date!";
+		}
+		return timeFormat24H.format(date);
+	}
+
 	public static String getMonthYear(long time) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTimeInMillis(time);
@@ -75,5 +85,9 @@ public class TimeUtils {
 			return "0"+day;
 		}
 		return String.valueOf(day);
+	}
+
+	public static boolean isDiffSorterThan2Days(long start, long end) {
+		return  (float) (end - start)/ (24 * 60 * 60 * 1000*2) < 1; //2 days period mills
 	}
 }
