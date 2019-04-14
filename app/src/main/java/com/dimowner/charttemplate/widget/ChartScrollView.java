@@ -20,7 +20,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-//import android.graphics.Path;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -54,7 +53,6 @@ public class ChartScrollView extends View {
 	private ChartData data;
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
-//	private Path path;
 	private float chartArray[];
 	private float chartArray2[];
 	private float STEP = 10;
@@ -67,9 +65,6 @@ public class ChartScrollView extends View {
 	private float H1 = 1;
 	private int maxValueY = 0;
 	private float valueScaleY = 0;
-
-//	private float maxValueVisible = 0;
-//	private float maxValueCalculated = 0;
 
 	private boolean isAnimating = false;
 	private float scaleKoef = 1;
@@ -136,7 +131,6 @@ public class ChartScrollView extends View {
 
 	private void init(Context context) {
 		setFocusable(false);
-//		path = new Path();
 
 		int viewBackground;
 		TypedValue typedValue = new TypedValue();
@@ -202,7 +196,8 @@ public class ChartScrollView extends View {
 				}
 			}
 			//Draw round borders.
-			canvas.drawRoundRect(-1.5f*DENSITY, 0, WIDTH+1.5f*DENSITY, HEIGHT, SELECTION_HALF, SELECTION_HALF, borderPaint);
+			canvas.drawRoundRect(-1.5f*DENSITY, 0, WIDTH, HEIGHT, SELECTION_HALF, SELECTION_HALF, borderPaint);
+//			canvas.drawRoundRect(rectF, SELECTION_HALF, SELECTION_HALF, borderPaint);
 		}
 	}
 
@@ -405,7 +400,7 @@ public class ChartScrollView extends View {
 			linesCalculated[pos] = false;
 			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
 		}
-		calculateMaxValue(false);
+		calculateMaxValue(false, true);
 		invalidate();
 	}
 
@@ -418,7 +413,7 @@ public class ChartScrollView extends View {
 			linesCalculated[pos] = true;
 			alphaAnimator(linePaints[pos].getAlpha(), 255f, pos, true);
 		}
-		calculateMaxValue(false);
+		calculateMaxValue(false, true);
 		invalidate();
 	}
 
@@ -435,7 +430,7 @@ public class ChartScrollView extends View {
 				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 			}
 			calculateSumsLine();
-			calculateMaxValue(true);
+			calculateMaxValue(true, false);
 			if (WIDTH > 1 && data.getLength() > 0) {
 				STEP = (WIDTH / data.getLength());
 			}
@@ -467,7 +462,7 @@ public class ChartScrollView extends View {
 		}
 	}
 
-	private void calculateMaxValue(final boolean invalidate) {
+	private void calculateMaxValue(final boolean invalidate, boolean animate) {
 		int prev = maxValueY;
 		maxValueY = 0;
 		int sum=0;
@@ -496,7 +491,12 @@ public class ChartScrollView extends View {
 		}
 		valueScaleY = (HEIGHT-2*PADD_TINY)/maxValueY;
 		if (prev != maxValueY) {
-			heightAnimation(prev, maxValueY, invalidate);
+			if (animate) {
+				heightAnimation(prev, maxValueY, invalidate);
+			} else {
+//				maxValueY = (int) (start+(end-start)*(Float) animation.getAnimatedValue());
+				valueScaleY = (HEIGHT-2*PADD_TINY)/ maxValueY;
+			}
 		}
 	}
 
@@ -590,6 +590,11 @@ public class ChartScrollView extends View {
 				linePaints[i] = createLinePaint(data.getColorsInts()[i]);
 			}
 			chartArray = new float[data.getLength() * 4];
+			if (data.isPercentage()) {
+				chartArray2 = new float[data.getLength() * 4];
+			} else {
+				chartArray2 = null;
+			}
 		}
 	}
 

@@ -17,6 +17,7 @@
 package com.dimowner.charttemplate.util;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -53,5 +54,26 @@ public class TimeUtils {
 			return "Wrong date!";
 		}
 		return dateFormatLong.format(date);
+	}
+
+	public static String getMonthYear(long time) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(time);
+		int year = calendar.get(Calendar.YEAR);
+		int month = calendar.get(Calendar.MONTH)+1;
+		if (month < 10) {
+			return year + "-0"+month;
+		}
+		return year + "-"+month;
+	}
+
+	public static String getDayOfMonth(long time) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(time);
+		int day = calendar.get(Calendar.DAY_OF_MONTH);
+		if (day < 10) {
+			return "0"+day;
+		}
+		return String.valueOf(day);
 	}
 }

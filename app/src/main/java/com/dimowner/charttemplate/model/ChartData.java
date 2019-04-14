@@ -14,7 +14,8 @@ public class ChartData implements Parcelable {
 	public static final int TYPE_BAR = 2;
 	public static final int TYPE_AREA = 3;
 
-//	private long[] time;
+	private int chartNum;
+	private long[] time;
 	private String[] times;
 	private String[] timesShort;
 	private String[] timesLong;
@@ -28,9 +29,10 @@ public class ChartData implements Parcelable {
 	private boolean percentage;
 	private boolean stacked;
 
-	public ChartData(long[] time, int[][] columns, String[] names, String[] types, String[] colors,
+	public ChartData(int chartNum, long[] time, int[][] columns, String[] names, String[] types, String[] colors,
 						  boolean yScaled, boolean percentage, boolean stacked) {
-//		this.time = time;
+		this.chartNum = chartNum;
+		this.time = time;
 		this.columns = columns;
 		this.names = names;
 		this.types = types;
@@ -67,11 +69,12 @@ public class ChartData implements Parcelable {
 		in.readStringArray(timesShort);
 		in.readStringArray(timesLong);
 		in.readIntArray(colorsInts);
-//		in.readLongArray(time);
+		in.readLongArray(time);
 		in.readStringArray(names);
 		in.readStringArray(types);
 		in.readStringArray(colors);
 		in.readIntArray(typesInt);
+		chartNum = in.readInt();
 		int size = in.readInt();
 		columns = new int[size][];
 		for (int i = 0; i < size; i++) {
@@ -93,12 +96,14 @@ public class ChartData implements Parcelable {
 		out.writeStringArray(timesShort);
 		out.writeStringArray(timesLong);
 		out.writeIntArray(colorsInts);
-//		out.writeLongArray(time);
+		out.writeLongArray(time);
 		out.writeStringArray(names);
 		out.writeStringArray(types);
 		out.writeStringArray(colors);
 		out.writeIntArray(typesInt);
+		out.writeInt(chartNum);
 		out.writeInt(columns.length);
+
 		out.writeBooleanArray(new boolean[] {yScaled, percentage, stacked});
 		for (int i = 0; i < columns.length; i++) {
 			out.writeIntArray(columns[i]);
@@ -125,9 +130,9 @@ public class ChartData implements Parcelable {
 		return c;
 	}
 
-//	public long[] getTime() {
-//		return time;
-//	}
+	public long[] getTime() {
+		return time;
+	}
 
 	public int[][] getColumns() {
 		return columns;
@@ -191,6 +196,10 @@ public class ChartData implements Parcelable {
 
 	public int getVal(int lineIndex, int valIndex) {
 		return columns[lineIndex][valIndex];
+	}
+
+	public int getChartNum() {
+		return chartNum;
 	}
 
 	public void setData(int val, int lineIndex, int valIndex) {

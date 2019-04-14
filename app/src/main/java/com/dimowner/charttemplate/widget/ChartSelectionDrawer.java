@@ -109,7 +109,10 @@ public class ChartSelectionDrawer {
 				show = false;
 				selectionX = -1;
 			}
-			view.invalidate();
+//			TODO:  fix this NULL
+			if (view != null) {
+				view.invalidate();
+			}
 		}
 	};
 

@@ -37,8 +37,15 @@ import android.view.animation.LinearInterpolator;
 
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
+import com.dimowner.charttemplate.model.Data;
 import com.dimowner.charttemplate.util.AndroidUtils;
+import com.dimowner.charttemplate.util.TimeUtils;
+import com.google.gson.Gson;
+
+import java.io.IOException;
 import java.text.DecimalFormat;
+
+import timber.log.Timber;
 
 //import timber.log.Timber;
 
@@ -81,6 +88,7 @@ public class ChartView extends View {
 	private StringBuilder stringBuilder = new StringBuilder();
 
 	private ChartData data;
+//	private ChartData detailsData;
 
 	private float chartArray[];
 	private float chartArray2[];
@@ -322,7 +330,21 @@ public class ChartView extends View {
 				if (!selectionDrawer.checkCoordinateInPanel(e.getX(), e.getY())) {
 					selectionDrawer.hidePanel();
 				} else {
-					//TODO: open details;
+					try {
+						//TODO: open details;
+						TimeUtils.getMonthYear(data.getTime()[0]);
+//						String json1 = AndroidUtils.readAsset(getContext(), "contest/1/2018-04/07.json");
+						String json1 = AndroidUtils.readAsset(getContext(),
+								"contest/"+data.getChartNum()
+								+"/"+ TimeUtils.getMonthYear(data.getTime()[0])
+								+ "/" + TimeUtils.getDayOfMonth(data.getTime()[0]) + ".json");
+						Gson gson = new Gson();
+						Data data1 = gson.fromJson(json1, Data.class);
+						setData(toChartData(data1));
+						invalidate();
+					} catch (IOException | ClassCastException ex) {
+						Timber.e(ex);
+					}
 				}
 				return super.onSingleTapUp(e);
 			}
@@ -369,12 +391,14 @@ public class ChartView extends View {
 								if (onMoveEventsListener != null) {
 									onMoveEventsListener.disallowTouchEvent();
 								}
+								getParent().requestDisallowInterceptTouchEvent(true);
 							} else {
 								selectionX = -1;
 								selectionDrawer.setSelectionX(selectionX);
 								if (onMoveEventsListener != null) {
 									onMoveEventsListener.allowTouchEvent();
 								}
+								getParent().requestDisallowInterceptTouchEvent(false);
 							}
 							invalidate();
 						}
@@ -946,7 +970,9 @@ public class ChartView extends View {
 //		if (adjust) {
 //			maxValueCalculated = (int) adjustToGrid((float) maxValueCalculated, (int)GRID_LINES_COUNT);
 //		}
-		gridValueStep = maxValueCalculated/GRID_LINES_COUNT;
+		if (gridStep > 1000) {
+			gridValueStep = maxValueCalculated / GRID_LINES_COUNT;
+		}
 		if (prev != maxValueCalculated) {
 			if (animate) {
 				heightAnimator(maxValueCalculated - maxValueVisible, linearAnim);
@@ -1093,6 +1119,26 @@ public class ChartView extends View {
 			stringBuilder.append("B");
 			return stringBuilder.toString();
 		}
+	}
+
+	//TODO: remove this method from this class.
+	private ChartData toChartData(Data d) {
+		if (d != null) {
+			String[] keys = d.getColumnsKeys();
+			int[][] vals = new int[keys.length][d.getDataLength()];
+			String[] names = new String[keys.length];
+			String[] types = new String[keys.length];
+			String[] colors = new String[keys.length];
+			for (int i = 0; i < keys.length; i++) {
+				vals[i] = d.getValues(keys[i]);
+				names[i] = d.getName(keys[i]);
+				types[i] = d.getType(keys[i]);
+				colors[i] = d.getColor(keys[i]);
+			}
+			return new ChartData(1, d.getTimeArray(), vals, names, types, colors,
+					d.isYscaled(), d.isPercentage(), d.isStacked());
+		}
+		return null;
 	}
 
 	@Override

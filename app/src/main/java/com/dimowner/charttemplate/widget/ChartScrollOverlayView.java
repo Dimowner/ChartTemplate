@@ -227,6 +227,7 @@ public class ChartScrollOverlayView extends View {
 		if (onScrollListener != null && (scroll != prevScroll || width != prevWidth)) {
 //			Timber.v("onScroll Scroll = "+ scroll + " width = " + width + " x = " + scroll/STEP + " w = " + width/STEP);
 			onScrollListener.onScroll(scroll/STEP, width/STEP);
+			getParent().getParent().requestDisallowInterceptTouchEvent(true);
 			prevScroll = scroll;
 			prevWidth = width;
 			invalidate();
@@ -341,6 +342,7 @@ public class ChartScrollOverlayView extends View {
 				if (onScrollListener != null) {
 					onScrollListener.onScroll((scrollX-SELECTION)/ STEP, (selectionWidth+2*SELECTION) / STEP);
 				}
+				getParent().getParent().requestDisallowInterceptTouchEvent(true);
 			}
 			invalidate();
 		}

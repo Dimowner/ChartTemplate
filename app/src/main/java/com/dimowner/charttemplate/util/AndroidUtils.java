@@ -18,6 +18,7 @@ package com.dimowner.charttemplate.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Point;
 import android.os.Build;
 import android.view.View;
 import android.view.Window;
@@ -55,6 +56,16 @@ public class AndroidUtils {
 	 */
 	public static float dpToPx(int dp) {
 		return dp*DENSITY;
+	}
+
+	public static float getScreenWidth(Context context) {
+		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		Point size = new Point();
+		if (wm != null) {
+			wm.getDefaultDisplay().getSize(size);
+			return size.x;
+		}
+		return 0;
 	}
 
 	public static String readAsset(Context context, String name) throws FileNotFoundException, IOException {

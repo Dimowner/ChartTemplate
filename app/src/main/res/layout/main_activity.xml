@@ -30,15 +30,15 @@
 			android:background="?attr/primaryColor"
 			>
 
-		<TextView
-				android:id="@+id/btnNext"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="start|left|center_vertical"
-				android:padding="@dimen/spacing_normal"
-				android:textColor="@color/black"
-				android:background="?android:selectableItemBackgroundBorderless"
-				android:text="@string/next"/>
+		<!--<TextView-->
+				<!--android:id="@+id/btnNext"-->
+				<!--android:layout_width="wrap_content"-->
+				<!--android:layout_height="wrap_content"-->
+				<!--android:layout_gravity="start|left|center_vertical"-->
+				<!--android:padding="@dimen/spacing_normal"-->
+				<!--android:textColor="@color/black"-->
+				<!--android:background="?android:selectableItemBackgroundBorderless"-->
+				<!--android:text="@string/next"/>-->
 
 		<TextView
 				android:id="@+id/txtTitle"
@@ -46,8 +46,8 @@
 				android:layout_height="wrap_content"
 				android:layout_gravity="start"
 				android:padding="@dimen/spacing_normal"
-				android:layout_marginStart="62dp"
-				android:layout_marginLeft="62dp"
+				android:layout_marginStart="16dp"
+				android:layout_marginLeft="16dp"
 				android:text="@string/statistics"
 				android:fontFamily="sans-serif-medium"
 				android:textColor="@color/black"
@@ -66,41 +66,34 @@
 				/>
 
 	</FrameLayout>
-	<ScrollView
-			android:id="@+id/scrollView"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
 
-		<FrameLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:orientation="vertical"
-				android:elevation="@dimen/elevation"
-				android:layout_marginTop="@dimen/spacing_double"
-				android:background="?attr/viewBackground">
+	<android.support.v7.widget.RecyclerView
+			android:id="@+id/recyclerView"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			/>
+
+	<!--<ScrollView-->
+			<!--android:id="@+id/scrollView"-->
+			<!--android:layout_width="match_parent"-->
+			<!--android:layout_height="wrap_content">-->
+
+		<!--<FrameLayout-->
+				<!--android:layout_width="match_parent"-->
+				<!--android:layout_height="wrap_content"-->
+				<!--android:orientation="vertical"-->
+				<!--android:elevation="@dimen/elevation"-->
+				<!--android:layout_marginTop="@dimen/spacing_double"-->
+				<!--android:background="?attr/viewBackground">-->
 
 			<com.dimowner.charttemplate.widget.ItemView
 					android:id="@+id/itemView"
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content"/>
-
-			<TextView
-					android:id="@+id/txtChartTitle"
-					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:gravity="start|center_vertical"
-					android:layout_marginStart="@dimen/spacing_normal"
-					android:layout_marginLeft="@dimen/spacing_normal"
-					android:layout_marginEnd="@dimen/spacing_normal"
-					android:layout_marginRight="@dimen/spacing_normal"
-					android:layout_marginBottom="@dimen/spacing_tiny"
-					android:layout_marginTop="@dimen/spacing_normal"
-					android:text="@string/followers"
-					android:fontFamily="sans-serif-medium"
-					android:textColor="@color/black"
-					android:textSize="@dimen/text_xmedium"
-					/>
+					android:visibility="gone"/>
+
 			<!--<TextView-->
+					<!--android:id="@+id/txtChartTitle"-->
 					<!--android:layout_width="match_parent"-->
 					<!--android:layout_height="wrap_content"-->
 					<!--android:gravity="start|center_vertical"-->
@@ -112,53 +105,68 @@
 					<!--android:layout_marginTop="@dimen/spacing_normal"-->
 					<!--android:text="@string/followers"-->
 					<!--android:fontFamily="sans-serif-medium"-->
-					<!--android:textColor="@color/text_blue"-->
+					<!--android:textColor="@color/black"-->
 					<!--android:textSize="@dimen/text_xmedium"-->
 					<!--/>-->
+			<!--&lt;!&ndash;<TextView&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:gravity="start|center_vertical"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginStart="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginLeft="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginEnd="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginRight="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginBottom="@dimen/spacing_tiny"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginTop="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:text="@string/followers"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:fontFamily="sans-serif-medium"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:textColor="@color/text_blue"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:textSize="@dimen/text_xmedium"&ndash;&gt;-->
+					<!--&lt;!&ndash;/>&ndash;&gt;-->
 
-			<!--<com.dimowner.charttemplate.widget.ChartView-->
-					<!--android:id="@+id/chartView"-->
-					<!--android:layout_width="match_parent"-->
-					<!--android:layout_height="300dp"-->
-					<!--android:layout_marginStart="@dimen/spacing_normal"-->
-					<!--android:layout_marginLeft="@dimen/spacing_normal"-->
-					<!--android:layout_marginEnd="@dimen/spacing_normal"-->
-					<!--android:layout_marginRight="@dimen/spacing_normal"-->
-					<!--/>-->
+			<!--&lt;!&ndash;<com.dimowner.charttemplate.widget.ChartView&ndash;&gt;-->
+					<!--&lt;!&ndash;android:id="@+id/chartView"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_height="300dp"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginStart="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginLeft="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginEnd="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginRight="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;/>&ndash;&gt;-->
 
-		<!--<FrameLayout-->
-				<!--android:layout_width="match_parent"-->
-				<!--android:layout_height="wrap_content">-->
+		<!--&lt;!&ndash;<FrameLayout&ndash;&gt;-->
+				<!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+				<!--&lt;!&ndash;android:layout_height="wrap_content">&ndash;&gt;-->
 
-			<!--<com.dimowner.charttemplate.widget.ChartScrollView-->
-					<!--android:id="@+id/chartScrollView"-->
-					<!--android:layout_width="match_parent"-->
-					<!--android:layout_height="50dp"-->
-					<!--android:layout_marginStart="@dimen/spacing_normal"-->
-					<!--android:layout_marginLeft="@dimen/spacing_normal"-->
-					<!--android:layout_marginTop="@dimen/spacing_tiny"-->
-					<!--android:layout_marginEnd="@dimen/spacing_normal"-->
-					<!--android:layout_marginRight="@dimen/spacing_normal"-->
-					<!--android:layout_marginBottom="@dimen/spacing_small"-->
-					<!--/>-->
+			<!--&lt;!&ndash;<com.dimowner.charttemplate.widget.ChartScrollView&ndash;&gt;-->
+					<!--&lt;!&ndash;android:id="@+id/chartScrollView"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_height="50dp"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginStart="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginLeft="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginTop="@dimen/spacing_tiny"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginEnd="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginRight="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginBottom="@dimen/spacing_small"&ndash;&gt;-->
+					<!--&lt;!&ndash;/>&ndash;&gt;-->
 
-			<!--<com.dimowner.charttemplate.widget.ChartScrollOverlayView-->
-					<!--android:id="@+id/chartScrollOverlayView"-->
-					<!--android:layout_width="match_parent"-->
-					<!--android:layout_height="50dp"-->
-					<!--android:layout_marginStart="@dimen/spacing_normal"-->
-					<!--android:layout_marginLeft="@dimen/spacing_normal"-->
-					<!--android:layout_marginTop="@dimen/spacing_tiny"-->
-					<!--android:layout_marginEnd="@dimen/spacing_normal"-->
-					<!--android:layout_marginRight="@dimen/spacing_normal"-->
-					<!--android:layout_marginBottom="@dimen/spacing_small"-->
-					<!--/>-->
+			<!--&lt;!&ndash;<com.dimowner.charttemplate.widget.ChartScrollOverlayView&ndash;&gt;-->
+					<!--&lt;!&ndash;android:id="@+id/chartScrollOverlayView"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_height="50dp"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginStart="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginLeft="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginTop="@dimen/spacing_tiny"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginEnd="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginRight="@dimen/spacing_normal"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_marginBottom="@dimen/spacing_small"&ndash;&gt;-->
+					<!--&lt;!&ndash;/>&ndash;&gt;-->
+		<!--&lt;!&ndash;</FrameLayout>&ndash;&gt;-->
+			<!--&lt;!&ndash;<com.dimowner.charttemplate.widget.CheckersView&ndash;&gt;-->
+					<!--&lt;!&ndash;android:id="@+id/checkersView"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+					<!--&lt;!&ndash;android:layout_height="wrap_content"/>&ndash;&gt;-->
+
 		<!--</FrameLayout>-->
-			<!--<com.dimowner.charttemplate.widget.CheckersView-->
-					<!--android:id="@+id/checkersView"-->
-					<!--android:layout_width="match_parent"-->
-					<!--android:layout_height="wrap_content"/>-->
-
-		</FrameLayout>
-	</ScrollView>
+	<!--</ScrollView>-->
 </LinearLayout>
