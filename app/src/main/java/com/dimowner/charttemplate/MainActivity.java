@@ -145,20 +145,30 @@ public class MainActivity extends Activity implements View.OnClickListener,
 			@Override
 			public void showDetails(final int num, long time) {
 //				Timber.v("showDetails num = " + num + " time = " + time);
-				loadChartAsync(num, time, new OnLoadCharListener() {
-					@Override
-					public void onLoadChart(ChartData chart) {
-						if (chart != null) {
+				if (num == 5) {
+					ChartData c = CTApplication.getChartData()[4];
+					c.setDetailsMode(true);
+					adapter.setItem(num - 1, c);
+				} else {
+					loadChartAsync(num, time, new OnLoadCharListener() {
+						@Override
+						public void onLoadChart(ChartData chart) {
+							if (chart != null) {
 //							Timber.v("onLoadChart chart = " + chart.getChartNum());
-							adapter.setItem(num-1, chart);
+								adapter.setItem(num - 1, chart);
+							}
 						}
-					}
-				});
+					});
+				}
 			}
 
 			@Override
 			public void hideDetails(int num) {
-//				Timber.v("hideDetails num = " + num);
+				if (num == 5) {
+					ChartData c = CTApplication.getChartData()[4];
+					c.setDetailsMode(false);
+					adapter.setItem(num - 1, c);
+				}
 				adapter.setItem(num-1, CTApplication.getChartData()[num-1]);
 			}
 		});

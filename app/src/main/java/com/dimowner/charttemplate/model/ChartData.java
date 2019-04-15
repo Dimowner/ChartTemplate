@@ -212,6 +212,10 @@ public class ChartData implements Parcelable {
 		return detailsMode;
 	}
 
+	public void setDetailsMode(boolean detailsMode) {
+		this.detailsMode = detailsMode;
+	}
+
 	public void setData(int val, int lineIndex, int valIndex) {
 		columns[lineIndex][valIndex] = val;
 	}

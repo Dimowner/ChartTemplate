@@ -49,7 +49,7 @@ public class ChartView extends View {
 
 	private final float DENSITY;
 	private final int PADD_NORMAL;
-//	private final int PADD_SMALL;
+	private final int PADD_SMALL;
 	private final int PADD_TINY;
 	private final int TEXT_SPACE;
 	private final int BASE_LINE_Y;
@@ -62,7 +62,7 @@ public class ChartView extends View {
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
 		PADD_NORMAL = (int) (16*DENSITY);
-//		PADD_SMALL = (int) (8*DENSITY);
+		PADD_SMALL = (int) (8*DENSITY);
 		PADD_TINY = (int) (4*DENSITY);
 		TEXT_SPACE = (int) (56*DENSITY);
 		BASE_LINE_Y = (int) (32*DENSITY);
@@ -150,6 +150,10 @@ public class ChartView extends View {
 	private boolean isDetailsMode = false;
 //	private boolean isHeightAnimation = false;
 
+	private float[] arcSums;
+	private int totalAdcSum;
+	private float prevArc;
+
 	private OnMoveEventsListener onMoveEventsListener;
 	private GestureDetector gestureDetector;
 
@@ -176,7 +180,7 @@ public class ChartView extends View {
 			if (gridStep > MAX_GRID_STEP) {
 				gridValueStep /=2;
 			}
-			Timber.v("gridValueStep = " + gridValueStep + " gridStep = " + gridStep + " valueScale = " + valueScale);
+//			Timber.v("gridValueStep = " + gridValueStep + " gridStep = " + gridStep + " valueScale = " + valueScale);
 			gridStep = gridValueStep * valueScale;
 			if (gridStep < 40*DENSITY) { gridStep = 40*DENSITY;}
 			updateGrid();
@@ -212,7 +216,11 @@ public class ChartView extends View {
 			}
 			skipNextInvalidation = true;
 			if (data.isPercentage()) {
-				calculateSumsLine();
+				if (isDetailsMode) {
+					calculateArcs();
+				} else {
+					calculateSumsLine();
+				}
 			}
 			invalidate();
 		}
@@ -565,6 +573,8 @@ public class ChartView extends View {
 				isFirst = false;
 				updateGrid();
 				skipNextInvalidation = true;
+			} else {
+				calculateArcs();
 			}
 
 			invalidate();
@@ -604,7 +614,7 @@ public class ChartView extends View {
 				dateRangeHeight = rect.height();
 			}
 			if (dateRange == null) {
-				dateRange = "Unknown";
+				dateRange = "";
 			}
 		}
 	}
@@ -631,14 +641,24 @@ public class ChartView extends View {
 		if (data != null) {
 			//Draw charts
 			timelineTextPaint.setTextAlign(Paint.Align.CENTER);
-			for (int i = 0; i < data.getNames().length; i++) {
+			for (int i = 0; i < data.getLinesCount(); i++) {
 				if (linesVisibility[i]) {
 					if (data.getType(i) == ChartData.TYPE_LINE) {
 						drawChart(canvas, data.getValues(i), i);
 					} else if (data.getType(i) == ChartData.TYPE_BAR) {
 						drawBars(canvas, data.getValues(i), i);
 					} else if (data.getType(i) == ChartData.TYPE_AREA) {
-						drawAreaPercentage(canvas, data.getValues(i), i);
+						if (isDetailsMode) {
+							if (i == 0) { prevArc = 45;}
+							linePaints[i].setStyle(Paint.Style.FILL);
+							canvas.drawArc(
+									(WIDTH-(H2))/2, BASE_LINE_Y+PADD_NORMAL+PADD_SMALL,
+									(WIDTH-(H2))/2+H2, HEIGHT-BASE_LINE_Y+PADD_SMALL,
+									prevArc, arcSums[i], true, linePaints[i]);
+							prevArc += arcSums[i];
+						} else {
+							drawAreaPercentage(canvas, data.getValues(i), i);
+						}
 					} else {
 						drawChart(canvas, data.getValues(i), i);
 					}
@@ -647,12 +667,14 @@ public class ChartView extends View {
 			timelineTextPaint.setTextAlign(Paint.Align.LEFT);
 			selectionDrawer.drawBarOverlay(canvas, data.getType(0), STEP, H1, WIDTH, HEIGHT);
 			if (data.isPercentage()) {
-				drawPercentageGrid(canvas);
+				if (!isDetailsMode) {
+					drawPercentageGrid(canvas);
+				}
 			} else {
 				drawGrid(canvas);
 			}
 
-			if (data.getLinesCount() > 0) {
+			if (data.getLinesCount() > 0 && !(data.isPercentage() && isDetailsMode)) {
 				timelineTextPaint.setTextAlign(Paint.Align.CENTER);
 				timelineTextPaint.setColor(gridTextColor);
 				drawTimeline(canvas);
@@ -1111,6 +1133,37 @@ public class ChartView extends View {
 		}
 	}
 
+	private void calculateArcs() {
+		if (data.isPercentage() && isDetailsMode) {
+			end = (int) ((scrollPos + WIDTH) / STEP);
+			totalAdcSum = 0;
+			arcSums = new float[data.getLinesCount()];
+			for (int i = 0; i < arcSums.length; i++) {
+				arcSums[i] = 0;
+			}
+			for (calcI = (int) (scrollPos / STEP); calcI < end; calcI++) {
+				if (calcI >= 0 && calcI < maxValuesLine.length) {
+					for (calcJ = 0; calcJ < data.getLinesCount(); calcJ++) {
+						if (linesVisibility[calcJ]) {
+							if (isAnimating && calcJ == amnimItemIndex) {
+								totalAdcSum += data.getVal(calcJ, calcI)*scaleKoef;
+								arcSums[calcJ] += data.getVal(calcJ, calcI)*scaleKoef;
+							} else {
+								totalAdcSum += data.getVal(calcJ, calcI);
+								arcSums[calcJ] += data.getVal(calcJ, calcI);
+							}
+						}
+					}
+				}
+			}
+			if (totalAdcSum > 0) {
+				for (int i = 0; i < arcSums.length; i++) {
+					arcSums[i] = 360* arcSums[i]/ totalAdcSum;
+				}
+			}
+		}
+	}
+
 	private void updateValueScale() {
 		if (maxValueVisible - minValueVisible > 0) {
 			valueScale = (HEIGHT - HEIGHT_PADDS) / (maxValueVisible - minValueVisible);
@@ -1191,14 +1244,14 @@ public class ChartView extends View {
 //	private void updateStackedData() {
 //		int[][] vals = data.getColumns();
 //		TreeMap<Long, Integer> order = new TreeMap<>();
-//		long[] sums = new long[vals.length];
+//		long[] arcSums = new long[vals.length];
 //		for (int i = 0; i < vals[0].length; i++) {
 //			for (int j = 0; j < vals.length; j++) {
-//				sums[j] += vals[j][i];
+//				arcSums[j] += vals[j][i];
 //			}
 //		}
-//		for (int i = 0; i < sums.length; i++) {
-//			order.put(sums[i], i);
+//		for (int i = 0; i < arcSums.length; i++) {
+//			order.put(arcSums[i], i);
 //		}
 //		stackedData.clear();
 //		for (int i = 0; i < vals.length; i++) {
