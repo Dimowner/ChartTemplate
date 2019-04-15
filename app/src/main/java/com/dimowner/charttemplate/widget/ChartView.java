@@ -20,6 +20,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -53,6 +54,7 @@ public class ChartView extends View {
 	private final int MIN_GRID_STEP;
 	private final int MAX_GRID_STEP;
 	private final int DATE_RANGE_PADD;
+	private final int RADIUS;
 	private static final int GRID_LINES_COUNT = 6;
 	private static final int ANIMATION_DURATION = 220; //mills
 
@@ -65,9 +67,11 @@ public class ChartView extends View {
 		BASE_LINE_Y = (int) (32*DENSITY);
 		MIN_GRID_STEP = (int) (44*DENSITY);
 		MAX_GRID_STEP = (int) (90*DENSITY);
+		RADIUS = (int) (120*DENSITY);
 		DATE_RANGE_PADD = (int) (21*DENSITY);
 	}
 
+	private static final int START_ANGLE = 45;
 	private float STEP = 10*DENSITY;
 	/** Chart view height except bottom timeline height */
 	private float H1 = 0;
@@ -90,12 +94,14 @@ public class ChartView extends View {
 
 	private TextPaint dateRangePaint;
 	private TextPaint timelineTextPaint;
+	private TextPaint percentPaint;
 	private Paint gridPaint;
 	private Paint[] linePaints;
 
 	private ValueAnimator alphaAnimator;
 	private ValueAnimator heightAnimator;
 	private ValueAnimator minHeightAnimator;
+	private ValueAnimator moveAnimator;
 	private DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
 	private LinearInterpolator linearInterpolator = new LinearInterpolator();
 	private AccelerateInterpolator accelerateInterpolator= new AccelerateInterpolator();
@@ -147,6 +153,12 @@ public class ChartView extends View {
 	private float[] arcSums;
 	private int totalAdcSum;
 	private float prevArc;
+
+	public boolean isMoveAnimation = false;
+	private float moveVal = 0;
+	private float moveValX= 0;
+	private float moveValY= 0;
+	private int moveIndex = -1;
 
 	private OnMoveEventsListener onMoveEventsListener;
 	private GestureDetector gestureDetector;
@@ -312,6 +324,12 @@ public class ChartView extends View {
 		dateRangePaint.setTypeface(Typeface.create("sans-serif-sans-serif-thin", Typeface.BOLD));
 		dateRangePaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
 
+		percentPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
+		percentPaint.setColor(Color.WHITE);
+		percentPaint.setTextAlign(Paint.Align.CENTER);
+		percentPaint.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+		percentPaint.setTextSize(context.getResources().getDimension(R.dimen.text_normal));
+
 		timelineTextPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		timelineTextPaint.setColor(gridTextColor);
 		timelineTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -321,6 +339,15 @@ public class ChartView extends View {
 		gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
+				if (data.isPercentage() && isDetailsMode) {
+					int ind = arcIndexForCoordinates(e.getX(), e.getY());
+					if (ind != moveIndex || (moveValX == 0 && moveValY == 0)) {
+						moveIndex = ind;
+						moveAnimation(0, PADD_NORMAL);
+					} else {
+						moveAnimation(PADD_NORMAL, 0);
+					}
+				} else
 				if (!selectionDrawer.isShowPanel()) {
 					selectionDrawer.showPanel();
 					selectionDrawer.setSelectionX(e.getX());
@@ -470,6 +497,39 @@ public class ChartView extends View {
 		minHeightAnimator.start();
 	}
 
+	private void moveAnimation(final float start, final float end) {
+		isMoveAnimation = true;
+		if (moveAnimator != null && (moveAnimator.isStarted())) {
+			moveAnimator.cancel();
+		}
+		moveAnimator = ValueAnimator.ofFloat(start, end);
+		moveAnimator.setInterpolator(decelerateInterpolator);
+		moveAnimator.setDuration(300);
+		moveAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				moveVal = (float)animation.getAnimatedValue();
+				int prevArc = START_ANGLE;
+				for (int i = 0; i < moveIndex; i++) {
+					if (linesVisibility[moveIndex]) {
+						prevArc += arcSums[i];
+					}
+				}
+				moveValX = (float) Math.cos((prevArc+arcSums[moveIndex]/2)*Math.PI/180)*moveVal;
+				moveValY = (float) Math.sin((prevArc+arcSums[moveIndex]/2)*Math.PI/180)*moveVal;
+
+				if (moveVal == end) {
+					isMoveAnimation = false;
+					if (end == 0) {
+						moveIndex = -1;
+					}
+				}
+				invalidate();
+			}
+		});
+		moveAnimator.start();
+	}
+
 	private void updateGrid() {
 		gridCount = (int)((HEIGHT-BASE_LINE_Y-PADD_TINY)/gridStep);
 	}
@@ -566,6 +626,31 @@ public class ChartView extends View {
 		}
 	}
 
+	private int arcIndexForCoordinates(float x, float y) {
+		float angle = (float) Math.atan2((y - WIDTH/2), (x - (HEIGHT-BASE_LINE_Y+PADD_SMALL)/2 + (BASE_LINE_Y+PADD_NORMAL+PADD_SMALL)/2f));
+
+		float angle2 =(float) (angle * 180/Math.PI);
+		if (angle2 < 0) {
+			angle2 = 180 + 180+angle2;
+		}
+
+		float angleToStart  = angle2 - START_ANGLE;
+		if (angleToStart < 0) {
+			angleToStart = 360-START_ANGLE + START_ANGLE + angleToStart;
+		}
+
+		float prev = 0;
+		if (arcSums != null && arcSums.length > 0) {
+			for (int i = 0; i < arcSums.length; i++) {
+				prev += arcSums[i];
+				if (angleToStart - prev < 0) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
@@ -580,13 +665,7 @@ public class ChartView extends View {
 						drawBars(canvas, data.getValues(i), i);
 					} else if (data.getType(i) == ChartData.TYPE_AREA) {
 						if (isDetailsMode) {
-							if (i == 0) { prevArc = 45;}
-							linePaints[i].setStyle(Paint.Style.FILL);
-							canvas.drawArc(
-									(WIDTH-(H2))/2, BASE_LINE_Y+PADD_NORMAL+PADD_SMALL,
-									(WIDTH-(H2))/2+H2, HEIGHT-BASE_LINE_Y+PADD_SMALL,
-									prevArc, arcSums[i], true, linePaints[i]);
-							prevArc += arcSums[i];
+							drawPercentCircle(canvas, i);
 						} else {
 							drawAreaPercentage(canvas, data.getValues(i), i);
 						}
@@ -614,6 +693,31 @@ public class ChartView extends View {
 			}
 			canvas.drawText(dateRange, WIDTH-2, dateRangeHeight+DATE_RANGE_PADD, dateRangePaint);
 		}
+	}
+
+	private void drawPercentCircle(Canvas canvas, int i) {
+		if (i == 0) { prevArc = START_ANGLE;}
+		linePaints[i].setStyle(Paint.Style.FILL);
+		if (i == moveIndex) {
+			canvas.drawArc(
+					(WIDTH - (H2)) / 2+ moveValX,
+					BASE_LINE_Y + PADD_NORMAL + PADD_SMALL + moveValY,
+					(WIDTH - (H2)) / 2 + H2 + moveValX,
+					HEIGHT - BASE_LINE_Y + PADD_SMALL + moveValY,
+					prevArc, arcSums[i], true, linePaints[i]);
+			if (moveValX != 0 || moveValY != 0) {
+				canvas.drawText(data.getNames()[i], WIDTH / 2 + moveValX * 6, HEIGHT/2+PADD_NORMAL + moveValY * 6, percentPaint);
+			}
+		} else {
+			canvas.drawArc(
+					(WIDTH - (H2)) / 2, BASE_LINE_Y + PADD_NORMAL + PADD_SMALL,
+					(WIDTH - (H2)) / 2 + H2, HEIGHT - BASE_LINE_Y + PADD_SMALL,
+					prevArc, arcSums[i], true, linePaints[i]);
+			canvas.drawText((int) (arcSums[i]/3.6) + "%",
+					WIDTH/2+(float) Math.cos((prevArc+arcSums[i]/2)*Math.PI/180)*RADIUS,
+					(HEIGHT)/2+(float) Math.sin((prevArc+arcSums[i]/2)*Math.PI/180)*RADIUS+PADD_NORMAL+PADD_TINY, percentPaint);
+		}
+		prevArc += arcSums[i];
 	}
 
 	private void drawGrid(Canvas canvas) {
@@ -1052,11 +1156,17 @@ public class ChartView extends View {
 		}
 	}
 
+	//TODO: Need optimisation.
 	private void calculateArcs() {
 		if (data.isPercentage() && isDetailsMode) {
+			if (!isMoveAnimation && (moveValY != 0 || moveValX != 0)) {
+				moveAnimation(PADD_NORMAL, 0);
+			}
 			end = (int) ((scrollPos + WIDTH) / STEP);
 			totalAdcSum = 0;
-			arcSums = new float[data.getLinesCount()];
+			if (arcSums == null || arcSums.length == 0) {
+				arcSums = new float[data.getLinesCount()];
+			}
 			for (int i = 0; i < arcSums.length; i++) {
 				arcSums[i] = 0;
 			}
@@ -1065,8 +1175,8 @@ public class ChartView extends View {
 					for (calcJ = 0; calcJ < data.getLinesCount(); calcJ++) {
 						if (linesVisibility[calcJ]) {
 							if (isAnimating && calcJ == amnimItemIndex) {
-								totalAdcSum += data.getVal(calcJ, calcI)*scaleKoef;
-								arcSums[calcJ] += data.getVal(calcJ, calcI)*scaleKoef;
+								totalAdcSum += data.getVal(calcJ, calcI) * scaleKoef;
+								arcSums[calcJ] += data.getVal(calcJ, calcI) * scaleKoef;
 							} else {
 								totalAdcSum += data.getVal(calcJ, calcI);
 								arcSums[calcJ] += data.getVal(calcJ, calcI);
@@ -1077,7 +1187,7 @@ public class ChartView extends View {
 			}
 			if (totalAdcSum > 0) {
 				for (int i = 0; i < arcSums.length; i++) {
-					arcSums[i] = 360* arcSums[i]/ totalAdcSum;
+					arcSums[i] = 360 * arcSums[i] / totalAdcSum;
 				}
 			}
 		}

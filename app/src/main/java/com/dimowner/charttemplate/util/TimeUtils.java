@@ -26,7 +26,7 @@ public class TimeUtils {
 	/** Date format: 16 May */
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM", Locale.getDefault());
 
-	/** Date format: Sat, May 2019 */
+	/** Date format: Sat, 12 May 2019 */
 	private static SimpleDateFormat dateFormatWeek = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.getDefault());
 
 	/** Date format: 10 April 2019 */
