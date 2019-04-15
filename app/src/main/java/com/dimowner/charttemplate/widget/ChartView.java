@@ -81,7 +81,6 @@ public class ChartView extends View {
 	private StringBuilder stringBuilder = new StringBuilder();
 
 	private ChartData data;
-//	private ChartData detailsData;
 
 	private float chartArray[];
 	private float chartArray2[];
@@ -89,7 +88,6 @@ public class ChartView extends View {
 	private boolean[] linesVisibility;
 	private boolean[] linesCalculated;
 
-//	private TextPaint textPaint;
 	private TextPaint dateRangePaint;
 	private TextPaint timelineTextPaint;
 	private Paint gridPaint;
@@ -145,7 +143,6 @@ public class ChartView extends View {
 	private boolean isMove = false;
 	private int scale = 1;
 	private boolean isDetailsMode = false;
-//	private boolean isHeightAnimation = false;
 
 	private float[] arcSums;
 	private int totalAdcSum;
@@ -159,14 +156,9 @@ public class ChartView extends View {
 	ValueAnimator.AnimatorUpdateListener heightValueAnimator = new ValueAnimator.AnimatorUpdateListener() {
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation) {
-//			float val = (float) animation.getAnimatedValue();
 			maxValueVisible = maxValueCalculated - (float)animation.getAnimatedValue();
-//			Timber.v("HeightUpdate val = " +(float)animation.getAnimatedValue()
-//					+ " calc = " + maxValueCalculated + " visible = " + maxValueVisible );
-//			valueScale = (HEIGHT-HEIGHT_PADDS)/ maxValueVisible;
 			updateValueScale();
 			if (skipNextInvalidation) {
-//				Timber.v("skipNextInvalidation");
 				skipNextInvalidation = false;
 			} else {
 				invalidate();
@@ -177,13 +169,9 @@ public class ChartView extends View {
 			if (gridStep > MAX_GRID_STEP) {
 				gridValueStep /=2;
 			}
-//			Timber.v("gridValueStep = " + gridValueStep + " gridStep = " + gridStep + " valueScale = " + valueScale);
 			gridStep = gridValueStep * valueScale;
 			if (gridStep < 40*DENSITY) { gridStep = 40*DENSITY;}
 			updateGrid();
-//			if (val == 0) {
-//				isHeightAnimation = false;
-//			}
 		}
 	};
 
@@ -244,14 +232,10 @@ public class ChartView extends View {
 		scrollPos = -1;
 		scrollStartIndex = 0;
 		rect = new Rect();
-//		stackedData = new ArrayList<>();
 
 		int gridColor;
-//		int gridBaseLineColor;
-//		int gridTextColor;
 		int panelTextColor;
 		int panelColor;
-//		int scrubblerColor;
 		int shadowColor;
 		int tittleColor;
 		int viewBackground;
@@ -265,11 +249,6 @@ public class ChartView extends View {
 		} else {
 			gridColor = res.getColor(R.color.grid_color2);
 		}
-//		if (theme.resolveAttribute(R.attr.gridBaseLineColor, typedValue, true)) {
-//			gridBaseLineColor = typedValue.data;
-//		} else {
-//			gridBaseLineColor = res.getColor(R.color.grid_base_line);
-//		}
 		if (theme.resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
 			gridTextColor = typedValue.data;
 		} else {
@@ -285,11 +264,6 @@ public class ChartView extends View {
 		} else {
 			panelTextColor = res.getColor(R.color.panel_text_night);
 		}
-//		if (theme.resolveAttribute(R.attr.scrubblerColor, typedValue, true)) {
-//			scrubblerColor = typedValue.data;
-//		} else {
-//			scrubblerColor = res.getColor(R.color.scrubbler_color);
-//		}
 		if (theme.resolveAttribute(R.attr.shadowColor, typedValue, true)) {
 			shadowColor = typedValue.data;
 		} else {
@@ -320,11 +294,9 @@ public class ChartView extends View {
 		selectionDrawer.setInvalidateIlstener(new ChartSelectionDrawer.InvalidateIlstener() {
 			@Override
 			public void onInvalidate() {
-//				Timber.v("onInvalidate");
 				invalidate();
 			}
 		});
-//		selectionDrawer.setView(this);
 
 		gridPaint = new Paint();
 		gridPaint.setAntiAlias(false);
@@ -333,19 +305,6 @@ public class ChartView extends View {
 		gridPaint.setStrokeCap(Paint.Cap.SQUARE);
 		gridPaint.setColor(gridColor);
 		gridPaint.setStrokeWidth(DENSITY);
-
-//		baselinePaint = new Paint();
-//		baselinePaint.setAntiAlias(false);
-//		baselinePaint.setDither(false);
-//		baselinePaint.setStyle(Paint.Style.STROKE);
-//		baselinePaint.setColor(gridBaseLineColor);
-//		baselinePaint.setStrokeWidth(DENSITY);
-//
-//		textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-//		textPaint.setColor(gridTextColor);
-//		textPaint.setTextAlign(Paint.Align.CENTER);
-//		textPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-//		textPaint.setTextSize(context.getResources().getDimension(R.dimen.text_xsmall));
 
 		dateRangePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		dateRangePaint.setColor(tittleColor);
@@ -362,39 +321,19 @@ public class ChartView extends View {
 		gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
-//				Timber.v("onSingleTapUp");
 				if (!selectionDrawer.isShowPanel()) {
-//					Timber.v("showPanel");
 					selectionDrawer.showPanel();
 					selectionDrawer.setSelectionX(e.getX());
 					selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos, WIDTH,
 							isYscaled, yIndex, yScale, sumVals);
 				} else
 				if (!selectionDrawer.checkCoordinateInPanel(e.getX(), e.getY())) {
-//					Timber.v("hidePanel");
 					selectionDrawer.hidePanel();
 				} else {
-//					Timber.v("Need openDetails is listener null ? " + (onDetailsListener == null) );
 					//Open detailed chart;
 					if (onDetailsListener != null && !isDetailsMode) {
-//						Timber.v("Need openDetails not details ");
 						onDetailsListener.showDetails(data.getChartNum(), data.getTime()[selectionDrawer.getSelectionIndex()]);
 					}
-//					try {
-//
-//						TimeUtils.getMonthYear(data.getTime()[0]);
-////						String json1 = AndroidUtils.readAsset(getContext(), "contest/1/2018-04/07.json");
-//						String json1 = AndroidUtils.readAsset(getContext(),
-//								"contest/"+data.getChartNum()
-//								+"/"+ TimeUtils.getMonthYear(data.getTime()[0])
-//								+ "/" + TimeUtils.getDayOfMonth(data.getTime()[0]) + ".json");
-//						Gson gson = new Gson();
-//						Data data1 = gson.fromJson(json1, Data.class);
-//						setData(toChartData(data1));
-//						invalidate();
-//					} catch (IOException | ClassCastException ex) {
-//						Timber.e(ex);
-//					}
 				}
 				return super.onSingleTapUp(e);
 			}
@@ -475,14 +414,10 @@ public class ChartView extends View {
 	}
 
 	private Paint createLinePaint(int color, boolean isBars) {
-		Paint lp = new Paint(1);
-//		lp.setAntiAlias(false);
-//		lp.setDither(false);
+		Paint lp = new Paint(Paint.ANTI_ALIAS_FLAG);
 		lp.setStyle(Paint.Style.STROKE);
-//		lp.setStrokeCap(Paint.Cap.ROUND);
 		lp.setStrokeWidth(2*DENSITY);
 		lp.setStrokeJoin(Paint.Join.ROUND);
-//		lp.setStrokeCap(Paint.Cap.ROUND);
 		lp.setColor(color);
 		if (isBars) {
 			lp.setStrokeCap(Paint.Cap.BUTT);
@@ -545,8 +480,7 @@ public class ChartView extends View {
 			scrollPos = (x * STEP);
 			scrollStartIndex = x;
 			indexesWidth = size;
-//			scale = (int)Math.ceil(size/50);
-//			Timber.v("x = " + x + " size = " + size + " STEP = " + STEP);
+
 			if (data.isPercentage()) {
 				if (size > 260) {
 					scale = 3;
@@ -562,12 +496,7 @@ public class ChartView extends View {
 					scale = 1;
 				}
 			}
-//			if (size > data.getLength()/3) {
-//				scale = 2;
-//			} else {
-//				scale = 1;
-//			}
-//			selectionDrawer.setScrollPos(scrollPos);
+
 			selectionDrawer.setScrollPos(scrollStartIndex, STEP);
 			calculateDateRange();
 			if (!data.isPercentage()) {
@@ -1014,8 +943,6 @@ public class ChartView extends View {
 		this.data = d;
 		if (data != null) {
 			this.isDetailsMode = data.isDetailsMode();
-//			Timber.v("setData isDetailMode = " + isDetailsMode);
-//			selectionDrawer.setSelectionX(-1);
 			selectionDrawer.hidePanel();
 			maxValueCalculated = 0;
 			isYscaled = data.isYscaled();
@@ -1029,9 +956,7 @@ public class ChartView extends View {
 				linesCalculated[i] = true;
 				linePaints[i] = createLinePaint(data.getColorsInts()[i], data.getType(i) == ChartData.TYPE_BAR);
 			}
-//			if (data.isStacked()) {
-//				updateStackedData();
-//			}
+
 			if (isYscaled) {
 				yScale = 1;
 				yIndex = 0;
@@ -1040,23 +965,14 @@ public class ChartView extends View {
 			calculateMaxValuesLine();
 			calculateSumsLine();
 			calculateMaxValue2(false, false);
-//			gridValueStep = maxValueCalculated / GRID_LINES_COUNT;
 
-//			if (HEIGHT > 1) {
 			chartArray = new float[data.getLength() * 4];
 			if (data.isPercentage()) {
 				chartArray2 = new float[data.getLength() * 4];
 			} else {
 				chartArray2 = null;
 			}
-//				for (int i = 0; i < data.getLength(); i += 2) {
-//					chartArray[i] = i;
-//					chartArray[i + 1] = HEIGHT - BASE_LINE_Y - data.getValues(0)[(i / 2 + 1)] * valueScale;
-//				}
-//			}
 		}
-//		selectionDrawer.setSelectionX(-1);
-//		selectionDrawer.hidePanel();
 		invalidate();
 	}
 
