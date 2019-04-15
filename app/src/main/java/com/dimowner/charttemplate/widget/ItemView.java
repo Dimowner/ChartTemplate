@@ -17,15 +17,17 @@
 package com.dimowner.charttemplate.widget;
 
 import android.content.Context;
-import android.graphics.Typeface;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
@@ -80,7 +82,7 @@ public class ItemView extends LinearLayout implements
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		container.setLayoutParams(containerLp);
 		container.setOrientation(LinearLayout.VERTICAL);
-		container.setPadding(PADD_NORMAL, 0, PADD_NORMAL, 0);
+//		container.setPadding(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		container.setClipChildren(false);
 		container.setClipToPadding(false);
 
@@ -88,26 +90,35 @@ public class ItemView extends LinearLayout implements
 		chartView = new ChartView(context);
 		LinearLayout.LayoutParams chartLp = new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(390*DENSITY));
-//		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
+		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chartView.setLayoutParams(chartLp);
 
+		int viewBackground;
+		TypedValue typedValue = new TypedValue();
+		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
+			viewBackground = typedValue.data;
+		} else {
+			viewBackground = context.getResources().getColor(R.color.view_background);
+		}
 		FrameLayout scroll = new FrameLayout(context);
 		LinearLayout.LayoutParams scrollLp2 = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		scroll.setLayoutParams(scrollLp2);
+		scroll.setPadding(PADD_NORMAL, 0, PADD_NORMAL, 0);
+		scroll.setBackgroundColor(viewBackground);
 
 		//CharScrollView
 		chartScrollView = new ChartScrollView(context);
 		FrameLayout.LayoutParams scrollLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(47*DENSITY));
-		scrollLp.setMargins(0, PADD_TINY, 0, 0);
+//		scrollLp.setMargins(0, PADD_TINY, 0, 0);
 		scrollLp.gravity = Gravity.CENTER;
 		chartScrollView.setLayoutParams(scrollLp);
 
 		chartScrollOverlayView = new ChartScrollOverlayView(context);
 		FrameLayout.LayoutParams scrollOverlayLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, (int)(47*DENSITY));
-		scrollOverlayLp.setMargins(0, PADD_TINY, 0, 0);
+//		scrollOverlayLp.setMargins(0, PADD_TINY, 0, 0);
 		scrollOverlayLp.gravity = Gravity.CENTER;
 		chartScrollOverlayView.setLayoutParams(scrollOverlayLp);
 		chartScrollOverlayView.setOnScrollListener(this);
@@ -125,6 +136,7 @@ public class ItemView extends LinearLayout implements
 		LinearLayout.LayoutParams checkersLp = new LinearLayout.LayoutParams (
 				ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		chipsView.setLayoutParams(checkersLp);
+		chipsView.setPadding(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chipsView.setOnChipCheckListener(this);
 		chipsView.setClipChildren(false);
 		chipsView.setClipToPadding(false);

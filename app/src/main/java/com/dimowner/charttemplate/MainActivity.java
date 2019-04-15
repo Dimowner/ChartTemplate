@@ -458,6 +458,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
 //			}
 
 			Gson gson = new Gson();
+//			DataArray data = gson.fromJson(json, DataArray.class);
 			Data data1 = gson.fromJson(json1, Data.class);
 			Data data2 = gson.fromJson(json2, Data.class);
 			Data data3 = gson.fromJson(json3, Data.class);

@@ -94,12 +94,14 @@ public class ChipsView extends LinearLayout {
 	private void init(Context context) {
 		chipsWidth = new ArrayList<>();
 		views = new ArrayList<>();
-//		TypedValue typedValue = new TypedValue();
-//		if (context.getTheme().resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
-//			gridTextColor = typedValue.data;
-//		} else {
-//			gridTextColor = context.getResources().getColor(R.color.text_color);
-//		}
+
+		int viewBackgroundColor;
+		TypedValue typedValue = new TypedValue();
+		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
+			viewBackgroundColor = typedValue.data;
+		} else {
+			viewBackgroundColor = context.getResources().getColor(R.color.text_color);
+		}
 
 		container = new FrameLayout(context);
 		LinearLayout.LayoutParams containerLp = new LinearLayout.LayoutParams(
@@ -110,12 +112,13 @@ public class ChipsView extends LinearLayout {
 //		containerLp.bottomMargin = PADD_SMALL+PADD_TINY;
 		container.setLayoutParams(containerLp);
 		this.addView(container);
+		setBackgroundColor(viewBackgroundColor);
 	}
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		super.onLayout(changed, left, top, right, bottom);
-		WIDTH = getWidth();
+		WIDTH = getWidth()-2*PADD_NORMAL;
 	}
 
 	public TextView createChipView(int id, final Context context, final String name, final int color, boolean checked) {

@@ -234,7 +234,7 @@ public class ChartSelectionDrawer {
 	}
 
 	public void draw(Canvas canvas, ChartData data, boolean[] linesVisibility, float HEIGHT,
-						  Paint[] linePaints, float valueScaleY) {
+						  Paint[] linePaints, float valueScaleY, float minValVisible) {
 		if (show) {
 			if (data.getType(0) == ChartData.TYPE_LINE || data.getType(0) == ChartData.TYPE_AREA) {
 				//Draw scrubbler
@@ -245,10 +245,10 @@ public class ChartSelectionDrawer {
 				if (data.getType(i) == ChartData.TYPE_LINE) {
 					if (linesVisibility[i]) {
 						canvas.drawCircle(selectionX,
-								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
+								HEIGHT - BASE_LINE_Y - (selectedValues[i]-minValVisible) * valueScaleY,
 								CIRCLE_SIZE, circlePaint);
 						canvas.drawCircle(selectionX,
-								HEIGHT - BASE_LINE_Y - selectedValues[i] * valueScaleY,
+								HEIGHT - BASE_LINE_Y - (selectedValues[i]-minValVisible) * valueScaleY,
 								CIRCLE_SIZE, linePaints[i]);
 					}
 				}
@@ -378,13 +378,13 @@ public class ChartSelectionDrawer {
 			selectedDateWidth = tempRect.width();
 		}
 
-		float width = 2*PADD_XNORMAL + selectedDateWidth + 30*DENSITY; //30dp is space for arrow icon
+		float width = 2*PADD_XNORMAL + selectedDateWidth + 24*DENSITY; //30dp is space for arrow icon
 		if (width < maxRowWidth+4* PADD_XNORMAL) {
 			width = maxRowWidth+4* PADD_XNORMAL;
 		}
 
-		sizeRect.left = selectionX - width - PADD_XNORMAL;
-		sizeRect.right = selectionX - PADD_XNORMAL;
+		sizeRect.left = selectionX - width - PADD_SMALL - STEP;
+		sizeRect.right = selectionX - PADD_SMALL - STEP;
 		sizeRect.top = BASE_LINE_Y + 2* PADD_XNORMAL;
 		sizeRect.bottom = BASE_LINE_Y + 4.5f * PADD_XNORMAL + selectedDateHeight + visibleLinesCount*selectedNameHeight;
 
@@ -394,10 +394,10 @@ public class ChartSelectionDrawer {
 			sizeRect.right = WIDTH - PADD_TINY;
 			sizeRect.left = WIDTH - PADD_TINY - w;
 		}
-		if (sizeRect.left < PADD_TINY) {
+		if (sizeRect.left < 0) {
 			float w = sizeRect.width();
-			sizeRect.left = PADD_TINY;
-			sizeRect.right = PADD_TINY + w;
+			sizeRect.left = 0;
+			sizeRect.right = 0 + w;
 		}
 	}
 

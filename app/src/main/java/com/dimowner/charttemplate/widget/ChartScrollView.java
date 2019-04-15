@@ -196,7 +196,7 @@ public class ChartScrollView extends View {
 				}
 			}
 			//Draw round borders.
-			canvas.drawRoundRect(-1.5f*DENSITY, 0, WIDTH, HEIGHT, SELECTION_HALF, SELECTION_HALF, borderPaint);
+			canvas.drawRoundRect(-DENSITY, -0.5f*DENSITY, WIDTH, HEIGHT+DENSITY, SELECTION_HALF, SELECTION_HALF, borderPaint);
 //			canvas.drawRoundRect(rectF, SELECTION_HALF, SELECTION_HALF, borderPaint);
 		}
 	}
@@ -240,11 +240,11 @@ public class ChartScrollView extends View {
 		float H3 = (H1-1.5f*DENSITY)/100;
 		int k = 0;
 		//TODO: Draw every second bar.
-		linePaints[index].setStrokeWidth(2*STEP+1);
+		linePaints[index].setStrokeWidth(3*STEP+1);
 		if (data.isStacked()) {
 			int j;
 			int sum=0;
-			for (int i = 0; i < values.length; i+=2) {
+			for (int i = 0; i < values.length; i+=3) {
 				if (k < chartArray.length) {
 					for (j = 0; j <= index; j++) {
 						if (linesCalculated[j] && j != amnimItemIndex) { //
@@ -281,10 +281,10 @@ public class ChartScrollView extends View {
 					}
 					sum = 0;
 				}
-				pos += 2*STEP;
+				pos += 3*STEP;
 			}
 		} else {
-			for (int i = 0; i < values.length; i+=2) {
+			for (int i = 0; i < values.length; i+=3) {
 				if (k < chartArray.length) {
 					chartArray[k] = pos; //x1
 					chartArray[k + 1] = H1; //y1
@@ -295,7 +295,7 @@ public class ChartScrollView extends View {
 						break;
 					}
 				}
-				pos += 2*STEP;
+				pos += 3*STEP;
 			}
 		}
 		canvas.drawLines(chartArray, linePaints[index]);
