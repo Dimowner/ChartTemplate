@@ -41,9 +41,6 @@ import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.util.TimeUtils;
 
 import java.text.DecimalFormat;
-import timber.log.Timber;
-
-//import timber.log.Timber;
 
 public class ChartView extends View {
 
@@ -441,7 +438,7 @@ public class ChartView extends View {
 								selectionDrawer.setSelectionX(selectionX);
 								selectionDrawer.calculatePanelSize(data, STEP, linesCalculated, scrollPos,
 										WIDTH, isYscaled, yIndex, yScale, sumVals);
-								if (isDetailsMode) {
+								if (isDetailsMode && !data.isPercentage()) {
 									setDateRange((int)((scrollPos+selectionX)/STEP));
 								}
 								if (onMoveEventsListener != null) {
@@ -558,7 +555,12 @@ public class ChartView extends View {
 				} else {
 					scale = 1;
 				}
-//				Timber.v("scale = " + scale);
+			} else if (data.isStacked()) {
+				if (size > 190) {
+					scale = 2;
+				} else {
+					scale = 1;
+				}
 			}
 //			if (size > data.getLength()/3) {
 //				scale = 2;
@@ -678,10 +680,10 @@ public class ChartView extends View {
 				timelineTextPaint.setTextAlign(Paint.Align.CENTER);
 				timelineTextPaint.setColor(gridTextColor);
 				drawTimeline(canvas);
+				//Draw selection panel with scrubbler
+				selectionDrawer.draw(canvas, data, linesVisibility, HEIGHT, linePaints, valueScale, minValueVisible);
 			}
 			canvas.drawText(dateRange, WIDTH-2, dateRangeHeight+DATE_RANGE_PADD, dateRangePaint);
-			//Draw selection panel with scrubbler
-			selectionDrawer.draw(canvas, data, linesVisibility, HEIGHT, linePaints, valueScale, minValueVisible);
 		}
 	}
 
@@ -779,13 +781,14 @@ public class ChartView extends View {
 		if (barSkip < 0) {barSkip = 0;}
 		barPos +=barSkip*STEP;
 //		int k = barSkip;
+		barSkip -= barSkip%scale;
 		barK = barSkip;
-		linePaints[index].setStrokeWidth(STEP+1);
+		linePaints[index].setStrokeWidth(scale*STEP+1);
 		if (data.isStacked()) {
 //			int j;
 //			int sum=0;
 			barSum = 0;
-			for (int i = barSkip; i < values.length; i++) {
+			for (int i = barSkip; i < values.length; i+=scale) {
 				if (barK < chartArray.length) {
 					for (barJ = 0; barJ <= index; barJ++) {
 						if (linesCalculated[barJ] && barJ != amnimItemIndex) { //
@@ -822,7 +825,7 @@ public class ChartView extends View {
 					}
 					barSum = 0;
 				}
-				barPos += STEP;
+				barPos += scale*STEP;
 			}
 		} else {
 			for (int i = barSkip; i < values.length; i++) {

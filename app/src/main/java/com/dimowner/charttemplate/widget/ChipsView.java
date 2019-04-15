@@ -228,7 +228,7 @@ public class ChipsView extends LinearLayout {
 					chipState[i] = true;
 					views.add(createChipView(i, getContext(), names[i], colors[i], true));
 					container.addView(views.get(i));
-					updatePositions(i);
+					updatePositions2(i);
 				}
 //				container.requestLayout();
 			} else {
@@ -269,6 +269,35 @@ public class ChipsView extends LinearLayout {
 		container.setLayoutParams(lp);
 	}
 
+	private void updatePositions2(int i) {
+		//Read view sizes;
+		Rect rect = new Rect();
+		views.get(i).getPaint().getTextBounds(names[i], 0, names[i].length(), rect);
+		int w = 2*NO_ICON_PADD + rect.width() + PADD_SMALL;
+		if (chipsHeight == 0) {
+			chipsHeight = 2*PADD_NORMAL + rect.height();
+		}
+		float x = totalWidth%WIDTH;
+		float y = (PADD_TINY+chipsHeight)*(totalWidth/(int)WIDTH)+PADD_NORMAL;
+
+		if (WIDTH-x < w) {
+			y = y + (PADD_TINY+chipsHeight);
+			views.get(i).setTranslationX(0);
+			views.get(i).setTranslationY(y);
+			totalWidth +=WIDTH-x;
+		} else {
+			views.get(i).setTranslationX(x);
+			views.get(i).setTranslationY(y);
+		}
+
+		totalWidth +=w;
+		chipsWidth.add(w);
+
+		ViewGroup.LayoutParams lp = container.getLayoutParams();
+		lp.height = (int)(y+chipsHeight + PADD_NORMAL);
+		container.setLayoutParams(lp);
+	}
+
 	public void setOnChipCheckListener(OnCheckListener l) {
 		this.listener = l;
 	}
@@ -304,7 +333,7 @@ public class ChipsView extends LinearLayout {
 				for (int i = 0; i < names.length; i++) {
 					views.add(createChipView(i, getContext(), names[i], colors[i], chipState[i]));
 					container.addView(views.get(i));
-					updatePositions(i);
+					updatePositions2(i);
 				}
 			} else {
 				clearChips();
