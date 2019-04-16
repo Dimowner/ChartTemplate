@@ -74,16 +74,16 @@ public class CheckersView extends LinearLayout {
 		Resources res = context.getResources();
 		TypedValue typedValue = new TypedValue();
 		Resources.Theme theme = context.getTheme();
-		if (theme.resolveAttribute(R.attr.textCheckerColor, typedValue, true)) {
-			textColor = typedValue.data;
-		} else {
+//		if (theme.resolveAttribute(R.attr.textCheckerColor, typedValue, true)) {
+//			textColor = typedValue.data;
+//		} else {
 			textColor = res.getColor(R.color.text_dark);
-		}
-		if (theme.resolveAttribute(R.attr.gridColor, typedValue, true)) {
-			dividerColor = typedValue.data;
-		} else {
+//		}
+//		if (theme.resolveAttribute(R.attr.gridColor, typedValue, true)) {
+//			dividerColor = typedValue.data;
+//		} else {
 			dividerColor = res.getColor(R.color.grid_color2);
-		}
+//		}
 
 		container = new LinearLayout(context);
 		LinearLayout.LayoutParams containerLp = new LinearLayout.LayoutParams(

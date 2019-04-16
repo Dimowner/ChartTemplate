@@ -36,14 +36,19 @@ import com.dimowner.charttemplate.widget.ChartView;
 import com.dimowner.charttemplate.widget.ItemView;
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import timber.log.Timber;
 
-public class MainActivity extends Activity implements View.OnClickListener,
-			ChartView.OnMoveEventsListener, ChartScrollOverlayView.OnScrollListener {
-
-	private ItemView itemView;
+public class MainActivity extends Activity implements View.OnClickListener {
+//			ChartView.OnMoveEventsListener,
+//		ChartScrollOverlayView.OnScrollListener {
 
 	private Gson gson = new Gson();
 
@@ -55,7 +60,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		AndroidUtils.update(getApplicationContext());
-		if (CTApplication.isNightMode()) {
+//		if (CTApplication.isNightMode()) {
+		if (ColorMap.isNightTheme()) {
 			setTheme(R.style.AppTheme_Night);
 		} else {
 			setTheme(R.style.AppTheme);
@@ -63,22 +69,24 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_activity);
 
-		itemView = findViewById(R.id.itemView);
-
 		ImageButton btnNightMode = findViewById(R.id.btnNightMode);
 		btnNightMode.setOnClickListener(this);
 
 		TextView txtTitle = findViewById(R.id.txtTitle);
-		if (CTApplication.isNightMode()) {
-			int color = getResources().getColor(R.color.white);
-			txtTitle.setTextColor(color);
-			btnNightMode.setImageResource(R.drawable.moon_light7);
-		} else {
-			int color = getResources().getColor(R.color.black);
-			txtTitle.setTextColor(color);
-			btnNightMode.setImageResource(R.drawable.moon7);
-			AndroidUtils.statusBarLightMode(this);
-		}
+//		if (CTApplication.isNightMode()) {
+//		if (ColorMap.isNightTheme()) {
+//			int color = getResources().getColor(R.color.white);
+//			txtTitle.setTextColor(color);
+//			btnNightMode.setImageResource(R.drawable.moon_light7);
+//		} else {
+//			int color = getResources().getColor(R.color.black);
+//			txtTitle.setTextColor(color);
+//			btnNightMode.setImageResource(R.drawable.moon7);
+//			AndroidUtils.statusBarLightMode(this);
+//		}
+		txtTitle.setTextColor(getResources().getColor(ColorMap.getTittleColor()));
+		btnNightMode.setImageResource(ColorMap.getMoonIcon());
+		findViewById(R.id.toolbar).setBackgroundColor(getResources().getColor(ColorMap.getViewBackground()));
 
 		recyclerView = findViewById(R.id.recyclerView);
 		layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -116,10 +124,17 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		});
 
 		if (savedInstanceState == null || CTApplication.getChartData() == null) {
+//			try {
+//				ArrayList<Data1> dat = Data1.convertJsonArrayToList(new JSONArray(AndroidUtils.readData(getApplicationContext())));
+//				Timber.v("data loaded = " + dat.size());
+//			} catch (JSONException e){
+//				Timber.e(e);
+//			}
+
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
-					final ChartData d = readDemoData(0);
+					readDemoData();
 					runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
@@ -132,10 +147,6 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		}
 	}
 
-	public void setData(ChartData d) {
-		itemView.setData(d);
-	}
-
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		AndroidUtils.update(getApplicationContext());
@@ -145,24 +156,23 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putParcelable("item_view1", itemView.onSaveInstanceState());
-		if (outState != null) {
+//		outState.putParcelable("item_view1", itemView.onSaveInstanceState());
+//		if (outState != null) {
 			listSaveState = layoutManager.onSaveInstanceState();
 			outState.putParcelable("recycler_state", listSaveState);
 			outState.putBundle("adapter", adapter.onSaveState());
-		}
+//		}
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Bundle state) {
 		super.onRestoreInstanceState(state);
-		itemView.onRestoreInstanceState(state.getParcelable("item_view1"));
-		if (state != null) {
+//		if (state != null) {
 			listSaveState = state.getParcelable("recycler_state");
 			adapter.setData(CTApplication.getChartData());
 			layoutManager.onRestoreInstanceState(listSaveState);
 			adapter.onRestoreState(state.getBundle("adapter"));
-		}
+//		}
 	}
 
 	/**
@@ -208,70 +218,82 @@ public class MainActivity extends Activity implements View.OnClickListener,
 		thread.start();
 	}
 
-	public ChartData readDemoData(int pos) {
+	public void readDemoData() {
 		try {
-//			String DATA_ARRAY = "dataArray";
-//			String COLUMNS = "columns";
-//			String TYPES = "types";
-//			String COLORS = "colors";
-//			String NAMES = "names";
+			String DATA_ARRAY = "dataArray";
+			String COLUMNS = "columns";
+			String TYPES = "types";
+			String COLORS = "colors";
+			String NAMES = "names";
 
-//			String json = AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json");
-			String json1 = AndroidUtils.readAsset(getApplicationContext(), "contest/1/overview.json");
-			String json2 = AndroidUtils.readAsset(getApplicationContext(), "contest/2/overview.json");
-			String json3 = AndroidUtils.readAsset(getApplicationContext(), "contest/3/overview.json");
-			String json4 = AndroidUtils.readAsset(getApplicationContext(), "contest/4/overview.json");
-			String json5 = AndroidUtils.readAsset(getApplicationContext(), "contest/5/overview.json");
-//			Timber.v("json = %s", json);
-//			JSONObject jo = new JSONObject(json);
-//			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
-//			Data[] dataValues = new Data[joArray.length()];
-//			for (int i = 0; i < joArray.length(); i++) {
-//				Object[][] columns;
-//				Map<String, String> types;
-//				Map<String, String> names;
-//				Map<String, String> colors;
-//				JSONObject joItem = (JSONObject) joArray.get(i);
-//
-//				names = AndroidUtils.jsonToMap(joItem.getJSONObject(NAMES));
-//				types = AndroidUtils.jsonToMap(joItem.getJSONObject(TYPES));
-//				colors = AndroidUtils.jsonToMap(joItem.getJSONObject(COLORS));
-//
-//				JSONArray colArray = joItem.getJSONArray(COLUMNS);
-//				List<Object> list = AndroidUtils.toList(colArray);
-//				columns = new Object[list.size()][];
-//
-//				for (int j = 0; j < list.size(); j++) {
-//					List<Object> l2 = (List<Object>) list.get(j);
-//					Object[] a = new Object[l2.size()];
-//					for (int k = 0; k < l2.size(); k++) {
-//						a[k] = l2.get(k);
-//					}
-//					columns[j] = a;
-//				}
-//				dataValues[i] = new Data(columns, types, names, colors);
-//			}
+			String json = AndroidUtils.readAsset(getApplicationContext(), "telegram_chart_data.json");
+//			String json = AndroidUtils.readData(getApplicationContext());
+//			String json1 = AndroidUtils.readAsset(getApplicationContext(), "contest/1/overview.json");
+//			String json2 = AndroidUtils.readAsset(getApplicationContext(), "contest/2/overview.json");
+//			String json3 = AndroidUtils.readAsset(getApplicationContext(), "contest/3/overview.json");
+//			String json4 = AndroidUtils.readAsset(getApplicationContext(), "contest/4/overview.json");
+//			String json5 = AndroidUtils.readAsset(getApplicationContext(), "contest/5/overview.json");
+			Timber.v("json = %s", json);
+			JSONObject jo = new JSONObject(json);
+			JSONArray joArray = jo.getJSONArray(DATA_ARRAY);
+			Data[] dataValues = new Data[joArray.length()];
+			for (int i = 0; i < joArray.length(); i++) {
+				Object[][] columns;
+				Map<String, String> types;
+				Map<String, String> names;
+				Map<String, String> colors;
+				JSONObject joItem = (JSONObject) joArray.get(i);
 
-			Gson gson = new Gson();
+				names = AndroidUtils.jsonToMap(joItem.getJSONObject(NAMES));
+				types = AndroidUtils.jsonToMap(joItem.getJSONObject(TYPES));
+				colors = AndroidUtils.jsonToMap(joItem.getJSONObject(COLORS));
+
+				JSONArray colArray = joItem.getJSONArray(COLUMNS);
+				List<Object> list = AndroidUtils.toList(colArray);
+				columns = new Object[list.size()][];
+
+				for (int j = 0; j < list.size(); j++) {
+					List<Object> l2 = (List<Object>) list.get(j);
+					Object[] a = new Object[l2.size()];
+					for (int k = 0; k < l2.size(); k++) {
+						a[k] = l2.get(k);
+					}
+					columns[j] = a;
+				}
+				dataValues[i] = new Data(columns, types, names, colors, false, false, false);
+			}
+
+//			Gson gson = new Gson();
 //			DataArray data = gson.fromJson(json, DataArray.class);
-			Data data1 = gson.fromJson(json1, Data.class);
-			Data data2 = gson.fromJson(json2, Data.class);
-			Data data3 = gson.fromJson(json3, Data.class);
-			Data data4 = gson.fromJson(json4, Data.class);
-			Data data5 = gson.fromJson(json5, Data.class);
+//			Data data1 = gson.fromJson(json1, Data.class);
+//			Data data2 = gson.fromJson(json2, Data.class);
+//			Data data3 = gson.fromJson(json3, Data.class);
+//			Data data4 = gson.fromJson(json4, Data.class);
+//			Data data5 = gson.fromJson(json5, Data.class);
 //			dataArray = array.getDataArray();
-			ChartData[] chartData = new ChartData[] {toChartData(false, 1, data1), toChartData(false, 2, data2),
-					toChartData(false, 3, data3), toChartData(false, 4, data4), toChartData(false, 5, data5)};
+//			ChartData[] chartData = new ChartData[] {toChartData(false, 1, data1), toChartData(false, 2, data2),
+//					toChartData(false, 3, data3), toChartData(false, 4, data4), toChartData(false, 5, data5)};
+//			ChartData[] chartData = new ChartData[] {
+//					toChartData(false, 1, data.getDataArray()[0]),
+//					toChartData(false, 2, data.getDataArray()[1]),
+//					toChartData(false, 3, data.getDataArray()[2]),
+//					toChartData(false, 4, data.getDataArray()[3]),
+//					toChartData(false, 5, data.getDataArray()[4]),
+//			};
+			ChartData[] chartData = new ChartData[] {
+					toChartData(false, 1, dataValues[0]),
+					toChartData(false, 2, dataValues[1]),
+					toChartData(false, 3, dataValues[2]),
+					toChartData(false, 4, dataValues[3]),
+					toChartData(false, 5, dataValues[4]),
+			};
 			CTApplication.setChartData(chartData);
 //			CTApplication.setData(new Data[]{data1, data2, data3, data4, data5});
 //			CTApplication.setData(dataValues);
-//		} catch (IOException | ClassCastException | JSONException ex) {
-		} catch (IOException | ClassCastException ex) {
+		} catch (IOException | ClassCastException | JSONException ex) {
+//		} catch (IOException | ClassCastException ex) {
 			Timber.e(ex);
-			return null;
 		}
-//		return toChartData(CTApplication.getData()[pos]);
-		return CTApplication.getChartData()[pos];
 	}
 
 	private ChartData toChartData(boolean detailsMode, int chartNum, Data d) {
@@ -296,29 +318,34 @@ public class MainActivity extends Activity implements View.OnClickListener,
 	@Override
 	public void onClick(View v) {
 		if (v.getId() == R.id.btnNightMode) {
-			CTApplication.setNightMode(!CTApplication.isNightMode());
+//			CTApplication.setNightMode(!CTApplication.isNightMode());
+			if (ColorMap.isNightTheme()) {
+				ColorMap.setDayTheme();
+			} else {
+				ColorMap.setNightTheme();
+			}
 			recreate();
 		}
 	}
 
-	@Override
-	public void disallowTouchEvent() {
+//	@Override
+//	public void disallowTouchEvent() {
 //		scrollView.requestDisallowInterceptTouchEvent(true);
 //		recyclerView.requestDisallowInterceptTouchEvent(true);
-	}
-
-	@Override
-	public void allowTouchEvent() {
+//	}
+//
+//	@Override
+//	public void allowTouchEvent() {
 //		scrollView.requestDisallowInterceptTouchEvent(false);
 //		recyclerView.requestDisallowInterceptTouchEvent(false);
-	}
-
-	@Override
-	public void onScroll(float x, float size) {
+//	}
+//
+//	@Override
+//	public void onScroll(float x, float size) {
 //		chartView.scrollPos(x, size);
 //		scrollView.requestDisallowInterceptTouchEvent(true);
 //		recyclerView.requestDisallowInterceptTouchEvent(true);
-	}
+//	}
 
 	public interface OnLoadCharListener {
 		void onLoadChart(ChartData chart);

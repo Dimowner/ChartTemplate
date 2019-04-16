@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
 		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/listItem"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
 		android:elevation="@dimen/elevation"
-		android:layout_marginTop="@dimen/spacing_double"
-		android:background="?attr/viewBackground">
+		android:layout_marginTop="@dimen/spacing_double" >
+		<!--android:background="@color/view_background">-->
+		<!--android:background="?attr/viewBackground">-->
 
 	<com.dimowner.charttemplate.widget.ItemView
 			android:id="@+id/itemView"
@@ -26,7 +28,7 @@
 			android:layout_marginTop="@dimen/spacing_normal"
 			android:text="@string/followers"
 			android:fontFamily="sans-serif-medium"
-			android:textColor="?attr/tittleColor"
+			android:textColor="@color/white"
 			android:textSize="@dimen/text_xmedium"
 			/>
 </FrameLayout>

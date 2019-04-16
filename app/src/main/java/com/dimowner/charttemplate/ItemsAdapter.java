@@ -16,6 +16,7 @@
 
 package com.dimowner.charttemplate;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -48,9 +49,9 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 	private ChartView.OnDetailsListener onDetailsListener;
 
 	private int zoomOutColor;
-	private int zoomOutColorNight;
+//	private int zoomOutColorNight;
 	private int titleColor;
-	private int titleColorNight;
+//	private int titleColorNight;
 
 	public ItemsAdapter() {
 		data = new ChartData[0];
@@ -62,10 +63,10 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int type) {
 		Resources res = viewGroup.getContext().getResources();
-		zoomOutColor = res.getColor(R.color.zoom_out_color);
-		zoomOutColorNight = res.getColor(R.color.zoom_out_color_night);
-		titleColor = res.getColor(R.color.black);
-		titleColorNight = res.getColor(R.color.white);
+		zoomOutColor = res.getColor(ColorMap.getZoomOutColor());
+//		zoomOutColorNight = res.getColor(R.color.zoom_out_color_night);
+		titleColor = res.getColor(ColorMap.getTittleColor());
+//		titleColorNight = res.getColor(R.color.white);
 		View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item, viewGroup, false);
 		return new ItemViewHolder(v);
 	}
@@ -76,22 +77,27 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		holder.itemView.setData(data[p]);
 		if (data[p].isDetailsMode()) {
 			holder.txtTitle.setText("Zoom Out");
-			if (CTApplication.isNightMode()) {
-				holder.txtTitle.setTextColor(zoomOutColorNight);
-				holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_zoom_out_night, 0, 0, 0);
-			} else {
-				holder.txtTitle.setTextColor(zoomOutColor);
-				holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_zoom_out, 0, 0, 0);
-			}
+			holder.txtTitle.setTextColor(zoomOutColor);
+			holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(ColorMap.getZoomOutIcon(), 0, 0, 0);
+//			if (CTApplication.isNightMode()) {
+//			if (ColorMap.isNightTheme()) {
+//				holder.txtTitle.setTextColor(zoomOutColorNight);
+//				holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_zoom_out_night, 0, 0, 0);
+//			} else {
+//				holder.txtTitle.setTextColor(zoomOutColor);
+//				holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_zoom_out, 0, 0, 0);
+//			}
 			holder.txtTitle.setCompoundDrawablePadding((int)AndroidUtils.dpToPx(6));
 		} else {
 			holder.txtTitle.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 			holder.txtTitle.setText("Chart " + data[p].getChartNum());
-			if (CTApplication.isNightMode()) {
-				holder.txtTitle.setTextColor(titleColorNight);
-			} else {
-				holder.txtTitle.setTextColor(titleColor);
-			}
+//			if (CTApplication.isNightMode()) {
+//			if (ColorMap.isNightTheme()) {
+//				holder.txtTitle.setTextColor(titleColorNight);
+//			} else {
+//				holder.txtTitle.setTextColor(titleColor);
+//			}
+			holder.txtTitle.setTextColor(titleColor);
 		}
 		holder.txtTitle.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -190,11 +196,15 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		ItemView itemView;
 		View view;
 
-		ItemViewHolder(View itemView) {
-			super(itemView);
-			this.view = itemView;
-			this.txtTitle = itemView.findViewById(R.id.txtTitle);
-			this.itemView = itemView.findViewById(R.id.itemView);
+		ItemViewHolder(View view) {
+			super(view);
+			this.view = view;
+			this.txtTitle = view.findViewById(R.id.txtTitle);
+			this.itemView = view.findViewById(R.id.itemView);
+
+			Context ctx = view.getContext();
+			this.itemView.findViewById(R.id.itemView).setBackgroundColor(ctx.getResources().getColor(ColorMap.getViewBackground()));
+
 		}
 
 		String getKey() {

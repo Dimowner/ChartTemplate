@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
+import com.dimowner.charttemplate.ColorMap;
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
@@ -132,13 +133,13 @@ public class ChartScrollView extends View {
 	private void init(Context context) {
 		setFocusable(false);
 
-		int viewBackground;
-		TypedValue typedValue = new TypedValue();
-		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
-			viewBackground = typedValue.data;
-		} else {
-			viewBackground = context.getResources().getColor(R.color.view_background);
-		}
+		int viewBackground = getResources().getColor(ColorMap.getViewBackground());
+//		TypedValue typedValue = new TypedValue();
+//		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
+//			viewBackground = typedValue.data;
+//		} else {
+//			viewBackground = context.getResources().getColor(R.color.view_background);
+//		}
 		borderPaint = new Paint();
 		borderPaint.setStyle(Paint.Style.STROKE);
 		borderPaint.setStrokeWidth(BORDER);
@@ -154,6 +155,7 @@ public class ChartScrollView extends View {
 		lp.setStrokeWidth(1.0f*DENSITY);
 //		lp.setStrokeJoin(Paint.Join.ROUND);
 //		lp.setStrokeCap(Paint.Cap.ROUND);
+		lp.setStrokeCap(Paint.Cap.SQUARE);
 		lp.setColor(color);
 		return lp;
 	}
@@ -228,6 +230,7 @@ public class ChartScrollView extends View {
 			k +=4;
 		}
 //		canvas.drawPath(path, linePaints[index]);
+//		linePaints[index].setStrokeCap(Paint.Cap.SQUARE);
 		canvas.drawLines(chartArray, linePaints[index]);
 	}
 

@@ -18,7 +18,7 @@
 
 	<style name="AppTheme" parent="android:Theme.Holo.Light">
 
-		<item name="primaryColor">@color/white</item>
+		<!--<item name="primaryColor">@color/white</item>-->
 
 		<item name="android:windowActionBar">false</item>
 		<item name="android:windowNoTitle">true</item>
@@ -26,26 +26,26 @@
 
 		<item name="android:windowBackground">@color/window_background</item>
 
-		<item name="viewBackground">@color/view_background</item>
-		<item name="gridColor">@color/grid_color2</item>
-		<item name="gridBaseLineColor">@color/grid_base_line</item>
-		<item name="gridTextColor">@color/text_color</item>
-		<item name="selectionColor">@color/selection_color</item>
-		<item name="overlayColor">@color/overlay_color</item>
-		<item name="textCheckerColor">@color/text_dark</item>
-		<item name="panelColor">@color/panel_background</item>
-		<item name="panelTextColor">@color/panel_text</item>
-		<item name="scrubblerColor">@color/scrubbler_color</item>
-		<item name="shadowColor">@color/shadow_color</item>
-		<item name="tittleColor">@color/black</item>
-		<item name="barOverlayColor">@color/bar_overlay_color</item>
-		<item name="arrowColor">@color/arrow_color</item>
+		<!--<item name="viewBackground">@color/view_background</item>-->
+		<!--<item name="gridColor">@color/grid_color2</item>-->
+		<!--<item name="gridBaseLineColor">@color/grid_base_line</item>-->
+		<!--<item name="gridTextColor">@color/text_color</item>-->
+		<!--<item name="selectionColor">@color/selection_color</item>-->
+		<!--<item name="overlayColor">@color/overlay_color</item>-->
+		<!--<item name="textCheckerColor">@color/text_dark</item>-->
+		<!--<item name="panelColor">@color/panel_background</item>-->
+		<!--<item name="panelTextColor">@color/panel_text</item>-->
+		<!--<item name="scrubblerColor">@color/scrubbler_color</item>-->
+		<!--<item name="shadowColor">@color/shadow_color</item>-->
+		<!--<item name="tittleColor">@color/black</item>-->
+		<!--<item name="barOverlayColor">@color/bar_overlay_color</item>-->
+		<!--<item name="arrowColor">@color/arrow_color</item>-->
 
 	</style>
 
 	<style name="AppTheme.Night" parent="AppTheme">
 
-		<item name="primaryColor">@color/primary_night</item>
+		<!--<item name="primaryColor">@color/primary_night</item>-->
 
 		<item name="android:windowActionBar">false</item>
 		<item name="android:windowNoTitle">true</item>
@@ -53,20 +53,20 @@
 
 		<item name="android:windowBackground">@color/window_background_night</item>
 
-		<item name="viewBackground">@color/view_background_night</item>
-		<item name="gridColor">@color/grid_color2_night</item>
-		<item name="gridBaseLineColor">@color/grid_base_line_night</item>
-		<item name="gridTextColor">@color/text_color_night</item>
-		<item name="selectionColor">@color/selection_color_night</item>
-		<item name="overlayColor">@color/overlay_color_night</item>
-		<item name="textCheckerColor">@color/text_light</item>
-		<item name="panelColor">@color/panel_background_night</item>
-		<item name="panelTextColor">@color/panel_text_night</item>
-		<item name="scrubblerColor">@color/scrubbler_color_night</item>
-		<item name="shadowColor">@color/shadow_color_night</item>
-		<item name="tittleColor">@color/white</item>
-		<item name="barOverlayColor">@color/bar_overlay_color_night</item>
-		<item name="arrowColor">@color/arrow_color_night</item>
+		<!--<item name="viewBackground">@color/view_background_night</item>-->
+		<!--<item name="gridColor">@color/grid_color2_night</item>-->
+		<!--<item name="gridBaseLineColor">@color/grid_base_line_night</item>-->
+		<!--<item name="gridTextColor">@color/text_color_night</item>-->
+		<!--<item name="selectionColor">@color/selection_color_night</item>-->
+		<!--<item name="overlayColor">@color/overlay_color_night</item>-->
+		<!--<item name="textCheckerColor">@color/text_light</item>-->
+		<!--<item name="panelColor">@color/panel_background_night</item>-->
+		<!--<item name="panelTextColor">@color/panel_text_night</item>-->
+		<!--<item name="scrubblerColor">@color/scrubbler_color_night</item>-->
+		<!--<item name="shadowColor">@color/shadow_color_night</item>-->
+		<!--<item name="tittleColor">@color/white</item>-->
+		<!--<item name="barOverlayColor">@color/bar_overlay_color_night</item>-->
+		<!--<item name="arrowColor">@color/arrow_color_night</item>-->
 
 	</style>
 

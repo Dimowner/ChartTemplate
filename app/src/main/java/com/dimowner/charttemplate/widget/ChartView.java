@@ -36,12 +36,15 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
+import com.dimowner.charttemplate.ColorMap;
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
 import com.dimowner.charttemplate.util.TimeUtils;
 
 import java.text.DecimalFormat;
+
+import timber.log.Timber;
 
 public class ChartView extends View {
 
@@ -55,6 +58,7 @@ public class ChartView extends View {
 	private final int MAX_GRID_STEP;
 	private final int DATE_RANGE_PADD;
 	private final int RADIUS;
+	private final int LINE_WIDTH;
 	private static final int GRID_LINES_COUNT = 6;
 	private static final int ANIMATION_DURATION = 220; //mills
 
@@ -68,6 +72,7 @@ public class ChartView extends View {
 		MIN_GRID_STEP = (int) (44*DENSITY);
 		MAX_GRID_STEP = (int) (90*DENSITY);
 		RADIUS = (int) (120*DENSITY);
+		LINE_WIDTH = (int) (2*DENSITY);
 		DATE_RANGE_PADD = (int) (21*DENSITY);
 	}
 
@@ -134,7 +139,7 @@ public class ChartView extends View {
 	private float gridStep = 1;
 	private float gridValueStep = 1;
 	private boolean skipNextInvalidation = false;
-	private String dateRange;
+	private String dateRange = "";
 	private float dateRangeHeight;
 	private Rect rect;
 	private int gridTextColor;
@@ -160,7 +165,7 @@ public class ChartView extends View {
 	private float moveValY= 0;
 	private int moveIndex = -1;
 
-	private OnMoveEventsListener onMoveEventsListener;
+//	private OnMoveEventsListener onMoveEventsListener;
 	private GestureDetector gestureDetector;
 
 	public OnDetailsListener onDetailsListener;
@@ -225,20 +230,20 @@ public class ChartView extends View {
 
 	public ChartView(Context context) {
 		super(context);
-		init(context);
+		init(context, null);
 	}
 
 	public ChartView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		init(context);
+		init(context, attrs);
 	}
 
 	public ChartView(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		init(context);
+		init(context, attrs);
 	}
 
-	private void init(Context context) {
+	private void init(Context context, AttributeSet attrs) {
 		setFocusable(false);
 
 		scrollPos = -1;
@@ -254,53 +259,73 @@ public class ChartView extends View {
 		int arrowColor;
 
 		Resources res = context.getResources();
-		TypedValue typedValue = new TypedValue();
-		Resources.Theme theme = context.getTheme();
-		if (theme.resolveAttribute(R.attr.gridColor, typedValue, true)) {
-			gridColor = typedValue.data;
-		} else {
-			gridColor = res.getColor(R.color.grid_color2);
-		}
-		if (theme.resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
-			gridTextColor = typedValue.data;
-		} else {
-			gridTextColor = res.getColor(R.color.text_color);
-		}
-		if (theme.resolveAttribute(R.attr.panelColor, typedValue, true)) {
-			panelColor = typedValue.data;
-		} else {
-			panelColor = res.getColor(R.color.panel_background);
-		}
-		if (theme.resolveAttribute(R.attr.panelTextColor, typedValue, true)) {
-			panelTextColor = typedValue.data;
-		} else {
-			panelTextColor = res.getColor(R.color.panel_text_night);
-		}
-		if (theme.resolveAttribute(R.attr.shadowColor, typedValue, true)) {
-			shadowColor = typedValue.data;
-		} else {
-			shadowColor = res.getColor(R.color.shadow_color);
-		}
-		if (theme.resolveAttribute(R.attr.tittleColor, typedValue, true)) {
-			tittleColor = typedValue.data;
-		} else {
-			tittleColor = res.getColor(R.color.black);
-		}
-		if (theme.resolveAttribute(R.attr.viewBackground, typedValue, true)) {
-			viewBackground = typedValue.data;
-		} else {
-			viewBackground = res.getColor(R.color.view_background);
-		}
-		if (theme.resolveAttribute(R.attr.barOverlayColor, typedValue, true)) {
-			barOverlayColor = typedValue.data;
-		} else {
-			barOverlayColor = res.getColor(R.color.bar_overlay_color);
-		}
-		if (theme.resolveAttribute(R.attr.arrowColor, typedValue, true)) {
-			arrowColor = typedValue.data;
-		} else {
-			arrowColor = res.getColor(R.color.arrow_color);
-		}
+//		gridColor = res.getColor(R.color.grid_color2);
+//		gridTextColor = res.getColor(R.color.text_color);
+//		panelColor = res.getColor(R.color.panel_background);
+//		panelTextColor = res.getColor(R.color.panel_text);
+//		shadowColor = res.getColor(R.color.shadow_color);
+//		tittleColor = res.getColor(R.color.black);
+//		viewBackground = res.getColor(R.color.view_background);
+//		barOverlayColor = res.getColor(R.color.bar_overlay_color);
+//		arrowColor = res.getColor(R.color.arrow_color);
+
+		gridColor = res.getColor(ColorMap.getGridColor());
+		gridTextColor = res.getColor(ColorMap.getGridTextColor());
+		panelColor = res.getColor(ColorMap.getPanelColor());
+		panelTextColor = res.getColor(ColorMap.getPanelTextColor());
+		shadowColor = res.getColor(ColorMap.getShadowColor());
+		tittleColor = res.getColor(ColorMap.getTittleColor());
+		viewBackground = res.getColor(ColorMap.getViewBackground());
+		barOverlayColor = res.getColor(ColorMap.getBarOverlayColor());
+		arrowColor = res.getColor(ColorMap.getArrowColor());
+
+//		if (attrs != null) {
+//			TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ChartView);
+//			if (ta != null) {
+//				//Read View custom attributes
+//				viewBackground = ta.getColor(R.styleable.ChartView_viewBackground, res.getColor(R.color.view_background));
+//				gridColor = ta.getColor(R.styleable.ChartView_gridColor, res.getColor(R.color.grid_color2));
+//				panelColor = ta.getColor(R.styleable.ChartView_panelColor, res.getColor(R.color.panel_background));
+//				panelTextColor = ta.getColor(R.styleable.ChartView_panelTextColor, res.getColor(R.color.panel_text));
+//				shadowColor = ta.getColor(R.styleable.ChartView_shadowColor, res.getColor(R.color.shadow_color));
+//				tittleColor = ta.getColor(R.styleable.ChartView_tittleColor, res.getColor(R.color.black));
+//				barOverlayColor = ta.getColor(R.styleable.ChartView_barOverlayColor, res.getColor(R.color.bar_overlay_color));
+//				arrowColor = ta.getColor(R.styleable.ChartView_arrowColor, res.getColor(R.color.arrow_color));
+//				ta.recycle();
+//			}
+//		} else {
+//			Timber.v("attributes is null \\_(-_-)_/");
+//			TypedValue typedValue = new TypedValue();
+//			Resources.Theme theme = context.getTheme();
+//			if (theme.resolveAttribute(R.attr.gridColor, typedValue, true)) {
+//				gridColor = typedValue.data;
+//			}
+//			if (theme.resolveAttribute(R.attr.gridTextColor, typedValue, true)) {
+//				gridTextColor = typedValue.data;
+//			}
+//			if (theme.resolveAttribute(R.attr.panelColor, typedValue, true)) {
+//				panelColor = typedValue.data;
+//			}
+//			if (theme.resolveAttribute(R.attr.panelTextColor, typedValue, true)) {
+//				panelTextColor = typedValue.data;
+//			}
+//			if (theme.resolveAttribute(R.attr.shadowColor, typedValue, true)) {
+//				shadowColor = typedValue.data;
+//			}
+//			if (theme.resolveAttribute(R.attr.tittleColor, typedValue, true)) {
+//				tittleColor = typedValue.data;
+//			}
+//			if (theme.resolveAttribute(R.attr.viewBackground, typedValue, true)) {
+//				viewBackground = typedValue.data;
+//			}
+//			if (theme.resolveAttribute(R.attr.barOverlayColor, typedValue, true)) {
+//				barOverlayColor = typedValue.data;
+//			}
+//			if (theme.resolveAttribute(R.attr.arrowColor, typedValue, true)) {
+//				arrowColor = typedValue.data;
+//			}
+//		}
+
 		selectionDrawer = new ChartSelectionDrawer(getContext(), panelTextColor, arrowColor,
 					panelColor, gridColor, shadowColor, viewBackground, barOverlayColor);
 		selectionDrawer.setInvalidateIlstener(new ChartSelectionDrawer.InvalidateIlstener() {
@@ -407,16 +432,16 @@ public class ChartView extends View {
 								if (isDetailsMode && !data.isPercentage()) {
 									setDateRange((int)((scrollPos+selectionX)/STEP));
 								}
-								if (onMoveEventsListener != null) {
-									onMoveEventsListener.disallowTouchEvent();
-								}
+//								if (onMoveEventsListener != null) {
+//									onMoveEventsListener.disallowTouchEvent();
+//								}
 								getParent().requestDisallowInterceptTouchEvent(true);
 							} else {
 //								selectionX = -1;
 								selectionDrawer.setSelectionX(selectionX);
-								if (onMoveEventsListener != null) {
-									onMoveEventsListener.allowTouchEvent();
-								}
+//								if (onMoveEventsListener != null) {
+//									onMoveEventsListener.allowTouchEvent();
+//								}
 								getParent().requestDisallowInterceptTouchEvent(false);
 							}
 							invalidate();
@@ -441,14 +466,15 @@ public class ChartView extends View {
 	}
 
 	private Paint createLinePaint(int color, boolean isBars) {
-		Paint lp = new Paint(Paint.ANTI_ALIAS_FLAG);
+		Paint lp = new Paint();
 		lp.setStyle(Paint.Style.STROKE);
-		lp.setStrokeWidth(2*DENSITY);
-		lp.setStrokeJoin(Paint.Join.ROUND);
+		lp.setStrokeWidth(LINE_WIDTH);
+		lp.setAntiAlias(true);
+//		lp.setStrokeJoin(Paint.Join.ROUND);
 		lp.setColor(color);
-		if (isBars) {
+//		if (isBars) {
 			lp.setStrokeCap(Paint.Cap.BUTT);
-		}
+//		}
 		return lp;
 	}
 
@@ -792,13 +818,12 @@ public class ChartView extends View {
 			}
 			chartPos += STEP;
 		}
-		if (chartPos/STEP < 140) {
+		if (chartPos/STEP < 80) {
 			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
 		} else {
-			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
+			linePaints[index].setStrokeCap(Paint.Cap.SQUARE);
 		}
 		canvas.drawLines(chartArray, chartSkip, chartK-chartSkip, linePaints[index]);
-//		canvas.drawVertices();
 	}
 
 	private float barPos;
@@ -1310,9 +1335,9 @@ public class ChartView extends View {
 		return -1;
 	}
 
-	public void setOnMoveEventsListener(OnMoveEventsListener onMoveEventsListener) {
-		this.onMoveEventsListener = onMoveEventsListener;
-	}
+//	public void setOnMoveEventsListener(OnMoveEventsListener onMoveEventsListener) {
+//		this.onMoveEventsListener = onMoveEventsListener;
+//	}
 
 	private String formatValue(float f) {
 		if (f < 1000.0f) {
@@ -1416,10 +1441,10 @@ public class ChartView extends View {
 		selectionDrawer.hidePanel();
 	}
 
-	public interface OnMoveEventsListener {
-		void disallowTouchEvent();
-		void allowTouchEvent();
-	}
+//	public interface OnMoveEventsListener {
+//		void disallowTouchEvent();
+//		void allowTouchEvent();
+//	}
 
 	static class SavedState extends View.BaseSavedState {
 		SavedState(Parcelable superState) {

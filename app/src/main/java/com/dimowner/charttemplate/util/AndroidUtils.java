@@ -24,6 +24,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.dimowner.charttemplate.R;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +40,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import timber.log.Timber;
 
 public class AndroidUtils {
 
@@ -78,6 +82,19 @@ public class AndroidUtils {
 			return new String(buffer, "UTF-8");
 		} else {
 			return "";
+		}
+	}
+
+	public static String readData(Context context) {
+		try {
+			InputStream openRawResource = context.getResources().openRawResource(R.raw.telegram_chart_data);
+			byte[] bArr = new byte[openRawResource.available()];
+			openRawResource.read(bArr);
+			openRawResource.close();
+			return new String(bArr);
+		} catch (IOException e) {
+			Timber.e(e);
+			return null;
 		}
 	}
 

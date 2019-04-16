@@ -29,6 +29,7 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.dimowner.charttemplate.ColorMap;
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
@@ -108,19 +109,21 @@ public class ChartScrollOverlayView extends View {
 
 		int overlayColor;
 		Resources res = context.getResources();
-		TypedValue typedValue = new TypedValue();
-		Resources.Theme theme = context.getTheme();
+//		TypedValue typedValue = new TypedValue();
+//		Resources.Theme theme = context.getTheme();
 		colorWhite = res.getColor(R.color.white);
-		if (theme.resolveAttribute(R.attr.selectionColor, typedValue, true)) {
-			selectionColor = typedValue.data;
-		} else {
-			selectionColor = res.getColor(R.color.selection_color);
-		}
-		if (theme.resolveAttribute(R.attr.overlayColor, typedValue, true)) {
-			overlayColor = typedValue.data;
-		} else {
-			overlayColor = res.getColor(R.color.overlay_color);
-		}
+		selectionColor = res.getColor(ColorMap.getSelectionColor());
+		overlayColor = res.getColor(ColorMap.getOverlayColor());
+//		if (theme.resolveAttribute(R.attr.selectionColor, typedValue, true)) {
+//			selectionColor = typedValue.data;
+//		} else {
+//			selectionColor = res.getColor(R.color.selection_color);
+//		}
+//		if (theme.resolveAttribute(R.attr.overlayColor, typedValue, true)) {
+//			overlayColor = typedValue.data;
+//		} else {
+//			overlayColor = res.getColor(R.color.overlay_color);
+//		}
 
 		selectionPaint = new Paint();
 //		selectionPaint.setAntiAlias(false);

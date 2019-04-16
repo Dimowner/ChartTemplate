@@ -31,6 +31,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.dimowner.charttemplate.ColorMap;
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.util.AndroidUtils;
 
@@ -95,13 +96,13 @@ public class ChipsView extends LinearLayout {
 		chipsWidth = new ArrayList<>();
 		views = new ArrayList<>();
 
-		int viewBackgroundColor;
-		TypedValue typedValue = new TypedValue();
-		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
-			viewBackgroundColor = typedValue.data;
-		} else {
-			viewBackgroundColor = context.getResources().getColor(R.color.text_color);
-		}
+		int viewBackgroundColor = getResources().getColor(ColorMap.getViewBackground());
+//		TypedValue typedValue = new TypedValue();
+//		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
+//			viewBackgroundColor = typedValue.data;
+//		} else {
+//			viewBackgroundColor = context.getResources().getColor(R.color.view_background);
+//		}
 
 		container = new FrameLayout(context);
 		LinearLayout.LayoutParams containerLp = new LinearLayout.LayoutParams(
@@ -211,6 +212,7 @@ public class ChipsView extends LinearLayout {
 
 	public void setData(String[] names, int[] colors) {
 		if (names != null && colors != null) {
+			//TODO: Fix this hard coded width.
 			if (WIDTH <= 1) {
 				WIDTH = AndroidUtils.getScreenWidth(getContext())-2*PADD_NORMAL;
 			}
@@ -253,11 +255,11 @@ public class ChipsView extends LinearLayout {
 		//Read view sizes;
 		Rect rect = new Rect();
 		views.get(i).getPaint().getTextBounds(names[i], 0, names[i].length(), rect);
-		int w = 2*NO_ICON_PADD + rect.width() + PADD_SMALL;
-		totalWidth +=w;
+		int w = NO_ICON_PADD+NO_ICON_PADD + rect.width() + PADD_SMALL;
+		totalWidth += w;
 		chipsWidth.add(w);
 		if (chipsHeight == 0) {
-			chipsHeight = 2*PADD_NORMAL + rect.height();
+			chipsHeight = PADD_NORMAL+PADD_NORMAL + rect.height();
 		}
 		float x = totalWidth%WIDTH;
 		float y = (PADD_TINY+chipsHeight)*(totalWidth/(int)WIDTH)+PADD_NORMAL;

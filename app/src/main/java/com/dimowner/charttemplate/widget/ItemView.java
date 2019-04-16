@@ -20,13 +20,13 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import com.dimowner.charttemplate.ColorMap;
 import com.dimowner.charttemplate.R;
 import com.dimowner.charttemplate.model.ChartData;
 import com.dimowner.charttemplate.util.AndroidUtils;
@@ -36,24 +36,24 @@ public class ItemView extends LinearLayout implements
 
 	private final float DENSITY;
 	private final int PADD_NORMAL;
-	private final int PADD_SMALL;
-	private final int PADD_TINY;
+//	private final int PADD_SMALL;
+//	private final int PADD_TINY;
 
 	{
 		DENSITY = AndroidUtils.dpToPx(1);
 		PADD_NORMAL = (int) (16*DENSITY);
-		PADD_SMALL = (int) (8*DENSITY);
-		PADD_TINY = (int) (4*DENSITY);
+//		PADD_SMALL = (int) (8*DENSITY);
+//		PADD_TINY = (int) (4*DENSITY);
 	}
 
-	private LinearLayout container;
+//	private LinearLayout container;
 
 	private ChartView chartView;
 	private ChartScrollView chartScrollView;
 	private ChartScrollOverlayView chartScrollOverlayView;
 //	private CheckersView checkersView;
 	private ChipsView chipsView;
-	private ChartScrollOverlayView.OnScrollListener onScrollListener;
+//	private ChartScrollOverlayView.OnScrollListener onScrollListener;
 
 	public ItemView(Context context) {
 		super(context);
@@ -76,7 +76,7 @@ public class ItemView extends LinearLayout implements
 
 
 	private View generateLayout(Context context) {
-		container = new LinearLayout(context);
+		LinearLayout container = new LinearLayout(context);
 		LinearLayout.LayoutParams containerLp = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -93,13 +93,13 @@ public class ItemView extends LinearLayout implements
 		chartLp.setMargins(PADD_NORMAL, 0, PADD_NORMAL, 0);
 		chartView.setLayoutParams(chartLp);
 
-		int viewBackground;
-		TypedValue typedValue = new TypedValue();
-		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
-			viewBackground = typedValue.data;
-		} else {
-			viewBackground = context.getResources().getColor(R.color.view_background);
-		}
+		int viewBackground = getResources().getColor(ColorMap.getViewBackground());
+//		TypedValue typedValue = new TypedValue();
+//		if (context.getTheme().resolveAttribute(R.attr.viewBackground, typedValue, true)) {
+//			viewBackground = typedValue.data;
+//		} else {
+//			viewBackground = context.getResources().getColor(R.color.view_background);
+//		}
 		FrameLayout scroll = new FrameLayout(context);
 		LinearLayout.LayoutParams scrollLp2 = new LinearLayout.LayoutParams(
 				LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -174,21 +174,20 @@ public class ItemView extends LinearLayout implements
 		chartView.setOnDetailsListener(listener);
 	}
 
-	public void setOnMoveEventsListener(ChartView.OnMoveEventsListener listener) {
-		chartView.setOnMoveEventsListener(listener);
-
-	}
-
-	public void setOnScrollListener(ChartScrollOverlayView.OnScrollListener l) {
-		this.onScrollListener = l;
-	}
+//	public void setOnMoveEventsListener(ChartView.OnMoveEventsListener listener) {
+//		chartView.setOnMoveEventsListener(listener);
+//	}
+//
+//	public void setOnScrollListener(ChartScrollOverlayView.OnScrollListener l) {
+//		this.onScrollListener = l;
+//	}
 
 	@Override
 	public void onScroll(float x, float size) {
 		chartView.scrollPos(x, size);
-		if (onScrollListener != null) {
-			onScrollListener.onScroll(x, size);
-		}
+//		if (onScrollListener != null) {
+//			onScrollListener.onScroll(x, size);
+//		}
 	}
 
 	@Override

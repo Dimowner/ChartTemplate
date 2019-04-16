@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<attr name="primaryColor" format="color" />
-	<attr name="viewBackground" format="color" />
-	<attr name="gridColor" format="color" />
-	<attr name="gridBaseLineColor" format="color" />
-	<attr name="gridTextColor" format="color" />
-	<attr name="selectionColor" format="color" />
-	<attr name="overlayColor" format="color" />
-	<attr name="textCheckerColor" format="color" />
-	<attr name="panelColor" format="color" />
-	<attr name="panelTextColor" format="color" />
-	<attr name="scrubblerColor" format="color" />
-	<attr name="shadowColor" format="color" />
-	<attr name="tittleColor" format="color" />
-	<attr name="barOverlayColor" format="color" />
-	<attr name="arrowColor" format="color" />
+	<!--<attr name="primaryColor" format="color" />-->
+	<!--<attr name="viewBackground" format="color" />-->
+	<!--<attr name="gridColor" format="color" />-->
+	<!--<attr name="gridBaseLineColor" format="color" />-->
+	<!--<attr name="gridTextColor" format="color" />-->
+	<!--<attr name="selectionColor" format="color" />-->
+	<!--<attr name="overlayColor" format="color" />-->
+	<!--<attr name="textCheckerColor" format="color" />-->
+	<!--<attr name="panelColor" format="color" />-->
+	<!--<attr name="panelTextColor" format="color" />-->
+	<!--<attr name="scrubblerColor" format="color" />-->
+	<!--<attr name="shadowColor" format="color" />-->
+	<!--<attr name="tittleColor" format="color" />-->
+	<!--<attr name="barOverlayColor" format="color" />-->
+	<!--<attr name="arrowColor" format="color" />-->
+
+	<!--<declare-styleable name="ChartView">-->
+		<!--<attr name="viewBackground" format="color" />-->
+		<!--<attr name="gridColor" format="color" />-->
+		<!--<attr name="gridTextColor" format="color" />-->
+		<!--<attr name="panelColor" format="color" />-->
+		<!--<attr name="panelTextColor" format="color" />-->
+		<!--<attr name="shadowColor" format="color" />-->
+		<!--<attr name="tittleColor" format="color" />-->
+		<!--<attr name="barOverlayColor" format="color" />-->
+		<!--<attr name="arrowColor" format="color" />-->
+	<!--</declare-styleable>-->
 
 </resources>

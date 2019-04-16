@@ -26,7 +26,7 @@ import timber.log.Timber;
 
 public class CTApplication extends Application {
 
-	private static boolean isNightMode = false;
+//	private static boolean isNightMode = false;
 
 	private static ChartData[] chartData;
 
@@ -51,13 +51,13 @@ public class CTApplication extends Application {
 		AndroidUtils.update(getApplicationContext());
 	}
 
-	public static boolean isNightMode() {
-		return isNightMode;
-	}
-
-	public static void setNightMode(boolean b) {
-		isNightMode = b;
-	}
+//	public static boolean isNightMode() {
+//		return isNightMode;
+//	}
+//
+//	public static void setNightMode(boolean b) {
+//		isNightMode = b;
+//	}
 
 	public static ChartData[] getChartData() {
 		return chartData;
