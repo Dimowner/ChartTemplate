@@ -25,7 +25,6 @@ import android.graphics.Region;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -71,9 +70,11 @@ public class ChartScrollOverlayView extends View {
 	private RectF rect;
 	private float STEP = 10;
 
-	private Paint overlayPaint;
-	private Paint selectionPaint;
-	private Paint borderPaint;
+//	private Paint overlayPaint;
+//	private Paint selectionPaint;
+//	private Paint borderPaint;
+
+	private Paint paint;
 
 	private float scrollX = -1;
 
@@ -84,6 +85,7 @@ public class ChartScrollOverlayView extends View {
 	private float prevWidth = 0;
 	private int colorWhite;
 	private int selectionColor;
+	private int overlayColor;
 
 	private OnScrollListener onScrollListener;
 
@@ -107,7 +109,7 @@ public class ChartScrollOverlayView extends View {
 //		path = new Path();
 		rect = new RectF();
 
-		int overlayColor;
+//		int overlayColor;
 		Resources res = context.getResources();
 //		TypedValue typedValue = new TypedValue();
 //		Resources.Theme theme = context.getTheme();
@@ -125,23 +127,29 @@ public class ChartScrollOverlayView extends View {
 //			overlayColor = res.getColor(R.color.overlay_color);
 //		}
 
-		selectionPaint = new Paint();
-//		selectionPaint.setAntiAlias(false);
-//		selectionPaint.setDither(false);
-		selectionPaint.setStyle(Paint.Style.FILL);
-//		selectionPaint.setStrokeWidth(SELECTION);
-		selectionPaint.setColor(selectionColor);
+//		selectionPaint = new Paint();
+////		selectionPaint.setAntiAlias(false);
+////		selectionPaint.setDither(false);
+//		selectionPaint.setStyle(Paint.Style.FILL);
+////		selectionPaint.setStrokeWidth(SELECTION);
+//		selectionPaint.setColor(selectionColor);
+//
+//		overlayPaint = new Paint();
+////		overlayPaint.setAntiAlias(false);
+////		overlayPaint.setDither(false);
+//		overlayPaint.setStyle(Paint.Style.FILL);
+//		overlayPaint.setColor(overlayColor);
+//
+//		borderPaint = new Paint();
+//		borderPaint.setStyle(Paint.Style.STROKE);
+//		borderPaint.setStrokeWidth(1.5f*DENSITY);
+//		borderPaint.setColor(selectionColor);
 
-		overlayPaint = new Paint();
-//		overlayPaint.setAntiAlias(false);
-//		overlayPaint.setDither(false);
-		overlayPaint.setStyle(Paint.Style.FILL);
-		overlayPaint.setColor(overlayColor);
+		paint = new Paint();
+//		paint.setStyle(Paint.Style.STROKE);
+//		paint.setStrokeWidth(1.5f*DENSITY);
+//		paint.setColor(selectionColor);
 
-		borderPaint = new Paint();
-		borderPaint.setStyle(Paint.Style.STROKE);
-		borderPaint.setStrokeWidth(1.5f*DENSITY);
-		borderPaint.setColor(selectionColor);
 
 		setOnTouchListener(new OnTouchListener() {
 //			TODO: When selection resized to smallest size on right side move selection to the left.
@@ -170,7 +178,7 @@ public class ChartScrollOverlayView extends View {
 								} else if (scrollX < SELECTION) {
 									scrollX = SELECTION;
 								}
-								onScroll(scrollX-SELECTION, selectionWidth+2*SELECTION);
+								onScroll(scrollX-SELECTION, selectionWidth+SELECTION+SELECTION);
 								break;
 							case CURSOR_LEFT:
 								float prevScroll = scrollX;
@@ -195,7 +203,7 @@ public class ChartScrollOverlayView extends View {
 								if (selectionWidth + scrollX > WIDTH) {
 									selectionWidth = WIDTH - scrollX;
 								}
-								onScroll(scrollX-SELECTION, selectionWidth+2*SELECTION);
+								onScroll(scrollX-SELECTION, selectionWidth+SELECTION+SELECTION);
 								break;
 							case CURSOR_RIGHT:
 								selectionWidth = (startSelectionWidth + motionEvent.getX() - moveStartX);
@@ -209,7 +217,7 @@ public class ChartScrollOverlayView extends View {
 								if (selectionWidth + scrollX > WIDTH-SELECTION) {
 									selectionWidth = WIDTH - scrollX-SELECTION;
 								}
-								onScroll(scrollX-SELECTION, selectionWidth+2*SELECTION);
+								onScroll(scrollX-SELECTION, selectionWidth+SELECTION+SELECTION);
 								break;
 							case CURSOR_UNSELECTED:
 							default:
@@ -279,6 +287,10 @@ public class ChartScrollOverlayView extends View {
 //		}
 //		canvas.clipPath(path);
 
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeWidth(1.5f*DENSITY);
+		paint.setColor(selectionColor);
+
 		borderLines[0] = scrollX; //x0 line1
 		borderLines[1] = BORDER_HALF; //y0
 		borderLines[2] = scrollX+selectionWidth; //x1
@@ -287,16 +299,18 @@ public class ChartScrollOverlayView extends View {
 		borderLines[5] = HEIGHT- BORDER_HALF; //y0
 		borderLines[6] = scrollX+selectionWidth; //x1
 		borderLines[7] = HEIGHT- BORDER_HALF; //y1
-		canvas.drawLines(borderLines, borderPaint);
+		canvas.drawLines(borderLines, paint);
 
-		selectionPaint.setColor(selectionColor);
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(overlayColor);
+
 		rect.left = 0;
 		rect.top = BORDER;
 		rect.bottom = HEIGHT- BORDER;
 		rect.right = scrollX;
 		canvas.clipRect(rect);
 		rect.right = scrollX+SELECTION_HALF;
-		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, overlayPaint);
+		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, paint);
 
 		rect.left = scrollX + selectionWidth;
 		rect.top = BORDER;
@@ -304,7 +318,10 @@ public class ChartScrollOverlayView extends View {
 		rect.right = WIDTH;
 		canvas.clipRect(rect,op);
 		rect.left = scrollX + selectionWidth-SELECTION_HALF;
-		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, overlayPaint);
+		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, paint);
+
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(selectionColor);
 
 		rect.left = scrollX - SELECTION;
 		rect.top = 0;
@@ -312,7 +329,7 @@ public class ChartScrollOverlayView extends View {
 		rect.right = scrollX;// + SELECTION_HALF;
 		canvas.clipRect(rect,op);
 		rect.right = scrollX + SELECTION_HALF;
-		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, selectionPaint);
+		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, paint);
 
 		rect.left = scrollX + selectionWidth;
 		rect.top = 0;
@@ -320,20 +337,20 @@ public class ChartScrollOverlayView extends View {
 		rect.right = scrollX + selectionWidth + SELECTION;
 		canvas.clipRect(rect,op);
 		rect.left = scrollX + selectionWidth - SELECTION_HALF;
-		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, selectionPaint);
+		canvas.drawRoundRect(rect, SELECTION_HALF, SELECTION_HALF, paint);
 
-		selectionPaint.setColor(colorWhite);
+		paint.setColor(colorWhite);
 		rect.left = scrollX + selectionWidth + SELECTION_HALF - LINE_WIDTH;
 		rect.top = HEIGHT/2-LINE_HEIGHT;
 		rect.bottom = HEIGHT/2+LINE_HEIGHT;
 		rect.right = scrollX + selectionWidth + SELECTION_HALF + LINE_WIDTH;
-		canvas.drawRoundRect(rect, LINE_WIDTH, LINE_WIDTH, selectionPaint);
+		canvas.drawRoundRect(rect, LINE_WIDTH, LINE_WIDTH, paint);
 
 		rect.left = scrollX - SELECTION_HALF - LINE_WIDTH;
 		rect.top = HEIGHT/2-LINE_HEIGHT;
 		rect.bottom = HEIGHT/2+LINE_HEIGHT;
 		rect.right = scrollX - SELECTION_HALF + LINE_WIDTH;
-		canvas.drawRoundRect(rect, LINE_WIDTH, LINE_WIDTH, selectionPaint);
+		canvas.drawRoundRect(rect, LINE_WIDTH, LINE_WIDTH, paint);
 	}
 
 	public void setData(int length) {

@@ -28,7 +28,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -101,7 +100,9 @@ public class ChartView extends View {
 	private TextPaint timelineTextPaint;
 	private TextPaint percentPaint;
 	private Paint gridPaint;
-	private Paint[] linePaints;
+
+	private int[] linesAlpha;
+	private Paint linePaint;
 
 	private ValueAnimator alphaAnimator;
 	private ValueAnimator heightAnimator;
@@ -210,7 +211,8 @@ public class ChartView extends View {
 		public void onAnimationUpdate(ValueAnimator animation) {
 			float val = (float) animation.getAnimatedValue();
 			scaleKoef = Math.abs(val/255);
-			linePaints[index].setAlpha((int) val);
+//			linePaints[index].setAlpha((int) val);
+			linesAlpha[index] = (int) val;
 			if (val == end2) {
 				linesVisibility[index] = show;
 				isAnimating = false;
@@ -343,6 +345,10 @@ public class ChartView extends View {
 		gridPaint.setColor(gridColor);
 		gridPaint.setStrokeWidth(DENSITY);
 
+		linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		linePaint.setStyle(Paint.Style.STROKE);
+		linePaint.setStrokeWidth(LINE_WIDTH);
+
 		dateRangePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
 		dateRangePaint.setColor(tittleColor);
 		dateRangePaint.setTextAlign(Paint.Align.RIGHT);
@@ -465,18 +471,18 @@ public class ChartView extends View {
 		});
 	}
 
-	private Paint createLinePaint(int color, boolean isBars) {
-		Paint lp = new Paint();
-		lp.setStyle(Paint.Style.STROKE);
-		lp.setStrokeWidth(LINE_WIDTH);
-		lp.setAntiAlias(true);
-//		lp.setStrokeJoin(Paint.Join.ROUND);
-		lp.setColor(color);
-//		if (isBars) {
-			lp.setStrokeCap(Paint.Cap.BUTT);
-//		}
-		return lp;
-	}
+//	private Paint createLinePaint(int color, boolean isBars) {
+//		Paint lp = new Paint();
+//		lp.setStyle(Paint.Style.STROKE);
+//		lp.setStrokeWidth(LINE_WIDTH);
+//		lp.setAntiAlias(true);
+////		lp.setStrokeJoin(Paint.Join.ROUND);
+//		lp.setColor(color);
+////		if (isBars) {
+//			lp.setStrokeCap(Paint.Cap.BUTT);
+////		}
+//		return lp;
+//	}
 
 	private void alphaAnimator(float start, final float end, final int index, final boolean show) {
 		this.show = show;
@@ -517,7 +523,7 @@ public class ChartView extends View {
 			minHeightAnimator.cancel();
 		}
 		minHeightAnimator = ValueAnimator.ofFloat(diff, 0);
-		minHeightAnimator.setInterpolator(linearInterpolator);
+		minHeightAnimator.setInterpolator(decelerateInterpolator);
 		minHeightAnimator.setDuration(300);
 		minHeightAnimator.addUpdateListener(minHeightValueAnimator);
 		minHeightAnimator.start();
@@ -606,12 +612,12 @@ public class ChartView extends View {
 			if (isDetailsMode) {
 				int start = (int) Math.floor(scrollStartIndex);
 				if (TimeUtils.isDiffSorterThan2Days(data.getTime()[start], data.getTime()[idx])) {
-					dateRange = data.getTimesLong()[start];
+					dateRange = data.getTimeLong(start);
 				} else {
-					dateRange = data.getTimesLong()[start] + minus + data.getTimesLong()[idx];
+					dateRange = data.getTimeLong(start) + minus + data.getTimeLong(idx);
 				}
 			} else {
-				dateRange = data.getTimesLong()[(int) Math.floor(scrollStartIndex)] + minus + data.getTimesLong()[idx];
+				dateRange = data.getTimeLong((int) Math.floor(scrollStartIndex)) + minus + data.getTimeLong(idx);
 			}
 			dateRangePaint.getTextBounds(dateRange, 0, dateRange.length(), rect);
 		}
@@ -625,7 +631,7 @@ public class ChartView extends View {
 
 	private void setDateRange(int index) {
 		if (data.getLength() > index) {
-			dateRange = data.getTimesLong()[index];
+			dateRange = data.getTimeLong(index);
 			dateRangePaint.getTextBounds(dateRange, 0, dateRange.length(), rect);
 			if (dateRangeHeight < rect.height()) {
 				dateRangeHeight = rect.height();
@@ -715,7 +721,7 @@ public class ChartView extends View {
 				timelineTextPaint.setColor(gridTextColor);
 				drawTimeline(canvas);
 				//Draw selection panel with scrubbler
-				selectionDrawer.draw(canvas, data, linesVisibility, HEIGHT, linePaints, valueScale, minValueVisible);
+				selectionDrawer.draw(canvas, data, linesVisibility, HEIGHT, linesAlpha, linePaint, valueScale, minValueVisible);
 			}
 			canvas.drawText(dateRange, WIDTH-2, dateRangeHeight+DATE_RANGE_PADD, dateRangePaint);
 		}
@@ -723,22 +729,27 @@ public class ChartView extends View {
 
 	private void drawPercentCircle(Canvas canvas, int i) {
 		if (i == 0) { prevArc = START_ANGLE;}
-		linePaints[i].setStyle(Paint.Style.FILL);
+//		linePaints[i].setStyle(Paint.Style.FILL);
+		linePaint.setStyle(Paint.Style.FILL);
+		linePaint.setColor(data.getColor(i));
+		linePaint.setAlpha(linesAlpha[i]);
 		if (i == moveIndex) {
 			canvas.drawArc(
 					(WIDTH - (H2)) / 2+ moveValX,
 					BASE_LINE_Y + PADD_NORMAL + PADD_SMALL + moveValY,
 					(WIDTH - (H2)) / 2 + H2 + moveValX,
 					HEIGHT - BASE_LINE_Y + PADD_SMALL + moveValY,
-					prevArc, arcSums[i], true, linePaints[i]);
+					prevArc, arcSums[i], true, linePaint);
+//					prevArc, arcSums[i], true, linePaints[i]);
 			if (moveValX != 0 || moveValY != 0) {
-				canvas.drawText(data.getNames()[i], WIDTH / 2 + moveValX * 6, HEIGHT/2+PADD_NORMAL + moveValY * 6, percentPaint);
+				canvas.drawText(data.getName(i), WIDTH / 2 + moveValX * 6, HEIGHT/2+PADD_NORMAL + moveValY * 6, percentPaint);
 			}
 		} else {
 			canvas.drawArc(
 					(WIDTH - (H2)) / 2, BASE_LINE_Y + PADD_NORMAL + PADD_SMALL,
 					(WIDTH - (H2)) / 2 + H2, HEIGHT - BASE_LINE_Y + PADD_SMALL,
-					prevArc, arcSums[i], true, linePaints[i]);
+					prevArc, arcSums[i], true, linePaint);
+//					prevArc, arcSums[i], true, linePaints[i]);
 			canvas.drawText((int) (arcSums[i]/3.6) + "%",
 					WIDTH/2+(float) Math.cos((prevArc+arcSums[i]/2)*Math.PI/180)*RADIUS,
 					(HEIGHT)/2+(float) Math.sin((prevArc+arcSums[i]/2)*Math.PI/180)*RADIUS+PADD_NORMAL+PADD_TINY, percentPaint);
@@ -748,10 +759,16 @@ public class ChartView extends View {
 
 	private void drawGrid(Canvas canvas) {
 		if (isYscaled) {
-			timelineTextPaint.setColor(data.getColorsInts()[yIndex == 0 ? 1: 0]);
+			timelineTextPaint.setColor(data.getColor(yIndex == 0 ? 1: 0));
 		} else {
 			timelineTextPaint.setColor(gridTextColor);
 		}
+//		paint.setAntiAlias(false);
+//		paint.setStyle(Paint.Style.STROKE);
+//		paint.setStrokeCap(Paint.Cap.SQUARE);
+//		paint.setColor(gridColor);
+//		paint.setStrokeWidth(DENSITY);
+		//TODO: remove loop;
 		for (int i = 0; i < gridCount; i++) {
 			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, gridPaint);
 			canvas.drawText(formatValue(gridValueStep * i+minValueVisible), 0, H1 - gridStep * i - PADD_TINY, timelineTextPaint);
@@ -760,9 +777,10 @@ public class ChartView extends View {
 //			canvas.drawLine(0, H1 - i, WIDTH, H1 - i, gridPaint);
 //		}
 		if (isYscaled) {
-			timelineTextPaint.setColor(data.getColorsInts()[yIndex]);
+			timelineTextPaint.setColor(data.getColor(yIndex));
 			timelineTextPaint.setTextAlign(Paint.Align.RIGHT);
-			timelineTextPaint.setAlpha(linePaints[yIndex].getAlpha());
+//			timelineTextPaint.setAlpha(linePaints[yIndex].getAlpha());
+			timelineTextPaint.setAlpha(linesAlpha[yIndex]);
 			for (int i = 0; i < gridCount; i++) {
 				canvas.drawText(formatValue((gridValueStep * i+minValueVisible)/yScale),
 						WIDTH, H1 - gridStep * i - PADD_TINY, timelineTextPaint);
@@ -780,8 +798,16 @@ public class ChartView extends View {
 	private void drawPercentageGrid(Canvas canvas) {
 		gridStep = (H2-PADD_NORMAL)/5;
 		gridValueStep = 20;//%
+
+//		paint.setAntiAlias(false);
+//		paint.setStyle(Paint.Style.STROKE);
+//		paint.setStrokeCap(Paint.Cap.SQUARE);
+//		paint.setColor(gridColor);
+//		paint.setStrokeWidth(DENSITY);
+
 		timelineTextPaint.setAlpha(255);
 		for (int i = 0; i <= 5; i++) {
+//			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, paint);
 			canvas.drawLine(0, H1 - gridStep * i, WIDTH, H1 - gridStep * i, gridPaint);
 			canvas.drawText(String.valueOf(gridValueStep * i), 0, H1 - gridStep * i - PADD_TINY, timelineTextPaint);
 		}
@@ -818,12 +844,21 @@ public class ChartView extends View {
 			}
 			chartPos += STEP;
 		}
+//		paint.setStyle(Paint.Style.STROKE);
+		linePaint.setStrokeWidth(LINE_WIDTH);
+		linePaint.setAntiAlias(true);
+		linePaint.setColor(data.getColor(index));
+		linePaint.setAlpha(linesAlpha[index]);
+
 		if (chartPos/STEP < 80) {
-			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
+			linePaint.setStrokeCap(Paint.Cap.ROUND);
+//			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
 		} else {
-			linePaints[index].setStrokeCap(Paint.Cap.SQUARE);
+			linePaint.setStrokeCap(Paint.Cap.SQUARE);
+//			linePaints[index].setStrokeCap(Paint.Cap.SQUARE);
 		}
-		canvas.drawLines(chartArray, chartSkip, chartK-chartSkip, linePaints[index]);
+		canvas.drawLines(chartArray, chartSkip, chartK-chartSkip, linePaint);
+//		canvas.drawLines(chartArray, chartSkip, chartK-chartSkip, linePaints[index]);
 	}
 
 	private float barPos;
@@ -841,7 +876,7 @@ public class ChartView extends View {
 //		int k = barSkip;
 		barSkip -= barSkip%scale;
 		barK = barSkip;
-		linePaints[index].setStrokeWidth(scale*STEP+1);
+//		linePaints[index].setStrokeWidth(scale*STEP+1);
 		if (data.isStacked()) {
 //			int j;
 //			int sum=0;
@@ -900,7 +935,14 @@ public class ChartView extends View {
 				barPos += STEP;
 			}
 		}
-		canvas.drawLines(chartArray, barSkip, barK-barSkip, linePaints[index]);
+
+//		paint.setStyle(Paint.Style.STROKE);
+		linePaint.setAntiAlias(false);
+		linePaint.setStrokeWidth(scale*STEP+1);
+		linePaint.setColor(data.getColor(index));
+		linePaint.setAlpha(linesAlpha[index]);
+		canvas.drawLines(chartArray, barSkip, barK-barSkip, linePaint);
+//		canvas.drawLines(chartArray, barSkip, barK-barSkip, linePaints[index]);
 	}
 
 	private void drawAreaPercentage(Canvas canvas, int[] values, int index) {
@@ -970,17 +1012,35 @@ public class ChartView extends View {
 			pos += scale*STEP;
 		}
 
-		linePaints[index].setStrokeWidth(scale*STEP+1);
-		linePaints[index].setTextAlign(Paint.Align.RIGHT);
-		linePaints[index].setStrokeCap(Paint.Cap.BUTT);
-		canvas.drawLines(chartArray, skip, k-skip, linePaints[index]);
+//		paint.setStyle(Paint.Style.STROKE);
+//		paint.setStrokeWidth(LINE_WIDTH);
+		linePaint.setAntiAlias(false);
+//		lp.setStrokeCap(Paint.Cap.BUTT);
+		linePaint.setColor(data.getColor(index));
+		linePaint.setStrokeWidth(scale*STEP+1);
+		linePaint.setTextAlign(Paint.Align.RIGHT);
+		linePaint.setStrokeCap(Paint.Cap.BUTT);
+		linePaint.setAlpha(linesAlpha[index]);
+		canvas.drawLines(chartArray, skip, k-skip, linePaint);
 		if (data.isPercentage() && index > 0 && !isBottomLine(index)) {
-			linePaints[index].setStrokeWidth(STEP*scale);
+			linePaint.setStrokeWidth(STEP*scale);
 //			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
-			canvas.drawLines(chartArray2, skip, k - skip, linePaints[index]);
-			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
-			canvas.drawPoints(chartArray2, skip, k - skip-1, linePaints[index]);
+			canvas.drawLines(chartArray2, skip, k - skip, linePaint);
+			linePaint.setStrokeCap(Paint.Cap.ROUND);
+			canvas.drawPoints(chartArray2, skip, k - skip-1, linePaint);
 		}
+
+//		linePaints[index].setStrokeWidth(scale*STEP+1);
+//		linePaints[index].setTextAlign(Paint.Align.RIGHT);
+//		linePaints[index].setStrokeCap(Paint.Cap.BUTT);
+//		canvas.drawLines(chartArray, skip, k-skip, linePaints[index]);
+//		if (data.isPercentage() && index > 0 && !isBottomLine(index)) {
+//			linePaints[index].setStrokeWidth(STEP*scale);
+////			linePaints[index].setStrokeCap(Paint.Cap.BUTT);
+//			canvas.drawLines(chartArray2, skip, k - skip, linePaints[index]);
+//			linePaints[index].setStrokeCap(Paint.Cap.ROUND);
+//			canvas.drawPoints(chartArray2, skip, k - skip-1, linePaints[index]);
+//		}
 	}
 
 	private boolean isBottomLine(int index) {
@@ -1020,12 +1080,12 @@ public class ChartView extends View {
 					int start = (int)(scrollPos/STEP);
 					if (data.getLength() > start+(int)(indexesWidth)
 							&& TimeUtils.isDiffSorterThan2Days(data.getTime()[start], data.getTime()[start+(int)(indexesWidth)])) {
-						canvas.drawText(data.getTimes()[i * timelineCount], timelinePos - scrollPos, HEIGHT - PADD_NORMAL, timelineTextPaint);
+						canvas.drawText(data.getTime(i * timelineCount), timelinePos - scrollPos, HEIGHT - PADD_NORMAL, timelineTextPaint);
 					} else {
-						canvas.drawText(data.getTimesShort()[i * timelineCount], timelinePos - scrollPos, HEIGHT - PADD_NORMAL, timelineTextPaint);
+						canvas.drawText(data.getTimeShort(i * timelineCount), timelinePos - scrollPos, HEIGHT - PADD_NORMAL, timelineTextPaint);
 					}
 				} else {
-					canvas.drawText(data.getTimesShort()[i * timelineCount], timelinePos - scrollPos, HEIGHT - PADD_NORMAL, timelineTextPaint);
+					canvas.drawText(data.getTimeShort(i * timelineCount), timelinePos - scrollPos, HEIGHT - PADD_NORMAL, timelineTextPaint);
 				}
 			}
 			timelinePos += timelineCount*STEP;
@@ -1038,7 +1098,8 @@ public class ChartView extends View {
 		if (pos >= 0) {
 			amnimItemIndex = pos;
 			linesCalculated[pos] = false;
-			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
+			alphaAnimator(linesAlpha[pos], 0, pos, false);
+//			alphaAnimator(linePaints[pos].getAlpha(), 0, pos, false);
 		}
 		calculateMaxValuesLine();
 		calculateMaxValue2(false, true);
@@ -1053,7 +1114,8 @@ public class ChartView extends View {
 		if (pos >= 0) {
 			linesVisibility[pos] = true;
 			linesCalculated[pos] = true;
-			alphaAnimator(linePaints[pos].getAlpha(), 255, pos, true);
+			alphaAnimator(linesAlpha[pos], 255, pos, true);
+//			alphaAnimator(linePaints[pos].getAlpha(), 255, pos, true);
 		}
 		calculateMaxValuesLine();
 		calculateMaxValue2(false, true);
@@ -1079,11 +1141,13 @@ public class ChartView extends View {
 			linesVisibility = new boolean[data.getLinesCount()];
 			linesCalculated = new boolean[data.getLinesCount()];
 			selectionDrawer.setLinesCount(data.getLinesCount());
-			linePaints = new Paint[data.getLinesCount()];
+//			linePaints = new Paint[data.getLinesCount()];
+			linesAlpha = new int[data.getLinesCount()];
 			for (int i = 0; i < data.getLinesCount(); i++) {
 				linesVisibility[i] = true;
 				linesCalculated[i] = true;
-				linePaints[i] = createLinePaint(data.getColorsInts()[i], data.getType(i) == ChartData.TYPE_BAR);
+				linesAlpha[i] = 255;
+//				linePaints[i] = createLinePaint(data.getColor(i), data.getType(i) == ChartData.TYPE_BAR);
 			}
 
 			if (isYscaled) {
@@ -1292,6 +1356,7 @@ public class ChartView extends View {
 		for (int j = 0; j < v.length; j++) {
 //			v[j] = (int)(v[j]* yScale);
 			data.setData((int)(v[j]* yScale), yIndex, j);
+//			data.getColumns()[yIndex][j] = (int)(v[j]* yScale);
 		}
 	}
 
@@ -1328,7 +1393,7 @@ public class ChartView extends View {
 
 	private int findLinePosition(String name) {
 		for (int i = 0; i < data.getLinesCount(); i++) {
-			if (data.getNames()[i].equalsIgnoreCase(name)) {
+			if (data.getName(i).equalsIgnoreCase(name)) {
 				return i;
 			}
 		}
@@ -1431,9 +1496,12 @@ public class ChartView extends View {
 
 		if (data != null) {
 			selectionDrawer.setLinesCount(data.getLinesCount());
-			linePaints = new Paint[data.getLinesCount()];
+//			linePaints = new Paint[data.getLinesCount()];
+			linesAlpha = new int[data.getLinesCount()];
 			for (int i = 0; i < data.getLinesCount(); i++) {
-				linePaints[i] = createLinePaint(data.getColorsInts()[i], data.getType(i) == ChartData.TYPE_BAR);
+				linesAlpha[i] = 255;
+//				linePaints[i] = createLinePaint(data.getColor(i), data.getType(i) == ChartData.TYPE_BAR);
+
 			}
 			chartArray = new float[data.getLength() * 4];
 			chartArray2 = new float[data.getLength() * 4];

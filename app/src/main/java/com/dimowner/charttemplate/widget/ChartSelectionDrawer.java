@@ -233,8 +233,8 @@ public class ChartSelectionDrawer {
 		}
 	}
 
-	public void draw(Canvas canvas, ChartData data, boolean[] linesVisibility, float HEIGHT,
-						  Paint[] linePaints, float valueScaleY, float minValVisible) {
+	public void draw(Canvas canvas, ChartData data, boolean[] linesVisibility, float HEIGHT, int[] linesAlpha,
+						  Paint linePaint, float valueScaleY, float minValVisible) {
 		if (show) {
 			if (data.getType(0) == ChartData.TYPE_LINE || data.getType(0) == ChartData.TYPE_AREA) {
 				//Draw scrubbler
@@ -247,9 +247,10 @@ public class ChartSelectionDrawer {
 						canvas.drawCircle(selectionX,
 								HEIGHT - BASE_LINE_Y - (selectedValues[i]-minValVisible) * valueScaleY,
 								CIRCLE_SIZE, circlePaint);
+						linePaint.setColor(data.getColor(i));
 						canvas.drawCircle(selectionX,
 								HEIGHT - BASE_LINE_Y - (selectedValues[i]-minValVisible) * valueScaleY,
-								CIRCLE_SIZE, linePaints[i]);
+								CIRCLE_SIZE, linePaint);
 					}
 				}
 			}
@@ -280,16 +281,16 @@ public class ChartSelectionDrawer {
 								sizeRect.left + PADD_XNORMAL,
 								sizeRect.top + selectedDateHeight + PADD_XSMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, percentsPaint);
 						//Draw names
-						canvas.drawText(data.getNames()[i],
+						canvas.drawText(data.getName(i),
 								sizeRect.left + PADD_XNORMAL + percentWidth + PADD_SMALL,
 								sizeRect.top + selectedDateHeight + PADD_XSMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
 					} else {
 						//Draw names
-						canvas.drawText(data.getNames()[i],
+						canvas.drawText(data.getName(i),
 								sizeRect.left + PADD_XNORMAL,
 								sizeRect.top + selectedDateHeight + PADD_SMALL + 2 * PADD_XNORMAL + PADD_TINY + selectedNameHeight * count, selectedNamePaint);
 					}
-					selectedValuePaint.setColor(data.getColorsInts()[i]);
+					selectedValuePaint.setColor(data.getColor(i));
 					selectedValuePaint.setAlpha(alpha);
 //					canvas.drawText(String.valueOf(((int)selectedValues[i])),
 					//Draw values
@@ -340,7 +341,7 @@ public class ChartSelectionDrawer {
 					);
 				}
 				//Name height and width
-				selectedNamePaint.getTextBounds(data.getNames()[i], 0, data.getNames()[i].length(), tempRect);
+				selectedNamePaint.getTextBounds(data.getName(i), 0, data.getName(i).length(), tempRect);
 				tempWidth = tempRect.width();
 				if (selectedNameHeight < tempRect.height()+PADD_XSMALL) selectedNameHeight = tempRect.height()+PADD_XSMALL;
 
@@ -368,7 +369,7 @@ public class ChartSelectionDrawer {
 
 		//Calculate date sizes
 //		date.setTime(data.getTimes()[selectionIndex]);
-		selectionDate = data.getTimes()[selectionIndex];//String.valueOf(date.getTime()/1000000);//TimeUtils.formatDateWeek(date);
+		selectionDate = data.getTime(selectionIndex);//String.valueOf(date.getTime()/1000000);//TimeUtils.formatDateWeek(date);
 		selectedDatePaint.getTextBounds(selectionDate, 0, selectionDate.length(), tempRect);
 
 		if (selectedDateHeight < tempRect.height()) {

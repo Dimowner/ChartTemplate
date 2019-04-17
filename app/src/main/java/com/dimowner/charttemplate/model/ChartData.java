@@ -140,40 +140,60 @@ public class ChartData implements Parcelable {
 		return time;
 	}
 
-	public int[][] getColumns() {
-		return columns;
-	}
+//	public int[][] getColumns() {
+//		return columns;
+//	}
 
 	public String[] getNames() {
 		return names;
 	}
 
-	public String[] getTypes() {
-		return types;
+	public String getName(int index) {
+		return names[index];
 	}
 
-	public String[] getColors() {
-		return colors;
-	}
+//	public String[] getTypes() {
+//		return types;
+//	}
+//
+//	public String[] getColors() {
+//		return colors;
+//	}
 
 	public int[] getColorsInts() {
 		return colorsInts;
+	}
+
+	public int getColor(int index) {
+		return colorsInts[index];
 	}
 
 	public int[] getValues(int p) {
 		return columns[p];
 	}
 
-	public String[] getTimes() {
-		return times;
+//	public String[] getTimes() {
+//		return times;
+//	}
+
+	public String getTime(int index) {
+		return times[index];
 	}
 
-	public String[] getTimesShort() {
-		return timesShort;
+//	public String[] getTimesShort() {
+//		return timesShort;
+//	}
+
+	public String getTimeShort(int index) {
+		return timesShort[index];
 	}
 
-	public String[] getTimesLong() {
-		return timesLong;
+//	public String[] getTimesLong() {
+//		return timesLong;
+//	}
+
+	public String getTimeLong(int index) {
+		return timesLong[index];
 	}
 
 	public boolean isYscaled() {
