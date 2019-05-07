@@ -2,7 +2,7 @@
 <p>App for Telegram Contest https://t.me/contest/59</p>
 <p>The application has taken the 4th place as <a href="https://contest.dev/chart-android/entry138">Huge Dragon</a> between Android apps</p>
 
-![Winner Screen1](https://github.com/Dimowner/ChartTemplate/blob/master/art/Screenshot_1.png)
+![Winner Screen1](https://github.com/Dimowner/ChartTemplate/blob/master/art/Screenshot_2.png)
 ![Winner Screen2](https://github.com/Dimowner/ChartTemplate/blob/master/art/Screenshot_1.png)
 
 ![Chart Template Logo](https://github.com/Dimowner/ChartTemplate/blob/master/app/src/main/res/mipmap-xxhdpi/chart_template_logo.png)
