@@ -1,7 +1,8 @@
 # ChartTemplate
-<p>Chart Template application</p>
+<p>Telegram Contest app https://t.me/contest/59</p>
+<p>The application has taken the 4th place between Android apps</p>
 
-![Chart Template Logo](https://github.com/Dimowner/ChartTemplate/blob/master/app/src/main/res/mipmap-xxhdpi/icon.png)
+![Chart Template Logo](https://github.com/Dimowner/ChartTemplate/blob/master/app/src/main/res/mipmap-xxhdpi/chart_template_logo.png)
 ### License
 
 ```
